@@ -68,15 +68,15 @@ export default async function ProductDetailPage({ params }: PageProps) {
             <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">{product.category}</p>
             <h1 className="mt-3 text-4xl font-semibold tracking-normal text-slate-950">{product.title}</h1>
             <p className="mt-4 text-2xl font-semibold text-slate-950">{product.price}</p>
-            <p className="mt-5 text-base leading-8 text-slate-600">{product.description}</p>
+            <div className="mt-6">
+              <ProductActions productTitle={product.title} />
+            </div>
+            <p className="mt-6 text-base leading-8 text-slate-600">{product.description}</p>
             <ul className="mt-6 grid gap-3 text-sm text-slate-700">
               <li>Designed for display value and a satisfying building experience.</li>
               <li>Suitable for DTC shoppers, collectors, and B2B product evaluation.</li>
               <li>Missing piece support is available through customer service.</li>
             </ul>
-            <div className="mt-8">
-              <ProductActions productTitle={product.title} />
-            </div>
             <div className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5">
               <h2 className="text-lg font-semibold text-slate-950">Business Cooperation</h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">

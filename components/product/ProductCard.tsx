@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/lib/data";
-import { CartIcon, HeartIcon, StarIcon } from "@/components/ui/Icons";
+import { HeartIcon, StarIcon } from "@/components/ui/Icons";
 
 export function ProductCard({ product }: { product: Product }) {
   return (
@@ -36,9 +36,8 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
           <div className="mt-4 flex items-center justify-between gap-3">
             <span className="text-lg font-black text-slate-950">{product.price}</span>
-            <span className="inline-flex h-9 w-28 items-center justify-center gap-2 rounded-md bg-red-600 text-xs font-black text-white transition group-hover:bg-red-700">
-              <CartIcon className="h-4 w-4" />
-              Add to Cart
+            <span className="inline-flex h-9 w-28 items-center justify-center rounded-md bg-red-600 text-xs font-black text-white transition group-hover:bg-red-700">
+              View Details
             </span>
           </div>
         </div>

@@ -57,6 +57,16 @@ export function MenuIcon(props: IconProps) {
   );
 }
 
+export function HomeIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="m4 11 8-7 8 7" />
+      <path d="M6.5 10.5V20h11v-9.5" />
+      <path d="M10 20v-5h4v5" />
+    </IconBase>
+  );
+}
+
 export function HeartIcon(props: IconProps) {
   return (
     <IconBase {...props}>
@@ -74,11 +84,92 @@ export function ArrowRightIcon(props: IconProps) {
   );
 }
 
+export function ChevronDownIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="m6 9 6 6 6-6" />
+    </IconBase>
+  );
+}
+
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="m15 18-6-6 6-6" />
+    </IconBase>
+  );
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="m9 18 6-6-6-6" />
+    </IconBase>
+  );
+}
+
+export function GridIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M4 4h6v6H4z" />
+      <path d="M14 4h6v6h-6z" />
+      <path d="M4 14h6v6H4z" />
+      <path d="M14 14h6v6h-6z" />
+    </IconBase>
+  );
+}
+
+export function ListIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M9 6h11" />
+      <path d="M9 12h11" />
+      <path d="M9 18h11" />
+      <path d="M4 6h.01" />
+      <path d="M4 12h.01" />
+      <path d="M4 18h.01" />
+    </IconBase>
+  );
+}
+
+export function SlidersIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M4 7h5" />
+      <path d="M15 7h5" />
+      <path d="M11 5v4" />
+      <path d="M4 17h8" />
+      <path d="M18 17h2" />
+      <path d="M14 15v4" />
+    </IconBase>
+  );
+}
+
 export function ShieldIcon(props: IconProps) {
   return (
     <IconBase {...props}>
       <path d="M12 3 5 6v5c0 4.5 2.9 8.4 7 10 4.1-1.6 7-5.5 7-10V6l-7-3Z" />
       <path d="m9 12 2 2 4-5" />
+    </IconBase>
+  );
+}
+
+export function RotateIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M20 12a8 8 0 1 1-2.3-5.7" />
+      <path d="M20 4v6h-6" />
+    </IconBase>
+  );
+}
+
+export function StoreIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M4 10h16" />
+      <path d="M5 10 6.5 4h11L19 10" />
+      <path d="M6 10v10h12V10" />
+      <path d="M9 20v-5h6v5" />
     </IconBase>
   );
 }

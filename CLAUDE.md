@@ -208,6 +208,38 @@ For small tasks, direct implementation is acceptable, but changes still need to 
 
 
 
+\### Project Progress & Conversation Handoff Workflow
+
+
+
+Use `docs/09-daily-progress-log.md` as the project progress memory and conversation handoff log.
+
+
+
+When the project owner says "结束当前对话", "结束这个小项", or "结束今天的工作":
+
+
+
+\- Update `docs/09-daily-progress-log.md` with the current small task / sub-project progress, validation results, discovered issues, unfinished items, and recommended next conversation goal.
+
+\- Keep the entry in Chinese.
+
+\- Use the existing single-file log structure instead of creating a new file.
+
+\- Keep the record concise, but clear enough that the next conversation can understand where the project currently stands and what work the next conversation should prepare to complete.
+
+
+
+When starting a new relevant project conversation or when the project owner asks to begin work:
+
+
+
+\- Read `docs/09-daily-progress-log.md` first.
+
+\- Understand the current project status, open issues, unfinished items, and the intended goal for the current conversation before making a new plan or editing files.
+
+
+
 \---
 
 
