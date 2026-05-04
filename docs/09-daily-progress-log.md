@@ -137,6 +137,41 @@
   - 当前工作区已有未提交改动，本次没有执行 commit。
   - 后续真实筛选建议使用 URL 参数驱动，正式数据来源优先考虑 Shopify collection、tags、price range 和 product metafields。
 
+### 子项目 / 小项：首页 UI 优化与 GitHub 提交
+
+- 当前状态：已完成。
+- 本次目标：
+  - 优化 Home 页面视觉表现，重点处理 Featured Categories、Featured Products、Hero banner、Wholesale Partnership、Quality Safety、Final CTA 和移动端布局。
+  - 检查当前代码状态并提交到 GitHub。
+- 本次完成：
+  - 首页 Hero 移动端大图已改为 framed product showcase panel，按钮后直接展示产品大图，视觉层级更接近参考图。
+  - Featured Categories 移动端改为更小的横向滑动卡片，隐藏滚动条，提升同屏信息密度。
+  - Featured Products 移动端改为横向滑动商品卡片，并比分类卡片稍大，保持 1:1 图片比例。
+  - Wholesale Partnership 流程卡片已垂直居中，移动端改为横向滑动。
+  - Quality You Can Build On 增加图片视觉区，避免页面过素。
+  - Final CTA 的 Partner With Us 按钮已改为红底白字白边，hover 为白底红字白边。
+  - Products 总产品页新版目录 UI、首页 UI 优化、进度日志和 AI 规则更新已提交并推送。
+  - 已创建 draft PR：`https://github.com/JIESTARTOYS/jiestar-global-website/pull/1`。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已在 in-app browser 检查 `http://localhost:3000/` 的移动端 Hero、分类、商品卡片和 CTA 关键区域。
+  - Git 提交已完成：`ebc755d feat: polish homepage and product catalog UI`。
+  - 分支已推送：`codex-homepage-ui-v1`。
+- 未完成事项：
+  - 当前 PR 仍为 draft，后续需要项目 owner 在 GitHub 上 review 后决定是否 mark ready / merge。
+  - 首页和产品页仍使用 mock/远程素材图，后续应替换为真实 JIESTAR 产品图、工厂图、质检图和合作图。
+  - Shopify 正式产品、cart、checkout、variant ID 仍未接入。
+- 发现的问题：
+  - Codex 进程无法直接读取用户终端中的 macOS keyring gh token，因此 PR 是由用户在本机终端用 `gh pr create --draft --fill --head codex-homepage-ui-v1` 创建。
+  - 当前产品筛选、排序、分页、Add to Cart 仍属于 preview/static UI。
+- 下一次对话建议目标：
+  - 从 GitHub PR #1 开始 review 当前首页和 Products 页面改动。
+  - 优先检查桌面端完整页面视觉、移动端真实滚动体验，以及是否需要继续替换 mock 图片。
+  - 如果视觉方向确认，可以进入 Shopify product data / cart / checkout 接入规划。
+- 备注：
+  - 结束当前对话时已按规则更新本进度日志。
+
 ### 原始每日记录归档
 
 ### 今日目标
