@@ -36,9 +36,9 @@
 
 - 当前阶段：Version 1 页面基础设计和产品相关页面验证阶段。
 - 已完成基础页面范围：Home、About、Products、Product Detail、Collections、Wholesale、Custom Solutions、Quality & Safety、Blog、Blog Detail、Contact、Policy pages、Replacement Parts、robots、sitemap。
-- 当前重点：继续检查和优化 Products、Product Detail、Collections、Wholesale、Custom Solutions、Contact 等核心页面体验。
+- 当前重点：继续检查和优化 Products、Product Detail、Collections、Contact 等核心页面体验，并准备后续 Shopify product data / cart / checkout 接入规划。
 - 当前边界：Shopify 正式产品、购物车和 checkout 尚未接入，产品购买按钮仍处于 preview/mock 数据阶段。
-- 下一个对话开始时应优先确认：是否继续进行产品页面视觉与交互检查，或先处理当前发现的具体页面问题。
+- 下一个对话开始时应优先确认：是否继续进行 Product Detail / Collections / Contact 页面视觉与交互检查，或先处理 Shopify product data / cart / checkout 接入规划。
 
 ### 子项目 / 小项：核心页面功能验证与产品页检查
 
@@ -171,6 +171,85 @@
   - 如果视觉方向确认，可以进入 Shopify product data / cart / checkout 接入规划。
 - 备注：
   - 结束当前对话时已按规则更新本进度日志。
+
+### 子项目 / 小项：Wholesale 与 Custom Solutions 页面初步优化
+
+- 当前状态：已完成。
+- 本次目标：
+  - 使用 `frontend-ui-ux-pro` 初步优化 `/wholesale` 页面，让它更像 premium、clean、international 的 B2B wholesale 转化页。
+  - 使用 `frontend-ui-ux-pro` 初步优化 `/custom-solutions` 页面，突出 OEM / ODM、产品共创、独家 SKU、长期产品线规划和子品牌合作。
+  - 将 iBlock、小角度、Xbert 三个子品牌 logo 放入项目资产目录，并在 Custom Solutions 页面作为子品牌合作案例展示。
+- 本次完成：
+  - `/wholesale` 已从基础信息页升级为完整的 B2B wholesale 页面，新增 hero summary panel、buyer fit、wholesale advantages、product catalog CTA、cooperation process、catalog inquiry CTA、FAQ 和表单填写提示。
+  - `/custom-solutions` 已从基础能力介绍页升级为更完整的 custom cooperation 页面，新增 hero summary panel、能力图标卡、子品牌合作案例、优化后的合作流程、FAQ 和表单填写提示。
+  - 新增 `public/images/sub-brands/`，并保存三张子品牌 logo：`iblock-logo.png`、`xiaojiaodu-logo.png`、`zhuanyue-xbert-logo.png`。
+  - 将两张较大的透明 logo 缩到 512px 长边，降低静态资源体积。
+  - Custom Solutions 子品牌案例移动端改为横向滑动卡片，并隐藏移动端横向滚动条。
+  - 将第三个子品牌展示名从 `Zhuanyue Xbert` 调整为 `Xbert`。
+  - 已提交并推送到 GitHub 分支 `codex-homepage-ui-v1`。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已通过：`git diff --check`。
+  - 已在 in-app browser 检查 `/wholesale` 移动端首屏、catalog/form 锚点、FAQ 和表单区。
+  - 已在 in-app browser 检查 `/custom-solutions` 移动端首屏、子品牌 logo 横滑模块、`#project-form` 锚点和 console 日志。
+  - 已确认三张本地 logo URL 返回 200。
+  - 已确认 `/api/inquiry` 对 wholesale/custom 测试请求返回 `{"ok":true}`。
+  - Git 提交已完成：`8a9a2d0 feat: polish b2b cooperation pages`。
+  - 分支已推送：`codex-homepage-ui-v1`。
+- 未完成事项：
+  - 当前 draft PR #1 需要项目 owner 在 GitHub 上 review 后决定是否继续追加、mark ready 或 merge。
+  - `gh auth status` 显示 GitHub CLI token 已失效，Codex 无法直接创建或更新 PR；如需后续 PR 操作，需要重新执行 `gh auth login -h github.com`。
+  - Wholesale 和 Custom Solutions 页面仍需后续用真实产品图、工厂图、合作图或更多品牌素材替换当前纯 UI / logo 证明模块。
+  - Shopify 正式产品、cart、checkout、variant ID 仍未接入。
+- 发现的问题：
+  - Custom Solutions 子品牌 logo 的移动端卡片需要控制宽度和隐藏横向滚动条；本次已完成修正。
+  - 小角度和 Xbert logo 原始图片较大；本次已压缩到 512px 长边，后续如有正式透明矢量或高清规范 logo，可再替换。
+  - 当前 GitHub CLI token 失效，但 `git push` 仍成功。
+- 下一次对话建议目标：
+  - 优先检查 Product Detail 页面是否需要与新版 Products / Wholesale / Custom Solutions 的视觉方向统一。
+  - 继续检查 Collections 和 Contact 页面移动端体验、表单状态和 B2B / DTC 路径清晰度。
+  - 如视觉方向确认，可进入 Shopify product data / cart / checkout 接入规划。
+- 备注：
+  - 本次提交没有修改 Header/Footer、Shopify 集成或 `InquiryForm` 的提交 API / payload。
+  - 结束当前对话时已按规则更新本进度日志；该日志更新发生在提交 `8a9a2d0` 之后，尚未包含在该 GitHub 提交中。
+
+### 子项目 / 小项：About 页面品牌信任页优化
+
+- 当前状态：已完成，已通过项目 owner 浏览器审核并准备提交。
+- 本次目标：
+  - 使用 `frontend-ui-ux-pro` 优化 `/about` 页面，让页面从简单公司简介升级为完整品牌信任页。
+  - 兼顾桌面端和移动端体验，补充 hero、公司简介、里程碑、制造能力、办公团队、作品展示、质量文档、子品牌和底部 CTA。
+  - 缺少真实素材时先使用远程占位图，后续由项目 owner 提供素材后替换。
+- 本次完成：
+  - `/about` 已重构为完整品牌介绍页面。
+  - 新增深色 hero、brand profile summary、company overview、timeline、facilities & manufacturing、office & team、portfolio / product directions、quality documentation、sub-brand cooperation 和底部 CTA。
+  - Portfolio 区复用当前 `lib/data.ts` 的 mock products / collections，链接到已有产品和集合页面。
+  - Sub-Brands 区复用已有 iBlock、小角度、Xbert 三个 logo。
+  - Certificates / Awards 按已确认策略处理为 “Quality documentation / compliance-ready placeholder”，没有写未验证的 ISO、EN71、ASTM 或奖项声明。
+  - 修复 About hero 远程背景图 404 导致的首屏破图问题。
+  - 优化底部 `Next step` CTA：从全宽深色区块改为浅灰背景中的独立深色面板，避免与 Footer 连成一块。
+  - 修复 `Contact Us`、`View Products`、`Custom Solutions` 三个 CTA 按钮在桌面端断成双行的问题。
+  - 没有新增依赖，没有修改 Header/Footer、Shopify 集成、表单 API 或全局样式。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已通过：`git diff --check`。
+  - 已通过本地 HTTP 验证：`http://localhost:3000/about` 返回 200。
+  - 已使用 in-app browser 验证 `/about` 首屏、移动端滚动、底部 CTA 与 Footer 过渡、CTA 按钮换行问题。
+  - 已确认浏览器 console 无 error。
+  - 项目 owner 已在浏览器中完成 About 页面审核。
+- 未完成事项：
+  - 当前 About 页面仍使用远程占位图，后续需要替换为真实 JIESTAR 产品图、工厂图、团队图、办公图、证书/检测报告图。
+- 发现的问题：
+  - 页面中质量文档模块目前是占位说明，不代表正式认证展示。
+  - `gh auth status` 仍显示 GitHub CLI token 失效；当前分支推送可继续使用 `git push`。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 继续检查 Product Detail / Collections / Contact 页面视觉与交互体验。
+  - 如视觉方向确认，可开始 Shopify product data / cart / checkout 接入规划。
+- 备注：
+  - 当前工作区准备提交：`app/about/page.tsx` 和本进度日志。
 
 ### 原始每日记录归档
 
