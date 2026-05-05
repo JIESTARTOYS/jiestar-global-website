@@ -86,12 +86,23 @@ const faqs = [
 export default function CustomSolutionsPage() {
   return (
     <div className="bg-slate-50 text-slate-950">
-      <section className="bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_0.72fr] lg:items-end">
+      <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
+        <div className="absolute inset-0 opacity-35">
+          <Image
+            src="https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?auto=format&fit=crop&w=1800&q=80"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-slate-950/75" />
+        </div>
+        <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_0.72fr] lg:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-normal text-red-300">Custom Solutions</p>
-            <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-normal sm:text-5xl lg:text-6xl">
-              From Custom Product Development to Sub-Brand Cooperation
+            <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-normal sm:text-5xl lg:text-[56px]">
+              Custom Building Block Solutions
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-300 sm:text-lg">
               Build OEM / ODM building block products, exclusive SKUs, custom product lines, and long-term sub-brand partnerships with JIESTAR.

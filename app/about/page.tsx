@@ -127,8 +127,8 @@ export default function AboutPage() {
         <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_0.76fr] lg:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-normal text-red-300">About JIESTAR</p>
-            <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-normal sm:text-5xl lg:text-6xl">
-              Building Block Product Development for Global Brands, Buyers, and Builders
+            <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-normal sm:text-5xl lg:text-[56px]">
+              Global Brand & Product Partner
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-300 sm:text-lg">
               Founded in 1998, JIESTAR connects product design, manufacturing coordination, wholesale supply, and custom cooperation for international building block markets.
