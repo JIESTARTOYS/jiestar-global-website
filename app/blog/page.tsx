@@ -67,7 +67,7 @@ export default function BlogPage() {
             </div>
           </div>
 
-          <div className="grid min-w-0 gap-3 rounded-lg border border-white/10 bg-white/[0.07] p-4 shadow-2xl shadow-black/20 backdrop-blur sm:grid-cols-3 lg:p-5">
+          <div className="grid min-w-0 gap-2 rounded-lg border border-white/10 bg-white/[0.07] p-2 shadow-2xl shadow-black/20 backdrop-blur sm:grid-cols-3 sm:gap-3 sm:p-4 lg:p-5">
             {[
               { label: "Buying guides", value: "DTC", icon: SearchIcon },
               { label: "Wholesale insight", value: "B2B", icon: FactoryIcon },
@@ -76,10 +76,12 @@ export default function BlogPage() {
               const Icon = item.icon;
 
               return (
-                <div key={item.label} className="rounded-md border border-white/10 bg-white/[0.08] p-4 shadow-sm">
-                  <Icon className="h-5 w-5 text-red-300" />
-                  <p className="mt-5 break-words text-xl font-black text-white">{item.value}</p>
-                  <p className="mt-1 text-sm leading-5 text-slate-300">{item.label}</p>
+                <div key={item.label} className="flex items-center gap-3 rounded-md border border-white/10 bg-white/[0.08] p-3 shadow-sm sm:block sm:p-4">
+                  <Icon className="h-4 w-4 shrink-0 text-red-300 sm:h-5 sm:w-5" />
+                  <div className="min-w-0">
+                    <p className="break-words text-base font-black leading-tight text-white sm:mt-5 sm:text-xl">{item.value}</p>
+                    <p className="mt-1 text-xs leading-4 text-slate-300 sm:text-sm sm:leading-5">{item.label}</p>
+                  </div>
                 </div>
               );
             })}
