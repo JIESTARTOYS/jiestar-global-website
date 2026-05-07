@@ -1,10 +1,13 @@
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
 import { InquiryForm } from "@/components/forms/InquiryForm";
+import { SubBrandCarousel } from "@/components/sections/SubBrandCarousel";
 import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, SparkIcon, StoreIcon } from "@/components/ui/Icons";
+import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { createMetadata } from "@/lib/seo";
+import { subBrands } from "@/lib/sub-brands";
 
 export const metadata = createMetadata({
   title: "Custom Building Block Solutions",
@@ -28,33 +31,6 @@ const capabilities: Array<[string, string, IconComponent]> = [
   ["Exclusive SKU", "Create dedicated versions for channels, platforms, regional markets, or campaign needs.", StoreIcon],
   ["Exclusive Product Line", "Plan a focused product series with consistent category logic, visual identity, and launch rhythm.", GlobeIcon],
   ["Sub-Brand Partnership", "Support long-term cooperation where JIESTAR helps partners build distinct product brands.", ShieldIcon],
-];
-
-const subBrands = [
-  {
-    name: "iBlock",
-    description: "A sub-brand cooperation example with a playful, character-led identity for building block products.",
-    image: "/images/sub-brands/iblock-logo.png",
-    width: 194,
-    height: 192,
-    imageClassName: "h-24 w-24",
-  },
-  {
-    name: "Xiao Jiaodu",
-    description: "A sub-brand cooperation example showing how product identity can support a more specialized market position.",
-    image: "/images/sub-brands/xiaojiaodu-logo.png",
-    width: 512,
-    height: 512,
-    imageClassName: "h-28 w-full",
-  },
-  {
-    name: "Xbert",
-    description: "A sub-brand cooperation example with a sharper visual system for differentiated product presentation.",
-    image: "/images/sub-brands/zhuanyue-xbert-logo.png",
-    width: 512,
-    height: 512,
-    imageClassName: "h-28 w-full",
-  },
 ];
 
 const process = [
@@ -108,12 +84,12 @@ export default function CustomSolutionsPage() {
               Build OEM / ODM building block products, exclusive SKUs, custom product lines, and long-term sub-brand partnerships with JIESTAR.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <LinkButton href="#project-form" variant="dark">Start a Custom Project</LinkButton>
-              <LinkButton href="#sub-brand-examples" variant="ghost" className="border border-white/25 text-white hover:bg-white/10">Sub-Brand Partnership Inquiry</LinkButton>
-              <LinkButton href="/wholesale" variant="ghost" className="text-white hover:bg-white/10">
-                Existing Product Wholesale
+              <HeroBannerButton href="#project-form">Start Project</HeroBannerButton>
+              <HeroBannerButton href="#sub-brand-examples" variant="secondary">Partner Inquiry</HeroBannerButton>
+              <HeroBannerButton href="/wholesale" variant="secondary">
+                Wholesale
                 <ArrowRightIcon className="ml-2 size-4" />
-              </LinkButton>
+              </HeroBannerButton>
             </div>
           </div>
 
@@ -162,29 +138,13 @@ export default function CustomSolutionsPage() {
 
       <section id="sub-brand-examples" className="scroll-mt-24 bg-white px-5 py-16 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
-            <SectionHeader
-              eyebrow="Sub-brand cooperation"
-              title="Sub-brand cooperation examples"
-              description="JIESTAR has supported sub-brand cooperation directions that give partners a clearer product identity, market position, and long-term product development path."
-            />
-            <div className="scrollbar-none -mx-5 flex gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
-              {subBrands.map((brand) => (
-                <article key={brand.name} className="w-[66vw] max-w-[300px] shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm sm:w-auto sm:max-w-none sm:shrink sm:p-5">
-                  <div className="flex min-h-28 items-center justify-center rounded-md bg-white p-3 sm:min-h-32 sm:p-4">
-                    <Image
-                      src={brand.image}
-                      alt={`${brand.name} sub-brand logo`}
-                      width={brand.width}
-                      height={brand.height}
-                      className={`${brand.imageClassName} object-contain`}
-                    />
-                  </div>
-                  <h2 className="mt-5 text-base font-semibold text-slate-950">{brand.name}</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{brand.description}</p>
-                </article>
-              ))}
-            </div>
+          <SectionHeader
+            eyebrow="Sub-brand cooperation"
+            title="Sub-brand cooperation examples"
+            description="JIESTAR has supported sub-brand cooperation directions that give partners a clearer product identity, market position, and long-term product development path."
+          />
+          <div className="mt-8">
+            <SubBrandCarousel brands={subBrands} />
           </div>
         </div>
       </section>

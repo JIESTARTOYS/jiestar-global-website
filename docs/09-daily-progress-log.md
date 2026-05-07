@@ -30,6 +30,298 @@
 
 ---
 
+## 2026-05-07
+
+### 今日工作收尾 / 对话交接：核心页面收口复查并提交
+
+- 当前状态：
+  - 已完成，准备提交当前未提交改动。
+  - 当前分支为 `codex-homepage-ui-v1`。
+- 本次目标：
+  - 复查当前批量页面收口改动。
+  - 提交今天完成的页面、表单、logo、子品牌与交接日志更新。
+  - 暂停 Shopify 接入，留到下一次对话继续。
+- 本次完成：
+  - 已复查 Wholesale 轻量留资逻辑、`InquiryForm` 必填字段、`/api/inquiry` 校验逻辑、核心页面 UI 改动、logo / favicon / 子品牌资源引用。
+  - 已确认当前改动没有新增依赖，没有暴露 Shopify token、API key 或其他敏感信息。
+  - 已确认新增组件 `SiteLogo`、`HeroBannerButton`、`SubBrandCarousel` 与 `lib/sub-brands.ts` 的资源路径可对应到实际图片文件。
+  - 已提交前指出一个非阻塞 review finding：Wholesale 表单成功提示已经写成“会发送 catalog 和 pricing”，但当前 API 仍只是 console 留资，真实邮件 / CRM / Google Sheet / catalog 发送链路尚未接入。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - `pnpm build` 已成功生成 34 个 app route，包括首页、核心页面、3 篇 blog detail、8 个 collection、4 个 product detail、robots 和 sitemap。
+- 未完成事项：
+  - Shopify 正式 product data、variant、cart、checkout 明天再接入。
+  - Inquiry 真实交付链路仍未接入：邮件通知、CRM、Google Sheet、WhatsApp 联系方式、自动回复或 wholesale catalog PDF 发送方式都还没有实现。
+  - 如果短期公开预览给外部用户，建议先把 Wholesale 表单成功提示改成更保守的 “Inquiry received” 口径；如果只给内部预览，可保留当前文案并在接入真实交付链路时补齐。
+  - 当前网站仍有大量远程占位图，后续需要替换为真实 JIESTAR 产品、工厂、质检、包装、展会和 B2B 合作素材。
+- 发现的问题：
+  - 当前 ProductActions 仍是 Shopify checkout preview，Add to Cart / Buy Now 不会创建真实 checkout。
+  - `/api/inquiry` 当前只校验字段并输出到 server console，没有持久化和通知能力。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先进入 `Shopify product data and checkout MVP`：确认 `.env.local` 配置、Shopify Storefront API 可用性、product variant ID 映射、Buy Now / checkout 行为。
+  - 同时决定 Wholesale 表单交付链路方案：邮件通知 / Google Sheet / CRM / WhatsApp / catalog PDF 自动发送。
+- 备注：
+  - 今天不继续 Shopify 接入。
+  - 前台文案保持英文；本进度记录按规则使用中文。
+
+### 子项目 / 小项：Wholesale 页面转化思路与专业感重整
+
+- 当前状态：
+  - 已完成，尚未提交。
+  - 当前分支 `codex-homepage-ui-v1` 仍有多处未提交页面改动；本小项是在既有未提交 diff 基础上的追加收口。
+- 本次目标：
+  - 将 `/wholesale` 从“完整批发介绍页”调整为更清晰的低门槛 B2B 留资页。
+  - 保留“提交邮箱后发送带批发价产品目录，再通过 WhatsApp / email / 社交媒体继续沟通”的转化逻辑。
+  - 避免页面显得过于简单或不专业，把流程表达升级为标准化 B2B 接待、目录匹配、私域跟进和订单规划流程。
+- 本次完成：
+  - `/wholesale` hero 文案调整为 `Request Wholesale Price Catalog`，突出 retailers、distributors、ecommerce sellers、channel buyers 等批发买家。
+  - 删除 Wholesale 页面中单独铺开的 `Product catalog / Wholesale product categories` 板块，不再把产品目录作为公开页面区域展示。
+  - `Get Catalog` / `How It Works` 等 CTA 继续保留有效锚点，跳转到页面内说明或表单区域。
+  - Wholesale 中部流程从 `A simple catalog-first wholesale path` 改为 `Wholesale Catalog & Pricing Workflow`。
+  - 流程视觉从三张普通说明卡升级为左侧说明 + 私密报价提示 + 右侧四步 timeline：
+    - `Inquiry Review`
+    - `Catalog Matching`
+    - `Private Follow-Up`
+    - `Order Planning`
+  - 深色 CTA 区改为更商务的私密报价说明：批发价在 inquiry review 后私下发送，MOQ、物流、包装、选品和订单规划后续沟通确认。
+  - Wholesale 底部表单改为轻量留资模式：只强制 `Email`，`Name`、`Company`、`Country / Region`、`WhatsApp / Social Media`、`Interested Product Category`、`Message` 均为辅助字段。
+  - `InquiryForm` 针对 `type="wholesale"` 显示独立标题、说明、提交按钮和成功提示；`custom` / `contact` 表单保持原有详细询盘逻辑。
+  - `/api/inquiry` 针对 `type="wholesale"` 只校验 `email`；其他类型继续校验 `name`、`country`、`email`、`message`。
+  - 首页 `Quality You Can Build On` 板块 CTA 位置按项目 owner 标注调整到板块右上方，避免按钮掉在图片下方显得孤立。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已通过本地 HTTP 验证：`/wholesale` 返回 200。
+  - 已刷新 in-app browser 到 `http://localhost:3000/wholesale`。
+  - API 已验证：Wholesale 只填 Email 返回 `{"ok":true}`。
+  - API 已验证：Wholesale 不填 Email 返回 `Missing fields: email`。
+  - API 已验证：Wholesale 填 Email + WhatsApp + Message 返回 `{"ok":true}`。
+  - API 已验证：Custom / Contact 只填 Email 仍返回缺少 `name, country, message`，未放松原有校验。
+  - API 已验证：Custom / Contact 填完整基础字段返回 `{"ok":true}`。
+- 未完成事项：
+  - 本次改动尚未提交。
+  - Wholesale 页面仍使用远程占位背景图，后续需要替换为真实 JIESTAR 产品、仓储、发货、展会或 B2B 沟通素材。
+  - 当前 inquiry 仍只是写入 API console，没有接入真实邮件发送、CRM、Google Sheet、飞书、WhatsApp 链接或自动回复。
+  - 批发价目录目前只以页面文案表达“提交后发送”，尚未接入真实 PDF、邮件模板或目录附件流程。
+  - 需要项目 owner 再用浏览器检查 `/wholesale` 桌面端和移动端，重点看新版 workflow 专业感、深色 CTA、底部轻量表单是否符合预期。
+- 发现的问题：
+  - 之前的流程区使用 `simple`、`Leave your email` 等表达，容易让页面显得不够专业；本次已改成 inquiry review / catalog matching 等 B2B 流程语言。
+  - 之前单独展示产品分类目录会让 Wholesale 页面重复、冗长，也和“目录私下发送”的逻辑冲突；本次已删除。
+  - 首页 Quality 板块按钮原先位置两次调整后，最终放到板块右上角更符合项目 owner 标注。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先复查当前未提交 diff，尤其是 `/wholesale`、`components/forms/InquiryForm.tsx`、`app/api/inquiry/route.ts`、首页 `QualitySafety` 组件。
+  - 如果视觉和转化方向确认，建议执行一次最终 `git diff --check`、`pnpm lint`、`pnpm build`，然后由项目 owner 决定是否提交当前批量页面收口改动。
+  - 后续可规划真实 inquiry 交付链路：邮件通知 / Google Sheet / CRM / WhatsApp 联系方式 / wholesale catalog PDF 发送方式。
+- 备注：
+  - 本次未新增依赖。
+  - 本次未接入 Shopify、邮件服务或真实目录下载。
+  - 前台文案保持英文；本进度记录按规则使用中文。
+
+### 子项目 / 小项：核心页面视觉与转化路径收口
+
+- 当前状态：
+  - 已完成，尚未提交。
+  - 当前分支 `codex-homepage-ui-v1` 仍有多处未提交页面改动。
+- 本次目标：
+  - 收口 Products、Product Detail、Collections、Contact、Quality & Safety 等核心页面体验。
+  - 统一核心入口页 hero 按钮样式。
+  - 补齐首页 Wholesale Partnership 板块到 `/wholesale` 的转化入口。
+- 本次完成：
+  - `/products` 新增 `Shop by Category` 全部分类入口，8 个 collection 页面都可从产品总页进入。
+  - `/products` 侧边栏分类恢复为 preview checkbox filter，不再跳转 collection 页面。
+  - `/products/[handle]` 优化 DTC preview 购买区、产品规格、B2B cooperation 入口和相关产品区。
+  - `/collections/[handle]` 优化为更完整的分类落地页，和新版产品目录卡片风格保持一致。
+  - `/contact` 优化为 DTC / Wholesale / Custom Solutions / Customer Support 更清楚的联系入口页。
+  - `InquiryForm` 增强必填字段标识、成功状态和错误状态说明。
+  - `/quality-safety` 从基础卡片页升级为完整质量信任页，新增 hero、质量流程、DTC 支持、B2B 质量沟通和合规说明。
+  - 多轮优化 `/quality-safety` hero 右侧信息框、workflow 卡片背景图、DTC / B2B 双栏协调性和 B2B 内容密度。
+  - 新增 `components/ui/HeroBannerButton.tsx`，并将 `/blog`、`/wholesale`、`/custom-solutions`、`/about` 的 hero 按钮统一到同一视觉样式。
+  - 首页 `Featured Categories` 的右侧链接文案从 `View all categories` 调整为 `Shop all products`。
+  - 首页 `Wholesale Partnership` 板块新增 `Wholesale Cooperation` 按钮，跳转 `/wholesale`；同时保留 `Custom Solutions` 次入口。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已通过：`git diff --check`。
+  - 已通过本地 HTTP 验证：`/`、`/products`、`/products/velocity-super-car`、`/collections/super-cars`、`/contact`、`/quality-safety` 返回 200。
+  - 已通过 8 个 collection URL 的本地 HTTP 200 检查。
+  - 已确认 `/api/inquiry` 有效请求返回 `{"ok":true}`，缺少必填字段时返回 400。
+- 未完成事项：
+  - 当前改动尚未提交，后续需要项目 owner 决定是否继续追加到 draft PR #1 或单独提交。
+  - Shopify 正式 product data、variant、cart、checkout 尚未接入，产品购买按钮仍处于 preview / mock 阶段。
+  - Products 侧边栏 filter、排序、分页、列表视图仍为 preview/static UI。
+  - 当前页面仍大量使用 mock 数据和远程占位图，后续需要替换真实 JIESTAR 产品图、工厂图、质检图、团队图和合作素材。
+  - GitHub CLI token 之前显示失效，如需 Codex 操作 PR，可能需要重新执行 `gh auth login -h github.com`。
+- 发现的问题：
+  - 主页 `Wholesale Partnership` 板块原先缺少直接进入 `/wholesale` 的 CTA，本次已补充。
+  - `/quality-safety` 初版 hero 信息框和 B2B 内容卡片显得过大或空，本次已压缩和补充说明。
+  - 当前仍不应展示 ISO、EN71、ASTM、CE、CPC 等未经验证的认证声明。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先复查当前未提交 diff，确认是否需要继续微调或提交。
+  - 如页面方向确认，可进入 `Shopify product data and checkout MVP`：先接真实 Shopify product data、variant ID、Buy Now / checkout。
+  - 在 Shopify 接入前，确认 `.env.example` 是否完整记录 Storefront API 所需变量。
+- 备注：
+  - 本次未新增依赖，未修改 Header/Footer，未改 Shopify API 基础结构。
+  - 前台文案保持英文；本进度记录按规则使用中文。
+
+### 子项目 / 小项：Logo 替换与首页/Wholesale 细节收尾
+
+- 当前状态：
+  - 已完成，尚未提交。
+  - 当前分支 `codex-homepage-ui-v1` 仍保留多处未提交页面改动；本小项是在这些未提交改动基础上的追加微调。
+- 本次目标：
+  - 将项目中使用到的 JIESTAR 主 logo 替换为项目 owner 提供的彩色 logo 图。
+  - 调整 Header logo 尺寸，使导航栏品牌识别更明显。
+  - 修复首页 `Quality You Can Build On` 板块移动端卡片过高问题，同时避免影响桌面端布局。
+  - 统一 Wholesale 页面 `Catalog inquiry first` 深色 CTA 区按钮 hover 样式。
+- 本次完成：
+  - 新增 `public/images/brand/jiestar-logo-color.png`，由原始 logo 压缩为 512px 网页版本。
+  - 新增 `components/layout/SiteLogo.tsx`，统一渲染 JIESTAR 主 logo。
+  - 替换 Header、Footer、首页 Brand Story 图片角标中的旧手写 `JIE / STAR` logo。
+  - 将 `app/favicon.ico` 替换为同一 logo 的 256px favicon 版本。
+  - Header logo 从 `size-12` 调整为 `size-16`。
+  - 首页 `QualitySafety` 组件移动端质量卡片改为横向信息行：左侧图标、右侧标题和说明；桌面端保持两列卡片、左上角图标布局。
+  - Wholesale 页面 `Catalog inquiry first` 区块按钮改为复用 `HeroBannerButton`，与 banner 按钮 hover 样式一致。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已通过：`git diff --check`。
+  - 已确认本地 logo 资源 `http://localhost:3000/images/brand/jiestar-logo-color.png` 返回 200。
+  - 已确认首页 HTML 中输出了新的 `JIESTAR logo` 图片引用。
+- 未完成事项：
+  - 本次改动尚未提交。
+  - 尚未用真实浏览器截图最终复核所有断点；项目 owner 已通过截图指出并确认了部分视觉问题，后续如继续收尾建议再完整检查首页和 Wholesale 页面桌面/移动端。
+  - 当前网站仍有大量 mock/远程素材图，后续需要替换真实 JIESTAR 产品、工厂、质检、合作素材。
+- 发现的问题：
+  - 第一次将质量卡片改为移动端横向布局时，桌面端图标被居中；已通过把图标容器调整为 `inline-flex` 修复。
+  - Header logo 使用真实图片后初始尺寸偏小；已调大。
+  - Wholesale 底部 CTA 原先使用 `LinkButton`，与 hero/banner 按钮 hover 不一致；已统一为 `HeroBannerButton`。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先复查当前未提交 diff，确认是否提交或继续视觉微调。
+  - 建议用浏览器分别检查 `/` 和 `/wholesale` 的桌面端、移动端：Header logo、首页 Quality 板块、Wholesale hero 和 `Catalog inquiry first` 按钮 hover。
+  - 页面视觉方向确认后，可继续进入 Shopify product data / cart / checkout MVP。
+- 备注：
+  - 本次未新增依赖，未修改 Shopify API、表单 API 或环境变量。
+  - 前台文案保持现状；本进度记录使用中文。
+
+## 2026-05-05
+
+### 子项目 / 小项：核心入口页 banner 按钮样式与文案统一
+
+- 当前状态：
+  - 已完成，尚未提交。
+  - `/blog`、`/wholesale`、`/custom-solutions`、`/about` 四个页面 hero / banner 大图中的按钮样式已统一。
+- 本次目标：
+  - 将 Wholesale、Custom Solutions、About、Blog 页面 banner 按钮统一为 Blog 当前视觉样式。
+  - 统一按钮 hover 状态。
+  - 缩短按钮英文文案，减少桌面端和移动端按钮文字过长的问题。
+- 本次完成：
+  - 新增 `components/ui/HeroBannerButton.tsx`，专用于深色 hero / banner 区域按钮。
+  - 将四个页面 banner 按钮统一为相同主按钮和次按钮样式。
+  - 主按钮 hover 统一为红底白字；次按钮 hover 统一为白色描边增强和浅色半透明背景。
+  - 优化按钮文案：
+    - Blog：`Latest Articles`、`Start Project`
+    - Wholesale：`Send Inquiry`、`Get Catalog`、`View Products`
+    - Custom Solutions：`Start Project`、`Partner Inquiry`、`Wholesale`
+    - About：`View Products`、`Contact Us`
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已通过：`git diff --check`。
+- 未完成事项：
+  - 本次未做浏览器截图复核；如项目 owner 继续微调视觉，可在下次对话打开四个页面确认按钮长度、换行和 hover 效果。
+  - 当前改动尚未提交。
+- 发现的问题：
+  - `docs/09-daily-progress-log.md` 在本次开始前已有未提交改动；本次只追加交接记录，没有清理或重写旧记录。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 如继续视觉收尾，建议用浏览器依次检查 `/blog`、`/wholesale`、`/custom-solutions`、`/about` 桌面端和移动端首屏。
+  - 后续可继续检查 Product Detail / Collections / Contact 页面视觉与交互体验，或开始规划 Shopify product data / cart / checkout 接入。
+- 备注：
+  - 本次未新增依赖，未修改 Shopify 集成、表单 API、Header/Footer 或全局样式。
+
+### 今日工作收尾 / 对话交接
+
+- 当前状态：
+  - About 页面品牌信任页优化已完成。
+  - 页面已通过项目 owner 在浏览器中的人工审核。
+  - 代码已提交并推送到 GitHub 分支 `codex-homepage-ui-v1`。
+- 本次完成：
+  - 重新连接本地 dev server，供项目 owner 审核 `http://localhost:3000/about`。
+  - 修复 About hero 远程背景图 404 导致的首屏破图问题。
+  - 优化底部 `Next step` CTA 与 Footer 的视觉关系，避免深色区块连在一起。
+  - 修复 `Contact Us`、`View Products`、`Custom Solutions` 三个 CTA 按钮在桌面端断成双行的问题。
+  - 更新 About 页面交接记录。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已通过本地 HTTP 验证：`/about` 返回 200。
+  - 已通过 in-app browser 视觉检查：首屏、移动端滚动、底部 CTA 与 Footer 过渡、CTA 按钮换行。
+  - 已确认浏览器 console 无 error。
+  - Git 提交已完成：`e6f3af0 feat: polish about brand page`。
+  - 分支已推送：`codex-homepage-ui-v1`。
+- 未完成事项：
+  - About 页面仍使用远程占位图；后续需要替换为真实 JIESTAR 产品图、工厂图、团队图、办公图、证书/检测报告图。
+  - GitHub CLI `gh auth status` 仍显示 token 失效；如需后续用 Codex 创建或更新 PR，需要重新执行 `gh auth login -h github.com`。
+  - Shopify 正式 product data、cart、checkout、variant ID 仍未接入。
+- 发现的问题：
+  - About 页面质量文档模块当前是占位说明，不代表正式认证展示。
+  - 当前 PR #1 仍为 draft，后续需要项目 owner 在 GitHub 上 review 后决定是否继续追加、mark ready 或 merge。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先继续检查 Product Detail / Collections / Contact 页面视觉与交互体验。
+  - 如果页面视觉方向确认，可开始规划 Shopify product data / cart / checkout 接入。
+- 备注：
+  - About 页面代码提交后工作区曾为干净状态；本条进度日志为“结束今天的工作”触发的收工更新，尚未单独提交。
+
+### 子项目 / 小项：Blog 页面与核心入口页 hero 统一优化
+
+- 当前状态：
+  - 已完成，并已提交推送到 GitHub 分支 `codex-homepage-ui-v1`。
+  - `/blog` 页面已从基础文章列表升级为品牌知识中心样式。
+  - `/blog`、`/wholesale`、`/custom-solutions`、`/about` 首屏 hero 已统一为深色背景、隐约背景图和半透明信息卡风格。
+- 本次目标：
+  - 使用 `frontend-ui-ux-pro` 优化 Blog 页面视觉体验。
+  - 统一 Blog、Wholesale、Custom Solutions、About 四个内容/合作入口页的 hero 风格。
+  - 缩短过长的 hero 标题，降低首屏文字压迫感。
+  - 修正 `/blog` 移动端 DTC / B2B / OEM / ODM 信息卡过大问题。
+- 本次完成：
+  - `/blog` 新增深色图像 hero、面包屑、短标题 `Building Guides & Business Insights`、精选文章、topic chips、文章卡片和底部 B2B 转化 CTA。
+  - `/blog` hero 中 DTC / B2B / OEM / ODM 信息区经过多版移动端调整，最终保留为三条紧凑横向信息条，不使用横向滑动卡片。
+  - `/wholesale` hero 标题改为 `Factory-Direct Wholesale Supply`，并新增深色背景图遮罩。
+  - `/custom-solutions` hero 标题改为 `Custom Building Block Solutions`，并新增深色背景图遮罩。
+  - `/about` hero 标题改为 `Global Brand & Product Partner`，保留既有深色背景图和半透明品牌信息卡。
+  - 本次没有新增依赖，没有修改 Shopify 集成、表单 API、Header/Footer 或全局样式。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已通过：`git diff --check`。
+  - 已通过本地 HTTP 验证：`/blog`、`/about`、`/wholesale`、`/custom-solutions` 返回 200。
+  - 已使用移动端截图检查 `/blog` 390px 宽度布局，确认信息卡不再大面积占屏或裁切文案。
+  - Git 提交已完成：`ab2cd4c feat: polish content page hero sections`。
+  - Git 提交已完成：`0a4e28b fix: compact blog hero cards on mobile`。
+  - 分支已推送：`codex-homepage-ui-v1`。
+- 未完成事项：
+  - Blog、Wholesale、Custom Solutions、About 当前仍使用远程占位图；后续应替换为真实 JIESTAR 产品、工厂、样品、合作、办公或品牌素材。
+  - Blog 文章数量仍较少，后续需要继续补 SEO 内容，覆盖 building blocks、wholesale、OEM / ODM、custom building blocks 等关键词方向。
+  - Shopify 正式 product data、cart、checkout、variant ID 仍未接入。
+- 发现的问题：
+  - 移动端信息卡如果做三列固定布局会挤压并裁切 `OEM / ODM`；最终改成三条紧凑横向信息条更稳。
+  - 当前 `docs/09-daily-progress-log.md` 是本次“结束当前对话”触发的交接更新，尚未单独提交。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先继续检查 Product Detail / Collections / Contact 页面视觉与交互体验。
+  - 如果继续做内容页，可检查 Blog detail 页面排版、Markdown 渲染层级、文章内 CTA 和相关文章入口。
+  - 如视觉方向确认，可开始规划 Shopify product data / cart / checkout 接入。
+- 备注：
+  - 本次页面代码已经提交并推送，进度日志更新不包含在上述 Git 提交中。
+
 ## 2026-05-04
 
 ### 当前项目状态快照
@@ -216,7 +508,7 @@
 
 ### 子项目 / 小项：About 页面品牌信任页优化
 
-- 当前状态：已完成，已通过项目 owner 浏览器审核并准备提交。
+- 当前状态：已完成，已通过项目 owner 浏览器审核，已提交并推送。
 - 本次目标：
   - 使用 `frontend-ui-ux-pro` 优化 `/about` 页面，让页面从简单公司简介升级为完整品牌信任页。
   - 兼顾桌面端和移动端体验，补充 hero、公司简介、里程碑、制造能力、办公团队、作品展示、质量文档、子品牌和底部 CTA。
@@ -239,6 +531,8 @@
   - 已使用 in-app browser 验证 `/about` 首屏、移动端滚动、底部 CTA 与 Footer 过渡、CTA 按钮换行问题。
   - 已确认浏览器 console 无 error。
   - 项目 owner 已在浏览器中完成 About 页面审核。
+  - Git 提交已完成：`e6f3af0 feat: polish about brand page`。
+  - 分支已推送：`codex-homepage-ui-v1`。
 - 未完成事项：
   - 当前 About 页面仍使用远程占位图，后续需要替换为真实 JIESTAR 产品图、工厂图、团队图、办公图、证书/检测报告图。
 - 发现的问题：
@@ -249,7 +543,7 @@
   - 继续检查 Product Detail / Collections / Contact 页面视觉与交互体验。
   - 如视觉方向确认，可开始 Shopify product data / cart / checkout 接入规划。
 - 备注：
-  - 当前工作区准备提交：`app/about/page.tsx` 和本进度日志。
+  - 2026-05-05 已完成提交并推送。
 
 ### 原始每日记录归档
 

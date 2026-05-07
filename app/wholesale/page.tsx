@@ -1,23 +1,22 @@
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
 import { InquiryForm } from "@/components/forms/InquiryForm";
-import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon } from "@/components/ui/Icons";
-import { LinkButton } from "@/components/ui/LinkButton";
+import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon, UserIcon } from "@/components/ui/Icons";
+import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { collections } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Wholesale Building Blocks",
+  title: "Request Wholesale Price Catalog",
   description:
-    "Request factory-direct wholesale building block supply from JIESTAR for retailers, distributors, ecommerce sellers, and regional agents.",
+    "Leave your email to request the JIESTAR wholesale price catalog, then continue product, MOQ, and order discussions by email or WhatsApp.",
   path: "/wholesale",
 });
 
 const heroStats = [
-  ["Channel focus", "Retail, ecommerce, distribution"],
-  ["Supply path", "Existing JIESTAR product lines"],
-  ["Next step", "Catalog review and MOQ discussion"],
+  ["Inquiry", "Business profile review"],
+  ["Catalog", "Private wholesale pricing"],
+  ["Follow-up", "Email, WhatsApp, social media"],
 ];
 
 const buyers = [
@@ -32,30 +31,30 @@ const buyers = [
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 const advantages: Array<[string, string, IconComponent]> = [
-  ["Factory-direct supply", "Work with JIESTAR on existing products, catalog selection, and order planning.", FactoryIcon],
-  ["Category coverage", "Explore vehicles, trains, architecture, book nooks, educational sets, and more.", StoreIcon],
-  ["Launch support", "Discuss MOQ, product fit, replenishment direction, and sales channel needs.", TruckIcon],
+  ["Wholesale price catalog", "Receive product catalog information with wholesale pricing direction by email.", FactoryIcon],
+  ["Category options", "Review existing JIESTAR product lines before choosing items for your market.", StoreIcon],
+  ["Follow-up discussion", "Continue product, MOQ, logistics, and order questions through WhatsApp, email, or social media.", TruckIcon],
 ];
 
-const process = [
-  ["01", "Submit inquiry", "Share your company, market, product category, estimated quantity, and sales channel."],
-  ["02", "Review catalog", "JIESTAR helps you evaluate relevant existing product lines and category options."],
-  ["03", "Discuss MOQ", "Confirm quantity direction, shipping terms, packaging needs, and launch requirements."],
-  ["04", "Plan order", "Move toward sampling, order confirmation, and channel launch preparation."],
+const process: Array<[string, string, string, IconComponent]> = [
+  ["01", "Inquiry Review", "Submit your email and optional business details so the team can identify buyer type, market direction, and product fit.", UserIcon],
+  ["02", "Catalog Matching", "JIESTAR matches suitable existing product lines and sends the relevant wholesale catalog or price list privately.", PackageIcon],
+  ["03", "Private Follow-Up", "Continue by email, WhatsApp, or social media to discuss MOQ, hot-selling categories, packaging, and logistics questions.", GlobeIcon],
+  ["04", "Order Planning", "Confirm sample needs, quantity direction, lead time, shipping approach, and future replenishment planning.", TruckIcon],
 ];
 
 const faqs = [
   [
     "Can I request a product catalog before placing an order?",
-    "Yes. Wholesale buyers can submit an inquiry with their market and product interests, then JIESTAR can follow up with suitable catalog information.",
+    "Yes. Leave your email and JIESTAR can send wholesale catalog and pricing information before detailed order discussion.",
   ],
   [
-    "Is MOQ fixed for every product?",
-    "MOQ depends on product category, order quantity, market requirements, and final order details. The inquiry form helps start that discussion.",
+    "Do I need to fill in every form field?",
+    "No. Email is the only required field for wholesale catalog requests. WhatsApp, company, country, and product interests help the team follow up faster.",
   ],
   [
-    "Can JIESTAR support shipping discussions for wholesale orders?",
-    "Yes. Shipping terms, lead time, and logistics direction are discussed with the business team before order confirmation.",
+    "How do we continue after receiving the catalog?",
+    "After the catalog is sent, product selection, MOQ, shipping, packaging, and order details can be discussed through WhatsApp, email, or other social media channels.",
   ],
   [
     "What if I need custom packaging, OEM / ODM, or an exclusive product line?",
@@ -80,20 +79,20 @@ export default function WholesalePage() {
         </div>
         <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_0.72fr] lg:items-end">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-normal text-red-300">B2B Wholesale Supply</p>
+            <p className="text-sm font-semibold uppercase tracking-normal text-red-300">Wholesale price catalog</p>
             <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-normal sm:text-5xl lg:text-[56px]">
-              Factory-Direct Wholesale Supply
+              Request Wholesale Price Catalog
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-300 sm:text-lg">
-              Source existing JIESTAR building block sets for retail, ecommerce, distribution, gift programs, and regional channel sales. Start with catalog review, MOQ discussion, and product fit for your market.
+              Request private wholesale catalog and pricing information for retailers, distributors, ecommerce sellers, and channel buyers. JIESTAR reviews your inquiry, sends relevant product materials, then continues MOQ, logistics, and order discussions by email, WhatsApp, or social media.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <LinkButton href="#wholesale-form" variant="dark">Submit Wholesale Inquiry</LinkButton>
-              <LinkButton href="#catalog-request" variant="ghost" className="border border-white/25 text-white hover:bg-white/10">Request Product Catalog</LinkButton>
-              <LinkButton href="/products" variant="ghost" className="text-white hover:bg-white/10">
-                View Product Lines
+              <HeroBannerButton href="#wholesale-form">Get Wholesale Catalog</HeroBannerButton>
+              <HeroBannerButton href="#catalog-request" variant="secondary">How It Works</HeroBannerButton>
+              <HeroBannerButton href="/products" variant="secondary">
+                View Products
                 <ArrowRightIcon className="ml-2 size-4" />
-              </LinkButton>
+              </HeroBannerButton>
             </div>
           </div>
 
@@ -103,8 +102,8 @@ export default function WholesalePage() {
                 <GlobeIcon className="size-5" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">Wholesale summary</p>
-                <p className="text-sm text-slate-400">For channel procurement and existing products</p>
+                <p className="text-sm font-semibold text-white">Wholesale request path</p>
+                <p className="text-sm text-slate-400">Inquiry review before private pricing</p>
               </div>
             </div>
             <dl className="grid gap-4 pt-5">
@@ -124,8 +123,8 @@ export default function WholesalePage() {
           <div>
             <SectionHeader
               eyebrow="Wholesale fit"
-              title="For buyers who need existing products and reliable channel supply"
-              description="This path is built for B2B buyers evaluating JIESTAR product lines, catalog options, MOQ direction, and launch planning for their sales channels."
+              title="For buyers who want to review wholesale pricing first"
+              description="This page is for B2B buyers who want to receive a wholesale price catalog before discussing MOQ, order planning, logistics, or product selection in detail."
             />
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {buyers.map(([title, description]) => (
@@ -139,8 +138,8 @@ export default function WholesalePage() {
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <SectionHeader
               eyebrow="What buyers can discuss"
-              title="Wholesale advantages"
-              description="JIESTAR helps global channel partners evaluate existing product categories, request catalog information, and prepare product launches."
+              title="What happens after you leave your email"
+              description="JIESTAR uses the inquiry to understand your market and product direction, then shares relevant wholesale materials and continues business details through direct communication."
             />
             <div className="mt-8 grid gap-4">
               {advantages.map(([title, description, Icon]) => (
@@ -159,61 +158,66 @@ export default function WholesalePage() {
         </div>
       </section>
 
-      <section id="catalog-request" className="scroll-mt-24 bg-white px-5 py-16 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <SectionHeader
-              eyebrow="Product catalog"
-              title="Wholesale product categories"
-              description="Use these categories as the starting point for catalog requests and product selection. Final availability, MOQ, and order details are confirmed through the business team."
-            />
-            <LinkButton href="/products" variant="secondary" className="w-full sm:w-auto">Browse Product Lines</LinkButton>
-          </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {collections.map((collection) => (
-              <article key={collection.handle} className="rounded-lg border border-slate-200 bg-slate-50 p-5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-sm">
-                <h2 className="text-lg font-semibold text-slate-950">{collection.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{collection.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="px-5 py-16 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <SectionHeader
-            eyebrow="Process"
-            title="Wholesale cooperation process"
-            description="A simple first-version flow keeps wholesale communication focused on catalog fit, order direction, and launch preparation."
-          />
-          <div className="mt-8 grid gap-4 md:grid-cols-4">
-            {process.map(([number, title, description]) => (
-              <article key={number} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-sm font-bold text-red-600">{number}</p>
-                <h2 className="mt-3 text-lg font-semibold text-slate-950">{title}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
-              </article>
-            ))}
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-24">
+            <SectionHeader
+              eyebrow="Workflow"
+              title="Wholesale Catalog & Pricing Workflow"
+              description="Wholesale pricing is handled as a private B2B communication flow. The inquiry starts lightweight, but the follow-up is matched to buyer type, market, and product direction."
+            />
+            <div className="mt-6 rounded-lg border border-red-100 bg-red-50 p-4">
+              <div className="flex gap-3">
+                <ShieldIcon className="mt-0.5 size-5 shrink-0 text-red-600" />
+                <p className="text-sm font-semibold leading-6 text-slate-800">
+                  Wholesale pricing is shared privately after inquiry review.
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-slate-600">
+              Email is enough to start. Company, country, WhatsApp, and category interests help the team prepare a more relevant catalog response.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="grid gap-3">
+              {process.map(([number, title, description, Icon], index) => (
+                <article key={number} className="relative grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:grid-cols-[auto_1fr] sm:p-5">
+                  {index < process.length - 1 ? (
+                    <span className="absolute left-9 top-16 hidden h-[calc(100%_-_1.5rem)] w-px bg-slate-200 sm:block" aria-hidden="true" />
+                  ) : null}
+                  <div className="relative z-10 flex size-10 items-center justify-center rounded-md bg-slate-950 text-white shadow-sm">
+                    <Icon className="size-5" />
+                  </div>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-xs font-black uppercase text-red-600">{number}</span>
+                      <h2 className="text-lg font-black text-slate-950">{title}</h2>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-slate-950 px-5 py-14 text-white lg:px-8">
+      <section id="catalog-request" className="scroll-mt-24 bg-slate-950 px-5 py-14 text-white lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-3xl">
             <div className="mb-4 flex size-11 items-center justify-center rounded-md bg-white text-slate-950">
               <PackageIcon className="size-5" />
             </div>
-            <p className="text-sm font-semibold uppercase tracking-normal text-red-300">Catalog inquiry first</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white">Request catalog support before order planning</h2>
+            <p className="text-sm font-semibold uppercase tracking-normal text-red-300">Private wholesale pricing</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white">Wholesale pricing is shared after inquiry review</h2>
             <p className="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
-              Wholesale inquiries are handled through business communication, not the DTC shopping cart. Share your market, product interests, estimated quantity, and channel so JIESTAR can recommend the right next step.
+              Submit your email and the JIESTAR team will review your business direction before sending catalog and wholesale pricing information. MOQ, shipping, packaging, product selection, and order planning can be confirmed afterward through WhatsApp, email, or other social media.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row lg:shrink-0">
-            <LinkButton href="#wholesale-form" variant="dark">Submit Wholesale Inquiry</LinkButton>
-            <LinkButton href="/products" variant="ghost" className="border border-white/25 text-white hover:bg-white/10">View Product Lines</LinkButton>
+            <HeroBannerButton href="#wholesale-form">Get Wholesale Catalog</HeroBannerButton>
+            <HeroBannerButton href="/products" variant="secondary">View Product Lines</HeroBannerButton>
           </div>
         </div>
       </section>
@@ -222,8 +226,8 @@ export default function WholesalePage() {
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.85fr_1fr]">
           <SectionHeader
             eyebrow="FAQ"
-            title="Wholesale questions buyers often ask"
-            description="These answers keep the first conversation practical while leaving final product, MOQ, and logistics details for business confirmation."
+            title="Catalog request questions"
+            description="These answers explain what happens before the team continues the conversation by email, WhatsApp, or social media."
           />
           <div className="grid gap-4">
             {faqs.map(([question, answer]) => (
@@ -253,13 +257,13 @@ export default function WholesalePage() {
           <div>
             <SectionHeader
               eyebrow="Inquiry"
-              title="Submit wholesale inquiry"
-              description="Tell us your market, product category, estimated order quantity, and target sales channel. The more specific the request, the easier it is to recommend suitable catalog options."
+              title="Get the wholesale price catalog"
+              description="Submit your email to start the wholesale catalog request. Optional WhatsApp, company, country, and category details help JIESTAR match the right catalog and pricing information before follow-up."
             />
             <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-semibold text-slate-950">Helpful details to include</p>
+              <p className="text-sm font-semibold text-slate-950">Useful details for catalog matching</p>
               <ul className="mt-4 grid gap-3 text-sm leading-6 text-slate-600">
-                {["Country / region and sales channel", "Interested product categories", "Estimated order quantity or launch plan", "Any packaging or logistics questions"].map((item) => (
+                {["WhatsApp or preferred social media contact", "Company and country / region", "Interested product categories", "Estimated quantity, if already known"].map((item) => (
                   <li key={item} className="flex gap-3">
                     <span className="mt-2 size-1.5 shrink-0 rounded-full bg-red-600" />
                     <span>{item}</span>

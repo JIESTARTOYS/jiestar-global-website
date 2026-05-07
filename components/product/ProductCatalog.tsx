@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Collection, Product } from "@/lib/data";
 import { CatalogProductCard } from "@/components/product/CatalogProductCard";
 import {
+  ArrowRightIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -113,6 +115,9 @@ function FilterPanel({ products, collections }: ProductCatalogProps) {
               />
             ))}
           </div>
+          <p className="mt-3 text-xs leading-5 text-slate-500">
+            Category checkboxes are preview controls until Shopify product filters are connected. Use Shop by Category above to open collection pages.
+          </p>
         </FilterSection>
 
         <FilterSection title="Piece Count">
@@ -136,6 +141,59 @@ function FilterPanel({ products, collections }: ProductCatalogProps) {
         Filter controls are visual placeholders until Shopify product filters are connected.
       </p>
     </aside>
+  );
+}
+
+function ShopByCategory({ collections, products }: ProductCatalogProps) {
+  return (
+    <section className="mb-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/[0.03] sm:p-5">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase text-red-600">Shop by category</p>
+          <h2 className="mt-1 text-xl font-black text-slate-950">Browse JIESTAR Collections</h2>
+        </div>
+        <p className="max-w-xl text-sm leading-6 text-slate-500">
+          Use these collection pages to explore product directions. Live Shopify collection filters will be connected later.
+        </p>
+      </div>
+
+      <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
+        {collections.map((collection) => {
+          const count = products.filter((product) => product.collectionHandle === collection.handle || product.category === collection.title).length;
+
+          return (
+            <Link
+              key={collection.handle}
+              href={`/collections/${collection.handle}`}
+              className="group w-[42vw] max-w-40 shrink-0 snap-start overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06] sm:w-auto sm:max-w-none"
+            >
+              <div className="relative aspect-square overflow-hidden bg-slate-50 sm:aspect-[4/3]">
+                <Image
+                  src={collection.image}
+                  alt={`${collection.title} collection`}
+                  fill
+                  sizes="(min-width: 1280px) 12vw, (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 42vw"
+                  className="object-cover transition duration-300 group-hover:scale-105"
+                />
+              </div>
+              <div className="flex min-h-[4.5rem] items-end justify-between gap-2 p-2.5">
+                <div className="min-w-0">
+                  <h3 className="line-clamp-2 text-xs font-black leading-4 text-slate-950 transition group-hover:text-red-600">
+                    {collection.title}
+                  </h3>
+                  <p className="mt-1 text-[11px] font-semibold leading-4 text-slate-500">
+                    {count} preview products
+                  </p>
+                </div>
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition group-hover:border-red-600 group-hover:bg-red-600 group-hover:text-white">
+                  <ArrowRightIcon className="h-3 w-3" />
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -292,6 +350,8 @@ export function ProductCatalog({ products, collections }: ProductCatalogProps) {
               Free Shipping on orders $49+
             </div>
           </div>
+
+          <ShopByCategory products={products} collections={collections} />
 
           <MobileControls products={products} collections={collections} />
 

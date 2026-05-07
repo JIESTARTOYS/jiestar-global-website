@@ -29,13 +29,21 @@ export function QualitySafety() {
   return (
     <section className="bg-[#f6f7f9] px-5 py-8 lg:px-8">
       <div className="mx-auto max-w-7xl rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:p-8">
-        <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-center">
-          <div className="lg:max-w-md">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="lg:max-w-lg">
             <h2 className="text-2xl font-black text-slate-950">Quality You Can Build On</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               JIESTAR focuses on reliable materials, stable production, and detailed quality control to deliver safe, durable, and enjoyable building experiences.
             </p>
-            <div className="relative mt-5 aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm lg:mt-7">
+          </div>
+          <LinkButton href="/quality-safety" variant="secondary" className="w-full px-5 lg:mt-2 lg:w-auto lg:min-w-72">
+            Learn Our Quality Standard
+          </LinkButton>
+        </div>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-center">
+          <div className="lg:max-w-md">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm">
               <Image
                 src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80"
                 alt="Detailed product inspection and quality control for building block sets"
@@ -48,20 +56,22 @@ export function QualitySafety() {
                 <p className="mt-1 text-sm font-black text-white">Material, clutch power and finished model details</p>
               </div>
             </div>
-            <div className="mt-6">
-              <LinkButton href="/quality-safety" variant="secondary">
-                Learn Our Quality Standard
-              </LinkButton>
-            </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:gap-4">
             {qualityPoints.map((point) => {
               const Icon = point.icon;
               return (
-                <article key={point.title} className="rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm shadow-slate-950/[0.02]">
-                  <Icon className="h-6 w-6 text-red-600" />
-                  <h3 className="mt-4 text-sm font-black text-slate-950">{point.title}</h3>
-                  <p className="mt-2 text-xs leading-5 text-slate-500">{point.text}</p>
+                <article
+                  key={point.title}
+                  className="flex items-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm shadow-slate-950/[0.02] lg:block lg:p-5"
+                >
+                  <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-white text-red-600 shadow-sm ring-1 ring-slate-200 lg:size-auto lg:bg-transparent lg:shadow-none lg:ring-0">
+                    <Icon className="h-5 w-5 lg:h-6 lg:w-6" />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-950 lg:mt-4">{point.title}</h3>
+                    <p className="mt-1 text-xs leading-5 text-slate-500 lg:mt-2">{point.text}</p>
+                  </div>
                 </article>
               );
             })}

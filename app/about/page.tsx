@@ -10,10 +10,13 @@ import {
   SparkIcon,
   StoreIcon,
 } from "@/components/ui/Icons";
+import { SubBrandCarousel } from "@/components/sections/SubBrandCarousel";
+import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { collections, products } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
+import { subBrands } from "@/lib/sub-brands";
 
 export const metadata = createMetadata({
   title: "About JIESTAR",
@@ -79,33 +82,6 @@ const documentationItems = [
   ["Compliance file readiness", "Specific certificates and market documents can be reviewed when official materials are provided."],
 ];
 
-const subBrands = [
-  {
-    name: "iBlock",
-    description: "A sub-brand cooperation example with a playful, character-led identity for building block products.",
-    image: "/images/sub-brands/iblock-logo.png",
-    width: 194,
-    height: 192,
-    imageClassName: "h-20 w-20",
-  },
-  {
-    name: "Xiao Jiaodu",
-    description: "A sub-brand example showing how product identity can support specialized market positioning.",
-    image: "/images/sub-brands/xiaojiaodu-logo.png",
-    width: 512,
-    height: 512,
-    imageClassName: "h-24 w-full",
-  },
-  {
-    name: "Xbert",
-    description: "A sharper visual direction for differentiated product presentation and partner-led programs.",
-    image: "/images/sub-brands/zhuanyue-xbert-logo.png",
-    width: 512,
-    height: 512,
-    imageClassName: "h-24 w-full",
-  },
-];
-
 const portfolioProducts = products.slice(0, 4);
 const portfolioCollections = collections.slice(0, 4);
 
@@ -134,8 +110,8 @@ export default function AboutPage() {
               Founded in 1998, JIESTAR connects product design, manufacturing coordination, wholesale supply, and custom cooperation for international building block markets.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <LinkButton href="/products" variant="dark">Explore Products</LinkButton>
-              <LinkButton href="/contact" variant="ghost" className="border border-white/25 text-white hover:bg-white/10">Contact JIESTAR</LinkButton>
+              <HeroBannerButton href="/products">View Products</HeroBannerButton>
+              <HeroBannerButton href="/contact" variant="secondary">Contact Us</HeroBannerButton>
             </div>
           </div>
 
@@ -386,29 +362,13 @@ export default function AboutPage() {
 
       <section className="bg-white px-5 py-16 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
-            <SectionHeader
-              eyebrow="Sub-brand cooperation"
-              title="Examples of differentiated brand directions"
-              description="JIESTAR can discuss long-term cooperation where product planning, product development, packaging, and brand presentation are considered together."
-            />
-            <div className="scrollbar-none -mx-5 flex gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
-              {subBrands.map((brand) => (
-                <article key={brand.name} className="w-[66vw] max-w-[300px] shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm sm:w-auto sm:max-w-none sm:shrink sm:p-5">
-                  <div className="flex min-h-28 items-center justify-center rounded-md bg-white p-3 sm:min-h-32 sm:p-4">
-                    <Image
-                      src={brand.image}
-                      alt={`${brand.name} sub-brand logo`}
-                      width={brand.width}
-                      height={brand.height}
-                      className={`${brand.imageClassName} object-contain`}
-                    />
-                  </div>
-                  <h2 className="mt-5 text-base font-semibold text-slate-950">{brand.name}</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{brand.description}</p>
-                </article>
-              ))}
-            </div>
+          <SectionHeader
+            eyebrow="Sub-brand cooperation"
+            title="Examples of differentiated brand directions"
+            description="JIESTAR can discuss long-term cooperation where product planning, product development, packaging, and brand presentation are considered together."
+          />
+          <div className="mt-8">
+            <SubBrandCarousel brands={subBrands} />
           </div>
         </div>
       </section>
@@ -427,12 +387,12 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:flex-nowrap xl:justify-end">
-              <LinkButton href="/contact" variant="dark" className="w-full whitespace-nowrap sm:w-auto sm:min-w-36">Contact Us</LinkButton>
-              <LinkButton href="/products" variant="ghost" className="w-full whitespace-nowrap border border-white/25 text-white hover:bg-white/10 sm:w-auto sm:min-w-40">View Products</LinkButton>
-              <LinkButton href="/custom-solutions" variant="ghost" className="w-full whitespace-nowrap border border-transparent text-white hover:bg-white/10 sm:w-auto sm:min-w-48">
+              <HeroBannerButton href="/contact" className="whitespace-nowrap sm:min-w-36">Contact Us</HeroBannerButton>
+              <HeroBannerButton href="/products" variant="secondary" className="whitespace-nowrap sm:min-w-40">View Products</HeroBannerButton>
+              <HeroBannerButton href="/custom-solutions" variant="secondary" className="whitespace-nowrap sm:min-w-48">
                 Custom Solutions
                 <ArrowRightIcon className="ml-2 size-4" />
-              </LinkButton>
+              </HeroBannerButton>
             </div>
           </div>
         </div>

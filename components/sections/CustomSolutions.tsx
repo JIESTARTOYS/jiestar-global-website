@@ -1,4 +1,5 @@
-import { GlobeIcon, PackageIcon, ShieldIcon, TruckIcon } from "@/components/ui/Icons";
+import { ArrowRightIcon, GlobeIcon, PackageIcon, ShieldIcon, TruckIcon } from "@/components/ui/Icons";
+import { LinkButton } from "@/components/ui/LinkButton";
 
 const metrics = [
   {
@@ -56,15 +57,24 @@ export function CustomSolutions() {
               );
             })}
           </div>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <LinkButton href="/wholesale" className="w-full px-4 sm:w-auto">
+              Wholesale Cooperation
+              <ArrowRightIcon className="ml-2 h-4 w-4" />
+            </LinkButton>
+            <LinkButton href="/custom-solutions" variant="secondary" className="w-full px-4 sm:w-auto">
+              Custom Solutions
+            </LinkButton>
+          </div>
         </div>
         <div className="scrollbar-none -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-5">
           {steps.map(([number, title, text]) => (
-            <article key={number} className="flex min-h-56 w-44 shrink-0 snap-start flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-4 text-center sm:w-auto">
-              <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-black text-red-600 shadow-sm">
+            <article key={number} className="grid min-h-56 w-44 shrink-0 snap-start grid-rows-[2.25rem_3.5rem_5rem] place-items-center content-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 text-center sm:w-auto">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-black text-red-600 shadow-sm">
                 {number}
               </span>
-              <h3 className="mt-3 text-sm font-black text-slate-950">{title}</h3>
-              <p className="mt-2 text-xs leading-5 text-slate-500">{text}</p>
+              <h3 className="self-start text-sm font-black leading-5 text-slate-950">{title}</h3>
+              <p className="self-start text-xs leading-5 text-slate-500">{text}</p>
             </article>
           ))}
         </div>

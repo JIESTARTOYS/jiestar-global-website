@@ -21,7 +21,7 @@ export function ProductCategories() {
         <div className="mb-4 flex items-end justify-between gap-4">
           <h2 className="text-2xl font-black text-slate-950">Featured Categories</h2>
           <Link href="/products" className="hidden items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-red-600 sm:flex">
-            View all categories
+            Shop all products
             <ArrowRightIcon className="h-4 w-4" />
           </Link>
         </div>

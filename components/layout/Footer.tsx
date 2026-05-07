@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { collections, siteConfig } from "@/lib/data";
 import { ArrowRightIcon } from "@/components/ui/Icons";
+import { SiteLogo } from "@/components/layout/SiteLogo";
 
 const b2bLinks = [
   ["Wholesale", "/wholesale"],
@@ -37,11 +38,7 @@ export function Footer() {
         <div className="grid gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_0.9fr_1.1fr] lg:px-8">
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-14 w-14 items-center justify-center rounded-md bg-red-600 text-center text-sm font-black leading-[0.9] text-white">
-                JIE
-                <br />
-                STAR
-              </span>
+              <SiteLogo className="size-14" />
             </div>
             <p className="mt-5 max-w-xs text-sm leading-6 text-slate-300">{siteConfig.description}</p>
           </div>

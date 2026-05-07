@@ -1,23 +1,14 @@
 import Link from "next/link";
 import { navigation } from "@/lib/data";
 import { CartIcon, MenuIcon, SearchIcon, UserIcon } from "@/components/ui/Icons";
-
-function Logo() {
-  return (
-    <span className="flex h-12 w-12 items-center justify-center rounded-md bg-red-600 text-center text-[13px] font-black leading-[0.9] text-white shadow-sm shadow-red-600/20">
-      JIE
-      <br />
-      STAR
-    </span>
-  );
-}
+import { SiteLogo } from "@/components/layout/SiteLogo";
 
 export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center gap-5 px-5 py-4 lg:px-8">
         <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="JIESTAR home">
-          <Logo />
+          <SiteLogo className="size-16" priority />
         </Link>
 
         <nav className="hidden flex-1 items-center justify-center gap-8 lg:flex" aria-label="Main navigation">

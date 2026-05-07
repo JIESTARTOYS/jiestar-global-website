@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { SiteLogo } from "@/components/layout/SiteLogo";
 import { LinkButton } from "@/components/ui/LinkButton";
 
 export function BrandStory() {
@@ -13,10 +14,8 @@ export function BrandStory() {
             sizes="(min-width: 1024px) 48vw, 100vw"
             className="object-cover"
           />
-          <div className="absolute left-6 top-6 rounded-md bg-red-600 px-4 py-3 text-center text-lg font-black leading-[0.9] text-white shadow-lg">
-            JIE
-            <br />
-            STAR
+          <div className="absolute left-6 top-6 rounded-md bg-white p-1 shadow-lg">
+            <SiteLogo className="size-16" />
           </div>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm lg:p-8">

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getBlogPosts } from "@/lib/blog";
 import { createMetadata } from "@/lib/seo";
 import { ArrowRightIcon, FactoryIcon, PackageIcon, SearchIcon, SparkIcon } from "@/components/ui/Icons";
+import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 
 export const metadata = createMetadata({
   title: "Building Guides & Business Insights",
@@ -52,18 +53,12 @@ export default function BlogPage() {
               Practical articles for collectors, retailers, distributors, and custom product partners choosing or developing building block sets.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="#latest-articles"
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-white px-5 text-sm font-bold text-slate-950 transition hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-slate-950 sm:w-auto"
-              >
-                Read Latest Articles
-              </Link>
-              <Link
-                href="/custom-solutions"
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-white/25 bg-white/5 px-5 text-sm font-bold text-white transition hover:border-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-slate-950 sm:w-auto"
-              >
-                Start a Project
-              </Link>
+              <HeroBannerButton href="#latest-articles">
+                Latest Articles
+              </HeroBannerButton>
+              <HeroBannerButton href="/custom-solutions" variant="secondary">
+                Start Project
+              </HeroBannerButton>
             </div>
           </div>
 

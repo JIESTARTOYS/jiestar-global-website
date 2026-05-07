@@ -118,6 +118,19 @@ These images are not single-product white background images. They are brand, B2B
 - [ ] Sub-brand examples, if approved for public use
 - [ ] MOQ reference
 - [ ] Lead time reference
+
+## 6. Sub-Brand Logo Display Rules
+
+Use these rules whenever adding a new public sub-brand logo to the About page or Custom Solutions page.
+
+- Add approved logo files under `public/images/sub-brands/`.
+- Crop or export each logo tightly before use. Remove unnecessary white / transparent outer padding, but do not crop into the actual logo mark, registered trademark symbol, or text.
+- Prefer PNG files with clean edges. Keep the original aspect ratio instead of stretching the logo.
+- Register new sub-brands in `lib/sub-brands.ts`; do not duplicate sub-brand data inside page files.
+- Provide the real cropped image `width` and `height` values in `lib/sub-brands.ts`.
+- Do not add one-off Tailwind sizing classes per brand. `SubBrandCarousel` controls display size consistently.
+- Current display rule: each brand card uses a fixed white logo frame, and the logo image renders at `h-28 w-auto max-w-[210px] object-contain`.
+- If a future logo still looks visually too small after cropping, adjust the source asset crop first. Only change the shared carousel sizing rule if all brands need a new global size.
 - [ ] Inquiry contact information
 
 ## 6. Support and Policy Materials
