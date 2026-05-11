@@ -1,22 +1,19 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/lib/data";
 import { CartIcon, HeartIcon } from "@/components/ui/Icons";
+import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 
 export function CatalogProductCard({ product }: { product: Product }) {
   return (
     <article className="group rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06]">
       <div className="relative">
         <Link href={`/products/${product.handle}`} className="block" aria-label={`View ${product.title}`}>
-          <div className="relative aspect-square overflow-hidden rounded-t-lg bg-slate-50">
-            <Image
-              src={product.image}
-              alt={product.imageAlt}
-              fill
-              sizes="(min-width: 1280px) 24vw, (min-width: 1024px) 32vw, 50vw"
-              className="object-cover transition duration-300 group-hover:scale-[1.04]"
-            />
-          </div>
+          <ProductImageSwap
+            product={product}
+            sizes="(min-width: 1280px) 24vw, (min-width: 1024px) 32vw, 50vw"
+            className="aspect-square rounded-t-lg"
+            imageClassName=""
+          />
         </Link>
         <Link
           href={`/products/${product.handle}`}

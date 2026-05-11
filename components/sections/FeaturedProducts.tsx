@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRightIcon, CartIcon, HeartIcon } from "@/components/ui/Icons";
+import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 import type { Product } from "@/lib/data";
 
 export function FeaturedProducts({ products }: { products: Product[] }) {
@@ -40,16 +40,15 @@ function HomeProductCard({ product }: { product: Product }) {
     <article className="group w-[56vw] max-w-56 shrink-0 snap-start overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06] sm:w-auto sm:max-w-none">
       <div className="relative">
         <Link href={`/products/${product.handle}`} className="block" aria-label={`View ${product.title}`}>
-          <div className="relative aspect-square overflow-hidden bg-slate-50">
+          <div className="relative">
             <span className="absolute left-2 top-2 z-10 rounded-md bg-slate-950 px-1.5 py-1 text-[10px] font-black text-white sm:left-3 sm:top-3 sm:px-2 sm:text-[11px]">
               New
             </span>
-            <Image
-              src={product.image}
-              alt={product.imageAlt}
-              fill
+            <ProductImageSwap
+              product={product}
               sizes="(min-width: 1280px) 24vw, (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-              className="object-cover transition duration-300 group-hover:scale-[1.04]"
+              className="aspect-square"
+              imageClassName=""
             />
           </div>
         </Link>

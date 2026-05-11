@@ -4,7 +4,6 @@ import { InquiryForm } from "@/components/forms/InquiryForm";
 import { SubBrandCarousel } from "@/components/sections/SubBrandCarousel";
 import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, SparkIcon, StoreIcon } from "@/components/ui/Icons";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
-import { LinkButton } from "@/components/ui/LinkButton";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { createMetadata } from "@/lib/seo";
 import { subBrands } from "@/lib/sub-brands";
@@ -181,8 +180,8 @@ export default function CustomSolutionsPage() {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row lg:shrink-0">
-            <LinkButton href="#project-form" variant="dark">Start a Custom Project</LinkButton>
-            <LinkButton href="/wholesale" variant="ghost" className="border border-white/25 text-white hover:bg-white/10">Compare Wholesale</LinkButton>
+            <HeroBannerButton href="#project-form">Start a Custom Project</HeroBannerButton>
+            <HeroBannerButton href="/wholesale" variant="secondary">Compare Wholesale</HeroBannerButton>
           </div>
         </div>
       </section>

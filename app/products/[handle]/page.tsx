@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ProductActions } from "@/components/product/ProductActions";
+import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { ArrowRightIcon, PackageIcon, ShieldIcon, TruckIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
@@ -12,6 +12,20 @@ import { getShopifyProduct } from "@/lib/shopify";
 type PageProps = {
   params: Promise<{ handle: string }>;
 };
+
+function cleanDescriptionHtml(html: string) {
+  let cleaned = html.trim();
+  const emptyBlockPattern =
+    /<(p|div)(?:\s[^>]*)?>(?:\s|&nbsp;|&#160;|<br\s*\/?>|<span(?:\s[^>]*)?>(?:\s|&nbsp;|&#160;|<br\s*\/?>)*<\/span>)*<\/\1>/gi;
+
+  let previous = "";
+  while (previous !== cleaned) {
+    previous = cleaned;
+    cleaned = cleaned.replace(emptyBlockPattern, "");
+  }
+
+  return cleaned.replace(/^(?:\s|&nbsp;|&#160;|<br\s*\/?>)+/gi, "").trim();
+}
 
 export function generateStaticParams() {
   return products.map((product) => ({ handle: product.handle }));
@@ -41,21 +55,21 @@ export default async function ProductDetailPage({ params }: PageProps) {
   }
 
   const related = products.filter((item) => item.handle !== product.handle).slice(0, 4);
-  const highlights = [
-    { label: "Pieces", value: product.pieceCount },
-    { label: "Age", value: product.recommendedAge },
-    { label: "Difficulty", value: product.difficulty },
-  ];
   const specs = [
     ["SKU", product.sku],
+    ["Release Date", product.releaseDate],
     ["Piece Count", product.pieceCount],
     ["Recommended Age", product.recommendedAge],
-    ["Difficulty Level", product.difficulty],
     ["Finished Model Size", product.finishedSize],
     ["Package Size", product.packageSize],
     ["Material", product.material],
     ["Shipping", product.shipping],
-  ];
+  ].filter((spec): spec is [string, string] => Boolean(spec[1]));
+  const descriptionHtml = cleanDescriptionHtml(product.descriptionHtml ?? "");
+  const hasDescriptionHtmlContent = Boolean(
+    descriptionHtml?.replace(/<[^>]*>/g, "").trim() || descriptionHtml?.includes("<img"),
+  );
+  const descriptionText = product.description.trim();
 
   return (
     <div className="bg-white px-5 py-8 lg:px-8 lg:py-12">
@@ -69,29 +83,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
         </nav>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(24rem,0.98fr)] lg:items-start">
-          <div className="grid gap-4">
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-100 shadow-sm shadow-slate-950/[0.04] sm:aspect-[4/3]">
-              <span className="absolute left-4 top-4 z-10 rounded-md bg-slate-950 px-3 py-1.5 text-xs font-black uppercase text-white">
-                Preview Product
-              </span>
-              <Image
-                src={product.image}
-                alt={product.imageAlt}
-                fill
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover"
-                priority
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {highlights.map((item) => (
-                <div key={item.label} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-[11px] font-black uppercase text-slate-500">{item.label}</p>
-                  <p className="mt-1 text-sm font-black text-slate-950">{item.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <ProductGallery product={product} />
 
           <div className="lg:sticky lg:top-24">
             <p className="text-sm font-black uppercase text-red-600">{product.category}</p>
@@ -100,13 +92,17 @@ export default async function ProductDetailPage({ params }: PageProps) {
             <p className="mt-4 text-base leading-8 text-slate-600">{product.description}</p>
 
             <div className="mt-6">
-              <ProductActions productTitle={product.title} />
+              <ProductActions productTitle={product.title} variantId={product.variantId} />
             </div>
 
             <div className="mt-6 grid gap-3 text-sm text-slate-700 sm:grid-cols-3">
               {[
                 { title: "Display build", text: "Designed for shelf presence.", icon: PackageIcon },
-                { title: "Secure checkout", text: "Shopify checkout planned.", icon: ShieldIcon },
+                {
+                  title: "Secure checkout",
+                  text: product.variantId ? "Checkout is handled by Shopify." : "Checkout preview until Shopify variants are connected.",
+                  icon: ShieldIcon,
+                },
                 { title: "Support", text: "Missing piece support available.", icon: TruckIcon },
               ].map((item) => {
                 const Icon = item.icon;
@@ -145,7 +141,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               <h2 className="mt-2 text-2xl font-black text-slate-950">Product Specifications</h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-slate-500">
-              Specification values are preview data until the live Shopify catalog and product metafields are connected.
+              Specification values combine Shopify product data with local first-batch catalog details where the SKU matches.
             </p>
           </div>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -156,6 +152,23 @@ export default async function ProductDetailPage({ params }: PageProps) {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="mt-12">
+          <div>
+            <p className="text-sm font-black uppercase text-red-600">Description</p>
+            <h2 className="mt-2 text-2xl font-black text-slate-950">Product Details</h2>
+          </div>
+          {descriptionHtml && hasDescriptionHtmlContent ? (
+            <div
+              className="mt-6 max-w-none rounded-lg border border-slate-200 bg-white p-4 text-base leading-8 text-slate-700 shadow-sm shadow-slate-950/[0.02] [&_a]:font-semibold [&_a]:text-red-600 [&_img]:my-4 [&_img]:h-auto [&_img]:w-full [&_img]:rounded-lg [&_img]:object-contain [&_li]:ml-5 [&_li]:list-disc [&_p]:my-4 [&_strong]:font-black [&_ul]:my-4 sm:p-6"
+              dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+            />
+          ) : (
+            <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-5 text-base leading-8 text-slate-700 shadow-sm shadow-slate-950/[0.02]">
+              {descriptionText || product.sellingPoint}
+            </div>
+          )}
         </section>
 
         <section className="mt-16">

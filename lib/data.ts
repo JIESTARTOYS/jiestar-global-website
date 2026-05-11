@@ -7,7 +7,12 @@ export type Product = {
   price: string;
   image: string;
   imageAlt: string;
+  images?: Array<{
+    src: string;
+    alt: string;
+  }>;
   description: string;
+  descriptionHtml?: string;
   sellingPoint: string;
   sku: string;
   pieceCount: string;
@@ -17,6 +22,9 @@ export type Product = {
   packageSize: string;
   material: string;
   shipping: string;
+  variantId?: string;
+  series?: string;
+  releaseDate?: string;
 };
 
 export type Collection = {

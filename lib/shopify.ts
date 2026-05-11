@@ -1,4 +1,5 @@
 import { products, type Product } from "./data";
+import { getLocalProductSpecifications } from "./product-specifications";
 
 const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION ?? "2026-01";
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
@@ -14,10 +15,19 @@ type ShopifyProductNode = {
   handle: string;
   title: string;
   description: string;
+  descriptionHtml: string;
   featuredImage?: {
     url: string;
     altText?: string | null;
   } | null;
+  images: {
+    edges: Array<{
+      node: {
+        url: string;
+        altText?: string | null;
+      };
+    }>;
+  };
   priceRange: {
     minVariantPrice: ShopifyMoney;
   };
@@ -99,27 +109,48 @@ function formatPrice(money: ShopifyMoney) {
 }
 
 function mapShopifyProduct(node: ShopifyProductNode): Product {
+  const variant = node.variants.edges[0]?.node;
+  const localSpecs = getLocalProductSpecifications({
+    sku: variant?.sku,
+    handle: node.handle,
+    title: node.title,
+  });
+  const productImages = node.images.edges.map(({ node: image }) => ({
+    src: image.url,
+    alt: image.altText ?? `${node.title} product image`,
+  }));
+  const fallbackImage = {
+    src:
+      node.featuredImage?.url ??
+      "https://images.unsplash.com/photo-1560961911-ba7ef651a56c?auto=format&fit=crop&w=1200&q=80",
+    alt: node.featuredImage?.altText ?? `${node.title} product image`,
+  };
+  const images = productImages.length ? productImages : [fallbackImage];
+
   return {
     id: node.id,
     handle: node.handle,
     title: node.title,
-    category: "Building Block Sets",
+    category: localSpecs?.series ?? "Building Block Sets",
     collectionHandle: "new-arrivals",
     price: formatPrice(node.priceRange.minVariantPrice),
-    image:
-      node.featuredImage?.url ??
-      "https://images.unsplash.com/photo-1560961911-ba7ef651a56c?auto=format&fit=crop&w=1200&q=80",
-    imageAlt: node.featuredImage?.altText ?? `${node.title} product image`,
+    image: images[0].src,
+    imageAlt: images[0].alt,
+    images,
     description: node.description,
+    descriptionHtml: node.descriptionHtml,
     sellingPoint: node.description.slice(0, 120) || "A JIESTAR building block set for global builders.",
-    sku: node.variants.edges[0]?.node.sku ?? "Contact for SKU",
-    pieceCount: "See product package",
-    recommendedAge: "See product package",
+    sku: variant?.sku ?? "Contact for SKU",
+    variantId: variant?.id,
+    pieceCount: localSpecs?.pieceCount ?? "See product package",
+    recommendedAge: localSpecs?.recommendedAge ?? "See product package",
     difficulty: "See product package",
-    finishedSize: "See product package",
-    packageSize: "See product package",
+    finishedSize: localSpecs?.finishedSize ?? "See product package",
+    packageSize: localSpecs?.packageSize ?? "See product package",
     material: "ABS plastic",
     shipping: "Ships through Shopify checkout based on destination.",
+    series: localSpecs?.series,
+    releaseDate: localSpecs?.releaseDate,
   };
 }
 
@@ -129,9 +160,18 @@ const productFragment = `
     handle
     title
     description
+    descriptionHtml
     featuredImage {
       url
       altText
+    }
+    images(first: 12) {
+      edges {
+        node {
+          url
+          altText
+        }
+      }
     }
     priceRange {
       minVariantPrice {

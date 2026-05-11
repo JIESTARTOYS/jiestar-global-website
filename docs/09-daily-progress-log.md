@@ -30,6 +30,156 @@
 
 ---
 
+## 2026-05-11
+
+### 当前对话收尾 / 交接：产品图片展示、详情页图库与描述区优化
+
+- 当前状态：
+  - 已完成本轮产品图片展示和产品详情页优化，尚未提交。
+  - 当前分支仍有 Shopify checkout MVP、产品规格映射、产品图片图库和本次视觉修正相关未提交改动。
+- 本次目标：
+  - 优化首页、产品列表、集合页、相关产品和 About 产品预览中的产品图片比例。
+  - 产品卡片 hover 时显示第二张商品图。
+  - 产品详情页改为主图 + 缩略图图库，点击缩略图可切换主图。
+  - 删除产品详情页主图下方 `Pieces` 和 `Age` 两个内容框。
+  - 在 `Details / Product Specifications` 下方新增 `Product Details` 描述板块，渲染 Shopify 商品描述和详情图。
+  - 修复用户反馈的缩略图点击无效、产品图裁切、图片留白和 Description 区域大空白问题。
+- 本次完成：
+  - `lib/data.ts` 产品类型已支持 `images` 和 `descriptionHtml`。
+  - `lib/shopify.ts` 已从 Storefront API 读取 `descriptionHtml` 和 `images(first: 12)`，第一张图作为默认主图，多张图写入 `product.images`。
+  - 新增 `components/product/ProductImageSwap.tsx`，产品卡片支持第二张图 hover 淡入；无第二张图时保持单图展示。
+  - 首页 Featured Products、`/products` 产品列表、collection 商品卡片、Related Products、About 产品预览已接入统一产品图组件。
+  - 新增 `components/product/ProductGallery.tsx`，产品详情页主图下方显示缩略图，缩略图按钮支持点击切换、选中状态和键盘 focus。
+  - `app/products/[handle]/page.tsx` 已替换为图库组件，并移除主图下方两个信息框。
+  - 产品详情页新增 `Description / Product Details` 板块，优先渲染 Shopify `descriptionHtml`，为空时回退到本地纯文本描述。
+  - 按最新反馈调整图片展示逻辑：产品卡片和详情页主图保持 1:1 稳定容器，但图片使用 `object-contain`，非 1:1 图片允许适当留白，不裁剪图片。
+  - 已修复缩略图点击不能切换的问题：缩略图图片不再拦截点击，主图切换时按图片地址重新渲染。
+  - 已修复 Description 区域大空白问题：渲染 Shopify 描述 HTML 前清理空段落、空 div、`<br>` 和 `&nbsp;` 组成的空富文本块，避免详情图被空标签顶下去。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已在本地开发服务 `http://127.0.0.1:3003` 查看过产品详情页和产品卡片效果；后续如继续视觉微调，应优先复查 `/products/flowers`、`/products/steam-train-1`、`/products/full-featured-crawler-excavator`。
+- 未完成事项：
+  - 本次改动尚未提交。
+  - 真实 Shopify 商品描述内容质量仍取决于 Shopify 后台维护；前端已支持详情图和描述 HTML 渲染，但后台空白、过多空段落或过大的详情图仍需要在 Shopify 侧规范录入。
+  - 当前 Related Products 仍主要基于本地 mock 产品列表，后续建议改为真实 Shopify 商品推荐或同 collection 商品。
+  - 还未做完整移动端截图回归；下次继续时建议重点检查产品卡片、详情图库缩略图横向滚动、Description 详情图宽度。
+- 发现的问题：
+  - Shopify 富文本描述里可能包含大量空 `<p><br></p>`、空 `<div>` 或 `&nbsp;`，直接渲染会在 Description 顶部产生大面积空白。
+  - 产品图不是 1:1 时，强制 `object-cover` 会裁剪主体；当前已改回 `object-contain`，允许非 1:1 图片在 1:1 容器中自然留白。
+  - 浏览器里看到的中文导航或按钮可能来自 Chrome 自动翻译，页面源文案仍以英文为主。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先视觉复查 `Description / Product Details` 区域是否已经去掉大空白；如 Shopify 后台仍有异常 HTML，再针对实际 HTML 做更精确清理。
+  - 继续做移动端和桌面端的视觉回归，尤其是产品卡片图片、详情页图库、缩略图切换和详情图展示。
+  - 如视觉方向确认，建议整理当前未提交 diff，决定是否将 Shopify checkout MVP、产品规格映射、产品图库和描述区优化合并为一次提交或拆分提交。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有修改 Shopify 后台数据，也没有暴露 Shopify token。
+  - 前台文案保持英文；本进度记录按规则使用中文。
+
+### 当前对话收尾 / 交接：第一批测试产品资料整理与规格映射
+
+- 当前状态：
+  - 已完成本次小项，尚未提交。
+  - 当前分支仍有之前 Shopify checkout MVP、页面调整和本次产品资料映射相关未提交改动。
+- 本次目标：
+  - 整理根目录临时产品资料文件夹 `2026.05.08jiestar第一批临时上架产品`。
+  - 将每个产品图片和 Markdown 资料放到项目合适位置。
+  - 将 Markdown 中的 SKU、颗粒数、建议年龄、发布日期、包装尺寸、成品尺寸等字段映射到产品详情页 `Product Specifications`。
+- 本次完成：
+  - 已将临时产品资料拆分整理到：
+    - `public/images/products/first-batch-2026-05-08/`
+    - `content/products/first-batch-2026-05-08/`
+  - 已按英文 slug 规范整理分类和产品文件夹。
+  - 已迁移 21 个产品 Markdown 和 243 个图片文件。
+  - 已清理 `.DS_Store`，未带入新目录。
+  - 已修正火车站 SKU：`Train Station.md` 从 `sku 53016` 改为 `sku 89140`。
+  - 新增 `lib/product-specifications.ts`，用于递归读取本地产品 Markdown 并生成规格索引。
+  - Shopify 商品映射已支持按 `SKU -> handle -> title` 顺序匹配本地 Markdown，避免 Shopify 未填 SKU 时规格无法显示。
+  - 产品详情页 `Product Specifications` 已显示本地 Markdown 规格：SKU、Release Date、Piece Count、Recommended Age、Finished Model Size、Package Size、Material、Shipping。
+  - 已按要求从产品规格展示中移除 `Series` 和 `Difficulty Level`；顶部摘要卡也移除了 `Difficulty`。
+  - 对 `成品 --` 的产品，成品尺寸显示为 `Variable`。
+  - 已修正 `Flowers.md` 的颗粒数：`2926 pcs` 改为 `739 pcs`。
+  - 开发环境下已禁用本地 Markdown 规格索引缓存，方便修改 md 后刷新页面查看最新值。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已通过本地页面验证：`/products/flowers` 显示 `739 pcs`、`JJ9236`、`2026年04月`、`Variable`、`28 × 22 × 6 cm`。
+  - 已通过本地页面验证：`/products/steam-train-1` 即使 Shopify SKU 缺失，也能通过 handle 匹配到本地 `Steam Train.md`，显示 `1277 pcs` 等规格。
+  - 已通过本地页面验证：`/products/full-featured-crawler-excavator` 显示 `57023`、`1246 pcs`、`34 × 27.5 × 10 cm`、`47.2 × 18.3 × 30 cm`。
+- 未完成事项：
+  - 本次改动尚未提交。
+  - 当前产品详情页 Related Products 仍使用本地 mock 数据。
+  - 当前 Shopify collection/category 仍统一落到 `new-arrivals`，分类 URL 还没有真实 Shopify collection 映射。
+  - 当前产品规格来源是本地 Markdown，不是 Shopify metafields；上线后修改 Markdown 仍需要提交并重新部署。
+  - Chrome 当前开启了自动翻译，浏览器中看到的中文是 Chrome 翻译结果，页面源文案仍为英文。
+- 发现的问题：
+  - 最初只按 SKU 匹配会导致 Shopify 未填 SKU 的商品无法映射规格；现已增加 handle/title fallback。
+  - 模块级缓存会导致开发环境修改 Markdown 后刷新不更新；现已在 development 环境禁用缓存。
+  - 如果直接在浏览器看到 `多变的`，这是 Chrome 把 `Variable` 自动翻译成中文，不是前端英文文案变化。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先复查当前未提交 diff，确认是否要提交 Shopify checkout MVP + 产品规格映射。
+  - 后续可继续处理真实 Shopify 商品图片、本地产品图片替换、Related Products 改为真实 Shopify 商品、collection/category 映射。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有把产品规格写入 Shopify metafields，也没有修改 Shopify 后台数据。
+  - 前台文案保持英文；本进度记录按规则使用中文。
+
+### 今日工作收尾 / 对话交接：Shopify Headless 真实联调
+
+- 当前状态：
+  - Shopify Storefront API 与 checkout MVP 已完成真实联调。
+  - 当前分支仍为 `codex-homepage-ui-v1`，存在未提交代码改动。
+  - 本地 `.env.local` 已创建并被 Git 忽略，包含 Shopify Storefront API 所需配置；日志不记录 token 明文。
+- 本次目标：
+  - 安装并配置 Shopify Headless channel。
+  - 获取 Storefront API token，并验证 Next.js 能读取真实 Shopify 产品。
+  - 验证产品详情页 `Buy Now` 能通过 `/api/checkout` 创建 Shopify checkout URL。
+- 本次完成：
+  - 已在 Shopify 后台安装官方 Headless 应用。
+  - 已创建 Headless storefront：`Jie Star Toys Headless`。
+  - 已创建本地 `.env.local`，配置：
+    - `NEXT_PUBLIC_SITE_URL=http://localhost:3000`
+    - `SHOPIFY_STORE_DOMAIN=jiestartoys.myshopify.com`
+    - `SHOPIFY_STOREFRONT_ACCESS_TOKEN`
+    - `SHOPIFY_API_VERSION=2026-01`
+  - 已确认 Storefront API 权限包含产品读取和 checkout 读写相关权限。
+  - 已验证 `/products` 能显示真实 Shopify 商品。
+  - 已验证真实 Shopify 商品详情页可访问，例如 `/products/flowers`。
+  - 已验证真实商品 `Flowers` 显示 Shopify 数据：价格 `$99.99`、SKU `JJ9236`，并显示 `Secure Shopify checkout`。
+  - 已验证 `/api/checkout` 使用真实 variant ID 可返回 Shopify checkout URL。
+  - 已重新打开侧边浏览器到 `http://127.0.0.1:3002/products/flowers` 给项目 owner 查看。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`，并确认 build 加载 `.env.local`。
+  - 已通过：`/products` 返回 200 并显示真实 Shopify 商品。
+  - 已通过：`/products/flowers` 返回真实 Shopify 商品详情。
+  - 已通过：`/api/checkout` 缺少 `variantId` 时返回 `Missing Shopify variant ID.`。
+  - 已通过：真实 variant ID 创建 checkout，返回状态 200 且获得 Shopify checkout URL。
+  - 浏览器端点击 `Buy Now` 已触发 Shopify 跳转，但最终进入 `jiestartoys.myshopify.com/password`。
+- 未完成事项：
+  - 当前 Shopify 店铺仍处于 password / opening soon 保护状态；真实顾客 checkout 前需在 Shopify 后台关闭 storefront password。
+  - 当前产品详情页 Related Products 仍使用本地 mock 数据，真实 Shopify 商品详情页下会混入 mock related products。
+  - 当前 Shopify 产品映射仍使用保守占位字段：`category`、`collectionHandle`、`pieceCount`、`recommendedAge`、尺寸、难度等尚未从 Shopify tags/metafields/collections 读取。
+  - 当前 `/products` 的分类计数仍不准确，因为真实 Shopify 商品暂未映射到现有本地 collection handles。
+  - 今天未提交代码。
+- 发现的问题：
+  - 旧测试 URL `/products/semi-submersible-drilling-platform` 当前已 404，原因是当前 Shopify 可用商品列表/handle 已变化；今天可用测试商品为 `/products/flowers`。
+  - Storefront API 已能读取真实商品，但产品描述可能为空，详情页描述区域会显得空，需要后续补 Shopify 商品描述或前端 fallback。
+  - 若后续打开 checkout 仍进入 password 页面，优先检查 Shopify storefront password，而不是前端 checkout 代码。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先修复真实 Shopify 商品详情页下的 Related Products：改为使用 Shopify 产品列表，而不是本地 mock 产品。
+  - 规划 Shopify 数据结构映射：collections/tags/metafields 对应 category、piece count、age、尺寸、难度等字段。
+  - 决定是否关闭 Shopify storefront password 以完成完整 checkout 可视化验证。
+  - 若当前 MVP 方向确认，可先提交 Shopify checkout MVP 相关代码，但不要提交 `.env.local`。
+- 备注：
+  - 本次创建了 Shopify Dev Dashboard app `JIESTAR Global Website`，但实际用于当前网站联调的是官方 Headless channel 生成的 Storefront API token。
+  - 结束当前对话前已停止本地 3002 服务。
+  - 前台文案保持英文；本进度记录按规则使用中文。
+
 ## 2026-05-07
 
 ### 今日工作收尾 / 对话交接：核心页面收口复查并提交

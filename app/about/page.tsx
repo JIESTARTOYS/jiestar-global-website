@@ -10,6 +10,7 @@ import {
   SparkIcon,
   StoreIcon,
 } from "@/components/ui/Icons";
+import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 import { SubBrandCarousel } from "@/components/sections/SubBrandCarousel";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 import { LinkButton } from "@/components/ui/LinkButton";
@@ -308,15 +309,12 @@ export default function AboutPage() {
                 href={`/products/${product.handle}`}
                 className="group overflow-hidden rounded-lg border border-slate-200 bg-slate-50 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
               >
-                <div className="relative aspect-square bg-slate-100">
-                  <Image
-                    src={product.image}
-                    alt={product.imageAlt}
-                    fill
-                    sizes="(min-width: 1024px) 23vw, (min-width: 640px) 45vw, 100vw"
-                    className="object-cover transition duration-300 group-hover:scale-105"
-                  />
-                </div>
+                <ProductImageSwap
+                  product={product}
+                  sizes="(min-width: 1024px) 23vw, (min-width: 640px) 45vw, 100vw"
+                  className="aspect-square bg-slate-100"
+                  imageClassName=""
+                />
                 <div className="p-5">
                   <p className="text-xs font-semibold uppercase tracking-normal text-red-600">{product.category}</p>
                   <h2 className="mt-2 text-base font-semibold leading-6 text-slate-950">{product.title}</h2>

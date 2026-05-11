@@ -3,11 +3,52 @@
 import { useState } from "react";
 import { CartIcon, ShieldIcon } from "@/components/ui/Icons";
 
-export function ProductActions({ productTitle }: { productTitle: string }) {
+type ProductActionsProps = {
+  productTitle: string;
+  variantId?: string;
+};
+
+export function ProductActions({ productTitle, variantId }: ProductActionsProps) {
   const [status, setStatus] = useState<string | null>(null);
+  const [isBuying, setIsBuying] = useState(false);
 
   function handleAddToCart() {
-    setStatus("Preview mode: Shopify cart and checkout will be enabled after product variant IDs are connected.");
+    setStatus(
+      variantId
+        ? "Cart drawer is coming later. Use Buy Now to continue through Shopify checkout."
+        : "Preview mode: Shopify cart and checkout will be enabled after product variant IDs are connected.",
+    );
+  }
+
+  async function handleBuyNow() {
+    if (!variantId) {
+      setStatus("Checkout is unavailable in preview mode because this product is not connected to a Shopify variant yet.");
+      return;
+    }
+
+    setIsBuying(true);
+    setStatus("Creating a secure Shopify checkout...");
+
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ variantId }),
+      });
+
+      const data = (await response.json()) as { checkoutUrl?: string; error?: string };
+
+      if (!response.ok || !data.checkoutUrl) {
+        throw new Error(data.error ?? "Unable to create Shopify checkout.");
+      }
+
+      window.location.href = data.checkoutUrl;
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable to create Shopify checkout.");
+      setIsBuying(false);
+    }
   }
 
   return (
@@ -17,9 +58,13 @@ export function ProductActions({ productTitle }: { productTitle: string }) {
           <ShieldIcon className="h-4 w-4" />
         </span>
         <div>
-          <p className="text-xs font-black uppercase text-slate-500">Shopify checkout preview</p>
+          <p className="text-xs font-black uppercase text-slate-500">
+            {variantId ? "Secure Shopify checkout" : "Shopify checkout preview"}
+          </p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            Product buttons are staged for the storefront UI. Real cart and checkout will be enabled after Shopify variants are connected.
+            {variantId
+              ? "Buy Now opens Shopify checkout for payment, order processing, and customer notifications."
+              : "Product buttons are staged for the storefront UI. Real checkout will be enabled after Shopify variants are connected."}
           </p>
         </div>
       </div>
@@ -34,14 +79,18 @@ export function ProductActions({ productTitle }: { productTitle: string }) {
       </button>
       <button
         type="button"
-        onClick={handleAddToCart}
+        onClick={handleBuyNow}
+        disabled={isBuying}
         className="min-h-12 rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:border-slate-400 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950"
         aria-label={`Buy ${productTitle} now`}
       >
-        Buy Now
+        {isBuying ? "Opening Checkout..." : "Buy Now"}
       </button>
       <p className="rounded-md bg-white px-3 py-2 text-sm leading-6 text-slate-600 sm:col-span-2">
-        {status ?? "Buttons are shown in preview mode. They will connect to Shopify cart and checkout after Storefront API product data is live."}
+        {status ??
+          (variantId
+            ? "Shopify checkout is available for this product. Add to Cart will be expanded in a later cart drawer pass."
+            : "Buttons are shown in preview mode. They will connect to Shopify checkout after Storefront API product data is live.")}
       </p>
     </div>
   );
