@@ -57,7 +57,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const related = products.filter((item) => item.handle !== product.handle).slice(0, 4);
   const specs = [
     ["SKU", product.sku],
-    ["Release Date", product.releaseDate],
+    ["Difficulty Level", product.difficulty],
     ["Piece Count", product.pieceCount],
     ["Recommended Age", product.recommendedAge],
     ["Finished Model Size", product.finishedSize],
@@ -141,12 +141,12 @@ export default async function ProductDetailPage({ params }: PageProps) {
               <h2 className="mt-2 text-2xl font-black text-slate-950">Product Specifications</h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-slate-500">
-              Specification values combine Shopify product data with local first-batch catalog details where the SKU matches.
+              Specification values are managed in Shopify product metafields, with SKU coming from the product variant.
             </p>
           </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
             {specs.map(([label, value]) => (
-              <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm shadow-slate-950/[0.02]">
+              <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 p-3 shadow-sm shadow-slate-950/[0.02] sm:p-4">
                 <p className="text-xs font-black uppercase text-slate-500">{label}</p>
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{value}</p>
               </div>

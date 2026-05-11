@@ -32,6 +32,49 @@
 
 ## 2026-05-11
 
+### 当前对话收尾 / 交接：产品展示与 Shopify checkout 改动复查并提交
+
+- 当前状态：
+  - 已完成本轮复查、验证和提交。
+  - 当前分支为 `codex-homepage-ui-v1`，工作区干净。
+  - 最新提交：`14a98ba feat: connect Shopify checkout and product media details`。
+- 本次目标：
+  - 按上次交接计划复查 Shopify checkout MVP、产品规格映射、产品图库、产品卡片图片展示和 Description 区域。
+  - 确认没有无关依赖、敏感配置或 `.env.local` 混入提交。
+  - 通过验证后提交当前批次改动。
+- 本次完成：
+  - 已复查 staged 范围，提交内容包括 `/api/checkout`、Shopify 商品图片/描述读取、产品详情图库、产品卡片 hover 第二张图、本地产品规格索引、第一批产品 Markdown 和图片素材、以及本进度日志。
+  - 已确认 `.env.local`、`package.json`、`pnpm-lock.yaml` 没有进入 diff。
+  - 已用本地开发服务复查 `/products`、`/products/flowers`、`/products/steam-train-1`、`/products/full-featured-crawler-excavator`。
+  - 已验证 Flowers 产品缩略图点击可切换主图。
+  - 已验证 `Buy Now` 能调用 `/api/checkout` 并跳转到 Shopify；最终进入 `https://jiestartoys.myshopify.com/password`，原因是 Shopify 店铺仍处于 password / opening soon 状态。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`，本次 build 生成 35 个 app route，并包含 `/api/checkout`。
+  - 已确认 `/products/flowers` 显示 Shopify 价格、图库、`JJ9236`、`739 pcs` 和 Product Details 区域。
+  - 已确认 `/products/steam-train-1` 在 Shopify SKU 缺失时仍可通过 handle fallback 显示 `1277 pcs` 等本地规格，SKU 显示为 `Contact for SKU`。
+  - 已确认 `/products/full-featured-crawler-excavator` 显示 `57023` 和 `1246 pcs`。
+- 未完成事项：
+  - 还未关闭 Shopify storefront password，因此无法完成真实顾客视角的 checkout 最终页面验证。
+  - 当前 Related Products 仍使用本地 mock 产品，真实 Shopify 商品详情页下仍可能混入 mock related products。
+  - Shopify collection/category 仍统一落到 `new-arrivals`，尚未做真实 Shopify collections/tags/metafields 映射。
+  - 产品规格仍来自本地 Markdown，不是 Shopify metafields；上线后如需后台维护规格，需要迁移到 Shopify metafields 或其他 CMS。
+  - 本轮未完成完整移动端截图回归；只做了桌面截图、DOM 检查和响应式结构确认。
+- 发现的问题：
+  - Next dev 提示部分 Shopify 主图是 LCP 图片，后续可考虑给首屏主图补充更明确的 eager / priority 策略做性能微调。
+  - in-app 浏览器本轮切换移动视口能力受限，移动端仍建议下次用实际浏览器或可用截图工具复查。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先处理真实 Shopify 商品详情页的 Related Products：改为真实 Shopify 商品推荐或同 collection 商品。
+  - 规划 Shopify 数据结构映射：collections/tags/metafields 对应 category、piece count、age、尺寸、发布时间等字段。
+  - 决定是否关闭 Shopify storefront password，以完成完整 checkout 可视化验证。
+  - 可顺手处理产品首屏图 LCP 提示和移动端截图回归。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有提交 `.env.local`，没有暴露 Shopify token。
+  - 前台文案保持英文；本进度记录按规则使用中文。
+
 ### 当前对话收尾 / 交接：产品图片展示、详情页图库与描述区优化
 
 - 当前状态：

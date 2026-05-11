@@ -142,7 +142,7 @@ export const products: Product[] = [
     finishedSize: "48 x 22 x 13 cm",
     packageSize: "54 x 35 x 9 cm",
     material: "ABS plastic",
-    shipping: "Ships through Shopify checkout based on destination.",
+    shipping: "Calculated at checkout.",
   },
   {
     id: "mock-classic-railway",
@@ -161,11 +161,11 @@ export const products: Product[] = [
     sku: "JS-TR-002",
     pieceCount: "968 pcs",
     recommendedAge: "12+",
-    difficulty: "Medium",
+    difficulty: "Intermediate",
     finishedSize: "42 x 8 x 12 cm",
     packageSize: "48 x 32 x 8 cm",
     material: "ABS plastic",
-    shipping: "Ships through Shopify checkout based on destination.",
+    shipping: "Calculated at checkout.",
   },
   {
     id: "mock-harbor-pirate-ship",
@@ -188,7 +188,7 @@ export const products: Product[] = [
     finishedSize: "61 x 18 x 48 cm",
     packageSize: "58 x 38 x 11 cm",
     material: "ABS plastic",
-    shipping: "Ships through Shopify checkout based on destination.",
+    shipping: "Calculated at checkout.",
   },
   {
     id: "mock-urban-architecture",
@@ -207,11 +207,11 @@ export const products: Product[] = [
     sku: "JS-AR-004",
     pieceCount: "812 pcs",
     recommendedAge: "12+",
-    difficulty: "Medium",
+    difficulty: "Intermediate",
     finishedSize: "28 x 22 x 24 cm",
     packageSize: "42 x 29 x 8 cm",
     material: "ABS plastic",
-    shipping: "Ships through Shopify checkout based on destination.",
+    shipping: "Calculated at checkout.",
   },
 ];
 
@@ -234,4 +234,33 @@ export function getProductsByCollection(handle: string) {
 
 export function getProduct(handle: string) {
   return products.find((product) => product.handle === handle);
+}
+
+const difficultyLevels = ["Beginner", "Intermediate", "Advanced", "Expert"] as const;
+
+function parseSpecNumber(value: string) {
+  return Number(value.replace(/[^0-9]/g, "")) || 0;
+}
+
+export function getDifficultyLevel(pieceCount: string, recommendedAge = "") {
+  const count = parseSpecNumber(pieceCount);
+
+  if (!count) {
+    return "See product package";
+  }
+
+  let levelIndex = count >= 1500 ? 3 : count >= 900 ? 2 : count >= 400 ? 1 : 0;
+  const age = parseSpecNumber(recommendedAge);
+
+  if (age >= 16 && count >= 1200) {
+    levelIndex = Math.max(levelIndex, 3);
+  } else if (age >= 14) {
+    levelIndex = Math.max(levelIndex, count >= 900 ? 3 : 2);
+  } else if (age >= 10) {
+    levelIndex = Math.max(levelIndex, 1);
+  } else if (age > 0 && age <= 6) {
+    levelIndex = Math.min(levelIndex, 1);
+  }
+
+  return difficultyLevels[levelIndex];
 }

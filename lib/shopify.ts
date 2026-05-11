@@ -31,6 +31,11 @@ type ShopifyProductNode = {
   priceRange: {
     minVariantPrice: ShopifyMoney;
   };
+  metafields: Array<{
+    namespace: string;
+    key: string;
+    value: string;
+  } | null>;
   variants: {
     edges: Array<{
       node: {
@@ -108,6 +113,22 @@ function formatPrice(money: ShopifyMoney) {
   }).format(Number(money.amount));
 }
 
+function getMetafieldValue(
+  metafields: ShopifyProductNode["metafields"],
+  namespace: string,
+  key: string,
+) {
+  return metafields.find((metafield) => metafield?.namespace === namespace && metafield.key === key)?.value;
+}
+
+function formatPieceCount(value?: string) {
+  if (!value) {
+    return "See product package";
+  }
+
+  return value.toLowerCase().includes("pcs") ? value : `${value} pcs`;
+}
+
 function mapShopifyProduct(node: ShopifyProductNode): Product {
   const variant = node.variants.edges[0]?.node;
   const localSpecs = getLocalProductSpecifications({
@@ -115,6 +136,11 @@ function mapShopifyProduct(node: ShopifyProductNode): Product {
     handle: node.handle,
     title: node.title,
   });
+  const difficultyLevel = getMetafieldValue(node.metafields, "specs", "difficulty_level");
+  const pieceCount = getMetafieldValue(node.metafields, "specs", "piece_count");
+  const recommendedAge = getMetafieldValue(node.metafields, "specs", "recommended_age");
+  const finishedSize = getMetafieldValue(node.metafields, "specs", "finished_model_size");
+  const packageSize = getMetafieldValue(node.metafields, "specs", "package_size");
   const productImages = node.images.edges.map(({ node: image }) => ({
     src: image.url,
     alt: image.altText ?? `${node.title} product image`,
@@ -142,13 +168,13 @@ function mapShopifyProduct(node: ShopifyProductNode): Product {
     sellingPoint: node.description.slice(0, 120) || "A JIESTAR building block set for global builders.",
     sku: variant?.sku ?? "Contact for SKU",
     variantId: variant?.id,
-    pieceCount: localSpecs?.pieceCount ?? "See product package",
-    recommendedAge: localSpecs?.recommendedAge ?? "See product package",
-    difficulty: "See product package",
-    finishedSize: localSpecs?.finishedSize ?? "See product package",
-    packageSize: localSpecs?.packageSize ?? "See product package",
+    pieceCount: formatPieceCount(pieceCount),
+    recommendedAge: recommendedAge ?? "See product package",
+    difficulty: difficultyLevel ?? "See product package",
+    finishedSize: finishedSize ?? "See product package",
+    packageSize: packageSize ?? "See product package",
     material: "ABS plastic",
-    shipping: "Ships through Shopify checkout based on destination.",
+    shipping: "Calculated at checkout.",
     series: localSpecs?.series,
     releaseDate: localSpecs?.releaseDate,
   };
@@ -178,6 +204,17 @@ const productFragment = `
         amount
         currencyCode
       }
+    }
+    metafields(identifiers: [
+      { namespace: "specs", key: "difficulty_level" }
+      { namespace: "specs", key: "piece_count" }
+      { namespace: "specs", key: "recommended_age" }
+      { namespace: "specs", key: "finished_model_size" }
+      { namespace: "specs", key: "package_size" }
+    ]) {
+      namespace
+      key
+      value
     }
     variants(first: 1) {
       edges {
