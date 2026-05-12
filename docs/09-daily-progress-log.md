@@ -32,6 +32,95 @@
 
 ## 2026-05-12
 
+### 今日工作收尾 / 对话交接：产品筛选客户端化与分类轮播拖拽优化
+
+- 当前状态：
+  - 已完成今天产品页筛选交互、产品页分类轮播、首页 Featured Categories 分类轮播的 UI/UX 优化。
+  - 当前分支为 `codex-homepage-ui-v1`，准备将本轮代码和进度日志一起提交。
+- 本次目标：
+  - 打开本地 3000 端口供项目 owner 检查网站。
+  - 根据浏览器反馈修复产品页筛选刷新整页的问题。
+  - 优化产品页和首页分类轮播，让分类卡片可鼠标拖拽横向滚动，并保留左右按钮。
+  - 收尾时更新项目交接日志并提交代码。
+- 本次完成：
+  - 已启动本地开发服务：`http://localhost:3000`。
+  - 产品页筛选器已去除右侧数量显示。
+  - 产品页 toolbar 已去除 Grid/List 两个视图切换按钮。
+  - `/products` 筛选逻辑已从服务端预筛选改为 `ProductCatalog` 客户端状态筛选；点击价格、分类、件数和排序时只更新产品列表区域，并通过 `history.pushState` 保留 URL query，不再触发整页路由刷新。
+  - 产品页顶部 `Shop by category` 分类轮播已支持鼠标左键按住拖拽横向滚动；拖拽时取消卡片误点击，左右按钮继续按页平滑滚动。
+  - 首页 `Featured Categories` 已改为显示全部 Shopify collections，不再只显示前 6 个；使用同样的横向拖拽滚动方案，左右按钮只在 hover / focus 时出现。
+  - 已禁用分类卡片和图片的原生拖拽，避免拖动时误触发链接或图片拖拽行为。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm build`；第一次普通 build 在 Shopify 请求阶段偶发 `fetch failed`，随后使用网络权限重跑通过。
+  - 已用 in-app browser 验证：`/products` 筛选后 URL 更新为 query，右侧产品列表变更，页面不再整页刷新。
+  - 已用 in-app browser 验证：首页 `Featured Categories`、左右按钮、`Technic`、`New Arrivals` 等分类入口存在。
+- 未完成事项：
+  - Shopify 后台部分 collection 仍缺真实英文简介和封面图；当前缺图分类继续显示 `Image pending`。
+  - 产品详情页 Related Products 仍待改为真实 Shopify 推荐或同 collection 商品。
+  - 本轮没有做完整移动端截图回归；只做了浏览器 DOM/交互验证和构建验证。
+- 发现的问题：
+  - 产品页原筛选使用 `Link href="/products?...`，会触发 Next 路由刷新和重新请求页面；已改为客户端状态更新。
+  - 横向分类轮播如果保留 `snap` 和 `scroll-smooth`，鼠标拖拽会像按钮翻页一样不跟手；已在拖拽态改为自由滚动。
+  - `pnpm build` 依赖 Shopify Storefront API，网络不稳定时会在静态生成阶段偶发失败；允许网络访问后重跑通过。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 继续处理真实 Shopify 商品详情页 Related Products，改为同 collection 商品或 Shopify 推荐。
+  - 继续补齐 Shopify collection 内容质量：英文简介、封面图、产品归属和 handle 规范。
+  - 做一轮移动端产品页和首页分类轮播视觉回归，重点看拖拽手感、按钮悬停显示、卡片宽度和文字换行。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有修改 `.env.local`，没有暴露 Shopify token。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
+
+### 当前对话收尾 / 交接：Vercel Shopify 环境变量修复与线上验证
+
+- 当前状态：
+  - 已完成本轮 Vercel Preview 不调用 Shopify、线上显示 mock 产品的问题排查和修复。
+  - 当前分支为 `codex-homepage-ui-v1`，代码已提交并推送到 `origin/codex-homepage-ui-v1`。
+  - 最新代码提交：`b2ed0c3 fix: surface Shopify data source failures`。
+- 本次目标：
+  - 验证 Vercel 线上为何仍显示旧的临时分类和产品。
+  - 找出今天早上 Shopify collections / 产品筛选改动后线上断开 Shopify 的真实原因。
+  - 修复线上静默 fallback 到 mock 数据导致问题不明显的风险。
+- 本次完成：
+  - 已用浏览器确认 Vercel 旧部署 `/products` 显示 4 个 mock 产品，`/products/flowers` 返回 404。
+  - 已对比早上修改前后代码，确认新增 GraphQL 字段本地可用，问题不是 Shopify 查询字段本身。
+  - `lib/shopify.ts` 已新增 Shopify 数据源诊断日志，输出 env 是否存在、API version、是否 Vercel、当前数据源为 `shopify` / `fallback` / `error`，不输出 token。
+  - 已调整 fallback 策略：本地开发仍允许 mock fallback；生产 / Vercel 缺 env 或 Shopify 请求失败时不再静默显示 mock，而是抛出可见错误。
+  - 新增 `/products` 和 `/collections/[handle]` 的 route error boundary，用于提示 Shopify catalog / collection 数据不可用。
+  - 已提交并推送：`b2ed0c3 fix: surface Shopify data source failures`。
+  - 已打开 Vercel 项目 Environment Variables 页面，确认此前项目没有任何环境变量。
+  - 已将本地 `.env.local` 中的 `SHOPIFY_STORE_DOMAIN`、`SHOPIFY_STOREFRONT_ACCESS_TOKEN`、`SHOPIFY_API_VERSION` 添加到 Vercel，范围为 `Production and Preview`，变量值未打印到聊天或提交中。
+  - 已重新触发 Vercel 部署，新部署已恢复 Shopify 数据。
+- 验证结果：
+  - 已通过本地 Shopify smoke check：返回 `flowers` 和真实 collection。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 本地 build 日志显示 `source: 'shopify'`，读取到 21 个产品、12 个 collections，并生成 `/products/flowers`。
+  - 本地浏览器验证：`/products` 显示 21 个 Shopify 产品，`/products/flowers` 正常打开，`/collections/technic` 正常打开。
+  - Vercel 失败日志确认根因：`hasStorefrontAccessToken: false`、`reason: 'env_missing'`。
+  - Vercel 变量保存后重新部署，线上 `/products/flowers` 已返回 `HTTP/2 200`，Chrome 验证标题为 `Flowers | JIESTAR Toys`。
+  - 线上 `/products` 不再出现 mock 产品 `Velocity Super Car Building Set`。
+- 未完成事项：
+  - 本次进度日志更新尚未提交；如需要保持日志同步到 GitHub，下次可单独提交本文档。
+  - 仍需后续继续处理产品详情页 Related Products，避免真实 Shopify 商品详情页混入本地 mock related products。
+  - Shopify 后台部分 collection 仍缺真实英文简介或封面图，需要继续补齐。
+- 发现的问题：
+  - Vercel 项目此前没有配置 Shopify 环境变量；旧代码静默 fallback 到 mock，掩盖了线上未连接 Shopify 的真实问题。
+  - Vercel 环境变量修改后必须重新部署才会生效。
+  - `SHOPIFY_API_VERSION` 即使未在 Vercel 配置也会因代码默认值显示为存在，因此排查时应重点看 `SHOPIFY_STORE_DOMAIN` 和 `SHOPIFY_STOREFRONT_ACCESS_TOKEN`。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 先确认 Vercel 最新 Preview 页面 `/products`、`/products/flowers`、`/collections/technic` 是否仍正常读取 Shopify。
+  - 如线上稳定，继续处理真实 Shopify 商品详情页 Related Products，改为同 collection 商品或 Shopify 推荐。
+  - 继续补齐 Shopify collection 内容质量：英文简介、封面图、产品归属和 handle 规范。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有修改 `.env.local`，也没有将 Shopify token 提交到 GitHub。
+  - Vercel 环境变量已由用户授权后填写，敏感值未在对话中明文输出。
+
 ### 当前对话收尾 / 交接：真实 Shopify collections、产品筛选与分类轮播优化
 
 - 当前状态：

@@ -1,12 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Collection, Product } from "@/lib/data";
 import { CatalogProductCard } from "@/components/product/CatalogProductCard";
 import { CategoryCarousel } from "@/components/product/CategoryCarousel";
 import {
   ChevronDownIcon,
-  GridIcon,
   HomeIcon,
-  ListIcon,
   RotateIcon,
   ShieldIcon,
   SlidersIcon,
@@ -16,7 +17,6 @@ import {
 
 type ProductCatalogProps = {
   allProducts: Product[];
-  products: Product[];
   collections: Collection[];
   selectedFilters: {
     category?: string;
@@ -27,6 +27,8 @@ type ProductCatalogProps = {
 };
 
 type FilterKey = "category" | "pieces" | "price" | "sort";
+type ProductFilters = ProductCatalogProps["selectedFilters"];
+type FilterAction = (key: FilterKey, value?: string) => void;
 
 function priceNumber(price: string) {
   return Number(price.replace(/[^0-9.]/g, "")) || 0;
@@ -36,15 +38,117 @@ function pieceCountNumber(pieceCount: string) {
   return Number(pieceCount.replace(/[^0-9]/g, "")) || 0;
 }
 
-function rangeCount(products: Product[], min: number, max?: number) {
-  return products.filter((product) => {
-    const count = pieceCountNumber(product.pieceCount);
-    return max ? count >= min && count <= max : count >= min;
-  }).length;
+function filterByPieceCount(product: Product, range?: string) {
+  const count = pieceCountNumber(product.pieceCount);
+
+  if (!range || !count) {
+    return true;
+  }
+
+  if (range === "under-500") {
+    return count < 500;
+  }
+
+  if (range === "500-1000") {
+    return count >= 500 && count <= 1000;
+  }
+
+  if (range === "1000-2000") {
+    return count >= 1000 && count <= 2000;
+  }
+
+  if (range === "2000-plus") {
+    return count >= 2000;
+  }
+
+  return true;
+}
+
+function filterByPrice(product: Product, range?: string) {
+  const price = priceNumber(product.price);
+
+  if (!range || !price) {
+    return true;
+  }
+
+  if (range === "under-50") {
+    return price < 50;
+  }
+
+  if (range === "50-100") {
+    return price >= 50 && price <= 100;
+  }
+
+  if (range === "100-150") {
+    return price > 100 && price <= 150;
+  }
+
+  if (range === "150-plus") {
+    return price > 150;
+  }
+
+  return true;
+}
+
+function sortProducts(products: Product[], sort?: string) {
+  const sortedProducts = [...products];
+
+  if (sort === "price-asc") {
+    return sortedProducts.sort((a, b) => priceNumber(a.price) - priceNumber(b.price));
+  }
+
+  if (sort === "price-desc") {
+    return sortedProducts.sort((a, b) => priceNumber(b.price) - priceNumber(a.price));
+  }
+
+  if (sort === "newest") {
+    return sortedProducts.sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+
+      return bTime - aTime;
+    });
+  }
+
+  return sortedProducts;
+}
+
+function filterProducts(products: Product[], selectedFilters: ProductFilters) {
+  return sortProducts(
+    products.filter((product) => {
+      const selectedCategory = selectedFilters.category;
+      const matchesCategory =
+        !selectedCategory ||
+        product.collectionHandle === selectedCategory ||
+        product.category.toLowerCase() === selectedCategory.toLowerCase();
+
+      return (
+        matchesCategory &&
+        filterByPieceCount(product, selectedFilters.pieces) &&
+        filterByPrice(product, selectedFilters.price)
+      );
+    }),
+    selectedFilters.sort,
+  );
+}
+
+function filtersFromUrl(defaultFilters: ProductFilters): ProductFilters {
+  if (typeof window === "undefined") {
+    return defaultFilters;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+
+  return {
+    category: params.get("category") ?? undefined,
+    pieces: params.get("pieces") ?? undefined,
+    price: params.get("price") ?? undefined,
+    sort: params.get("sort") ?? "popular",
+  };
 }
 
 function buildFilterHref(
-  selectedFilters: ProductCatalogProps["selectedFilters"],
+  selectedFilters: ProductFilters,
   key: FilterKey,
   value?: string,
 ) {
@@ -71,6 +175,22 @@ function buildFilterHref(
   const query = params.toString();
 
   return query ? `/products?${query}` : "/products";
+}
+
+function buildFilters(selectedFilters: ProductFilters, key: FilterKey, value?: string): ProductFilters {
+  const nextFilters = { ...selectedFilters };
+
+  if (value) {
+    nextFilters[key] = value;
+  } else {
+    delete nextFilters[key];
+  }
+
+  if (!nextFilters.sort) {
+    nextFilters.sort = "popular";
+  }
+
+  return nextFilters;
 }
 
 function FilterSection({
@@ -103,18 +223,19 @@ function FilterSection({
 
 function FilterLink({
   label,
-  count,
   href,
   active,
+  onClick,
 }: {
   label: string;
-  count: number;
   href: string;
   active: boolean;
+  onClick: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 }) {
   return (
-    <Link
+    <a
       href={href}
+      onClick={onClick}
       aria-current={active ? "true" : undefined}
       className={
         active
@@ -133,12 +254,21 @@ function FilterLink({
         />
         <span className="truncate">{label}</span>
       </span>
-      <span className="text-xs text-slate-500">({count})</span>
-    </Link>
+    </a>
   );
 }
 
-function FilterPanel({ allProducts, collections, selectedFilters }: ProductCatalogProps) {
+function FilterPanel({
+  allProducts,
+  collections,
+  selectedFilters,
+  onFilterChange,
+  onClearFilters,
+}: Pick<ProductCatalogProps, "allProducts" | "collections"> & {
+  selectedFilters: ProductFilters;
+  onFilterChange: FilterAction;
+  onClearFilters: () => void;
+}) {
   const prices = allProducts.map((product) => priceNumber(product.price)).filter(Boolean);
   const minPrice = prices.length ? Math.min(...prices) : 0;
   const maxPrice = prices.length ? Math.max(...prices) : 0;
@@ -146,38 +276,38 @@ function FilterPanel({ allProducts, collections, selectedFilters }: ProductCatal
     {
       label: "Under $50",
       value: "under-50",
-      count: allProducts.filter((product) => priceNumber(product.price) < 50).length,
     },
     {
       label: "$50 - $100",
       value: "50-100",
-      count: allProducts.filter((product) => priceNumber(product.price) >= 50 && priceNumber(product.price) <= 100).length,
     },
     {
       label: "$100 - $150",
       value: "100-150",
-      count: allProducts.filter((product) => priceNumber(product.price) > 100 && priceNumber(product.price) <= 150).length,
     },
     {
       label: "$150+",
       value: "150-plus",
-      count: allProducts.filter((product) => priceNumber(product.price) > 150).length,
     },
   ];
   const pieceOptions = [
-    { label: "Under 500", value: "under-500", count: rangeCount(allProducts, 0, 499) },
-    { label: "500 - 1000", value: "500-1000", count: rangeCount(allProducts, 500, 1000) },
-    { label: "1000 - 2000", value: "1000-2000", count: rangeCount(allProducts, 1000, 2000) },
-    { label: "2000+", value: "2000-plus", count: rangeCount(allProducts, 2000) },
+    { label: "Under 500", value: "under-500" },
+    { label: "500 - 1000", value: "500-1000" },
+    { label: "1000 - 2000", value: "1000-2000" },
+    { label: "2000+", value: "2000-plus" },
   ];
 
   return (
     <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.03]">
       <div className="mb-5 flex items-center justify-between gap-4">
         <h2 className="text-lg font-black text-slate-950">Filters</h2>
-        <Link href="/products" className="text-xs font-black text-red-600 transition hover:text-red-700">
+        <button
+          type="button"
+          onClick={onClearFilters}
+          className="text-xs font-black text-red-600 transition hover:text-red-700"
+        >
           Clear all
-        </Link>
+        </button>
       </div>
 
       <div className="grid gap-6">
@@ -197,13 +327,16 @@ function FilterPanel({ allProducts, collections, selectedFilters }: ProductCatal
               <FilterLink
                 key={option.value}
                 label={option.label}
-                count={option.count}
                 href={buildFilterHref(
                   selectedFilters,
                   "price",
                   selectedFilters.price === option.value ? undefined : option.value,
                 )}
                 active={selectedFilters.price === option.value}
+                onClick={(event) => {
+                  event.preventDefault();
+                  onFilterChange("price", selectedFilters.price === option.value ? undefined : option.value);
+                }}
               />
             ))}
           </div>
@@ -215,17 +348,19 @@ function FilterPanel({ allProducts, collections, selectedFilters }: ProductCatal
               <FilterLink
                 key={collection.handle}
                 label={collection.title}
-                count={
-                  allProducts.filter(
-                    (product) => product.collectionHandle === collection.handle || product.category === collection.title,
-                  ).length
-                }
                 href={buildFilterHref(
                   selectedFilters,
                   "category",
                   selectedFilters.category === collection.handle ? undefined : collection.handle,
                 )}
                 active={selectedFilters.category === collection.handle}
+                onClick={(event) => {
+                  event.preventDefault();
+                  onFilterChange(
+                    "category",
+                    selectedFilters.category === collection.handle ? undefined : collection.handle,
+                  );
+                }}
               />
             ))}
           </div>
@@ -237,13 +372,16 @@ function FilterPanel({ allProducts, collections, selectedFilters }: ProductCatal
               <FilterLink
                 key={option.value}
                 label={option.label}
-                count={option.count}
                 href={buildFilterHref(
                   selectedFilters,
                   "pieces",
                   selectedFilters.pieces === option.value ? undefined : option.value,
                 )}
                 active={selectedFilters.pieces === option.value}
+                onClick={(event) => {
+                  event.preventDefault();
+                  onFilterChange("pieces", selectedFilters.pieces === option.value ? undefined : option.value);
+                }}
               />
             ))}
           </div>
@@ -263,9 +401,11 @@ const sortLabels: Record<string, string> = {
 function CatalogToolbar({
   productCount,
   selectedFilters,
+  onFilterChange,
 }: {
   productCount: number;
-  selectedFilters: ProductCatalogProps["selectedFilters"];
+  selectedFilters: ProductFilters;
+  onFilterChange: FilterAction;
 }) {
   const sortOptions = [
     ["popular", "Popular"],
@@ -286,9 +426,13 @@ function CatalogToolbar({
           </summary>
           <div className="absolute right-0 top-9 z-20 grid w-48 gap-1 rounded-lg border border-slate-200 bg-white p-2 shadow-lg shadow-slate-950/[0.08]">
             {sortOptions.map(([value, label]) => (
-              <Link
+              <a
                 key={value}
                 href={buildFilterHref(selectedFilters, "sort", value)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  onFilterChange("sort", value);
+                }}
                 className={
                   selectedFilters.sort === value
                     ? "rounded-md bg-red-50 px-3 py-2 text-sm font-black text-red-700"
@@ -296,35 +440,26 @@ function CatalogToolbar({
                 }
               >
                 {label}
-              </Link>
+              </a>
             ))}
           </div>
         </details>
-        <div className="flex items-center gap-1" aria-label="Catalog view options">
-          <button
-            type="button"
-            aria-label="Grid view"
-            aria-pressed="true"
-            className="flex h-10 w-10 items-center justify-center rounded-md bg-red-600 text-white shadow-sm shadow-red-600/20"
-          >
-            <GridIcon className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            aria-label="List view"
-            aria-pressed="false"
-            className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
-          >
-            <ListIcon className="h-5 w-5" />
-          </button>
-        </div>
       </div>
     </div>
   );
 }
 
-function MobileControls(props: ProductCatalogProps) {
-  const { selectedFilters } = props;
+function MobileControls({
+  allProducts,
+  collections,
+  selectedFilters,
+  onFilterChange,
+  onClearFilters,
+}: Pick<ProductCatalogProps, "allProducts" | "collections"> & {
+  selectedFilters: ProductFilters;
+  onFilterChange: FilterAction;
+  onClearFilters: () => void;
+}) {
 
   return (
     <div className="grid gap-3 lg:hidden">
@@ -335,17 +470,27 @@ function MobileControls(props: ProductCatalogProps) {
             Filter
           </summary>
           <div className="absolute left-0 top-12 z-20 w-[min(86vw,20rem)]">
-            <FilterPanel {...props} />
+            <FilterPanel
+              allProducts={allProducts}
+              collections={collections}
+              selectedFilters={selectedFilters}
+              onFilterChange={onFilterChange}
+              onClearFilters={onClearFilters}
+            />
           </div>
         </details>
 
-        <Link
+        <a
           href={buildFilterHref(selectedFilters, "sort", selectedFilters.sort === "price-asc" ? "popular" : "price-asc")}
+          onClick={(event) => {
+            event.preventDefault();
+            onFilterChange("sort", selectedFilters.sort === "price-asc" ? "popular" : "price-asc");
+          }}
           className="flex min-h-11 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-950 shadow-sm"
         >
           Sort: {sortLabels[selectedFilters.sort] ?? "Popular"}
           <ChevronDownIcon className="h-4 w-4" />
-        </Link>
+        </a>
       </div>
     </div>
   );
@@ -383,8 +528,40 @@ function TrustStrip() {
 }
 
 export function ProductCatalog(props: ProductCatalogProps) {
-  const { products, allProducts, selectedFilters } = props;
+  const { allProducts } = props;
+  const [selectedFilters, setSelectedFilters] = useState<ProductFilters>(props.selectedFilters);
+  const products = useMemo(() => filterProducts(allProducts, selectedFilters), [allProducts, selectedFilters]);
   const activeFilterCount = [selectedFilters.category, selectedFilters.pieces, selectedFilters.price].filter(Boolean).length;
+  const updateFilters = useCallback(
+    (nextFilters: ProductFilters) => {
+      setSelectedFilters(nextFilters);
+
+      const nextHref = buildFilterHref(nextFilters, "sort", nextFilters.sort);
+      window.history.pushState(null, "", nextHref);
+    },
+    [],
+  );
+  const handleFilterChange = useCallback<FilterAction>(
+    (key, value) => {
+      updateFilters(buildFilters(selectedFilters, key, value));
+    },
+    [selectedFilters, updateFilters],
+  );
+  const clearFilters = useCallback(() => {
+    setSelectedFilters({ sort: "popular" });
+    window.history.pushState(null, "", "/products");
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setSelectedFilters(filtersFromUrl(props.selectedFilters));
+    };
+
+    handlePopState();
+    window.addEventListener("popstate", handlePopState);
+
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [props.selectedFilters]);
 
   return (
     <div className="bg-[#f7f8fa]">
@@ -414,23 +591,43 @@ export function ProductCatalog(props: ProductCatalogProps) {
 
           <CategoryCarousel collections={props.collections} products={allProducts} />
 
-          <MobileControls {...props} />
+          <MobileControls
+            allProducts={allProducts}
+            collections={props.collections}
+            selectedFilters={selectedFilters}
+            onFilterChange={handleFilterChange}
+            onClearFilters={clearFilters}
+          />
 
           <div className="mt-5 grid items-start gap-6 lg:mt-7 lg:grid-cols-[16rem_minmax(0,1fr)]">
             <div className="hidden lg:block">
-              <FilterPanel {...props} />
+              <FilterPanel
+                allProducts={allProducts}
+                collections={props.collections}
+                selectedFilters={selectedFilters}
+                onFilterChange={handleFilterChange}
+                onClearFilters={clearFilters}
+              />
             </div>
 
             <div className="grid auto-rows-max content-start gap-4 self-start">
-              <CatalogToolbar productCount={products.length} selectedFilters={selectedFilters} />
+              <CatalogToolbar
+                productCount={products.length}
+                selectedFilters={selectedFilters}
+                onFilterChange={handleFilterChange}
+              />
               {activeFilterCount > 0 ? (
                 <div className="flex items-start justify-between gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">
                   <p>
                     Showing <strong>{products.length}</strong> of <strong>{allProducts.length}</strong> products for the selected filters.
                   </p>
-                  <Link href="/products" className="shrink-0 font-black text-red-700 transition hover:text-red-800">
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="shrink-0 font-black text-red-700 transition hover:text-red-800"
+                  >
                     Clear filters
-                  </Link>
+                  </button>
                 </div>
               ) : null}
 

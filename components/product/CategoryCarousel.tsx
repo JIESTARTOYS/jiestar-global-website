@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import type { MouseEvent, PointerEvent } from "react";
 import type { Collection, Product } from "@/lib/data";
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
 
@@ -19,6 +20,14 @@ function productCount(collection: Collection, products: Product[]) {
 
 export function CategoryCarousel({ collections, products }: CategoryCarouselProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const dragStateRef = useRef({
+    pointerId: -1,
+    startX: 0,
+    scrollLeft: 0,
+    hasDragged: false,
+  });
+  const cancelClickRef = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   function scrollByPage(direction: -1 | 1) {
     const scroller = scrollerRef.current;
@@ -31,6 +40,80 @@ export function CategoryCarousel({ collections, products }: CategoryCarouselProp
       left: direction * scroller.clientWidth,
       behavior: "smooth",
     });
+  }
+
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (event.button !== 0) {
+      return;
+    }
+
+    const scroller = scrollerRef.current;
+
+    if (!scroller) {
+      return;
+    }
+
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      scrollLeft: scroller.scrollLeft,
+      hasDragged: false,
+    };
+    cancelClickRef.current = false;
+    setIsDragging(true);
+    scroller.setPointerCapture(event.pointerId);
+  }
+
+  function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
+    const scroller = scrollerRef.current;
+    const dragState = dragStateRef.current;
+
+    if (!scroller || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - dragState.startX;
+
+    if (Math.abs(deltaX) > 4) {
+      dragState.hasDragged = true;
+      cancelClickRef.current = true;
+      event.preventDefault();
+    }
+
+    if (dragState.hasDragged) {
+      scroller.scrollLeft = dragState.scrollLeft - deltaX;
+    }
+  }
+
+  function stopDragging(event: PointerEvent<HTMLDivElement>) {
+    const scroller = scrollerRef.current;
+    const dragState = dragStateRef.current;
+
+    if (!scroller || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (scroller.hasPointerCapture(event.pointerId)) {
+      scroller.releasePointerCapture(event.pointerId);
+    }
+
+    dragStateRef.current = {
+      pointerId: -1,
+      startX: 0,
+      scrollLeft: 0,
+      hasDragged: false,
+    };
+    setIsDragging(false);
+  }
+
+  function handleClickCapture(event: MouseEvent<HTMLDivElement>) {
+    if (!cancelClickRef.current) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    cancelClickRef.current = false;
   }
 
   return (
@@ -65,7 +148,17 @@ export function CategoryCarousel({ collections, products }: CategoryCarouselProp
 
         <div
           ref={scrollerRef}
-          className="scrollbar-none flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-1 pb-1"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={stopDragging}
+          onPointerCancel={stopDragging}
+          onClickCapture={handleClickCapture}
+          onDragStart={(event) => event.preventDefault()}
+          className={
+            isDragging
+              ? "scrollbar-none flex cursor-grabbing select-none gap-3 overflow-x-auto scroll-auto px-1 pb-1"
+              : "scrollbar-none flex cursor-grab gap-3 overflow-x-auto scroll-smooth px-1 pb-1"
+          }
         >
           {collections.map((collection) => {
             const count = productCount(collection, products);
@@ -74,7 +167,8 @@ export function CategoryCarousel({ collections, products }: CategoryCarouselProp
               <Link
                 key={collection.handle}
                 href={`/collections/${collection.handle}`}
-                className="group w-[11rem] shrink-0 snap-start overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06] sm:w-[12rem] lg:w-[13rem]"
+                draggable={false}
+                className="group w-[11rem] shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06] sm:w-[12rem] lg:w-[13rem]"
               >
                 <div className="relative h-36 overflow-hidden bg-slate-50 sm:h-40">
                   {collection.image ? (
@@ -83,6 +177,7 @@ export function CategoryCarousel({ collections, products }: CategoryCarouselProp
                       alt={collection.imageAlt ?? `${collection.title} collection`}
                       fill
                       sizes="13rem"
+                      draggable={false}
                       className="object-cover transition duration-300 group-hover:scale-105"
                     />
                   ) : (
