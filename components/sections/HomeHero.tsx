@@ -48,7 +48,7 @@ export function HomeHero() {
               <LinkButton href="/products" className="min-w-32">
                 Shop Now
               </LinkButton>
-              <LinkButton href="/collections/technic-vehicles" variant="secondary" className="min-w-44">
+              <LinkButton href="/products" variant="secondary" className="min-w-44">
                 Explore Collections
               </LinkButton>
             </div>

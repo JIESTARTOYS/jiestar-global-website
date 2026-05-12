@@ -25,13 +25,15 @@ export type Product = {
   variantId?: string;
   series?: string;
   releaseDate?: string;
+  createdAt?: string;
 };
 
 export type Collection = {
   handle: string;
   title: string;
   description: string;
-  image: string;
+  image?: string;
+  imageAlt?: string;
 };
 
 export const siteConfig = {

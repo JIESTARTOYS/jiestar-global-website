@@ -7,11 +7,13 @@ import { ArrowRightIcon, PackageIcon, ShieldIcon, TruckIcon } from "@/components
 import { LinkButton } from "@/components/ui/LinkButton";
 import { products } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
-import { getShopifyProduct } from "@/lib/shopify";
+import { getShopifyProduct, getShopifyProducts } from "@/lib/shopify";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
 };
+
+export const dynamicParams = true;
 
 function cleanDescriptionHtml(html: string) {
   let cleaned = html.trim();
@@ -27,8 +29,10 @@ function cleanDescriptionHtml(html: string) {
   return cleaned.replace(/^(?:\s|&nbsp;|&#160;|<br\s*\/?>)+/gi, "").trim();
 }
 
-export function generateStaticParams() {
-  return products.map((product) => ({ handle: product.handle }));
+export async function generateStaticParams() {
+  const shopifyProducts = await getShopifyProducts();
+
+  return shopifyProducts.map((product) => ({ handle: product.handle }));
 }
 
 export async function generateMetadata({ params }: PageProps) {

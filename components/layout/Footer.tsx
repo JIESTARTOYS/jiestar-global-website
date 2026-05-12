@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { collections, siteConfig } from "@/lib/data";
+import { siteConfig } from "@/lib/data";
+import { getShopifyCollections } from "@/lib/shopify";
 import { ArrowRightIcon } from "@/components/ui/Icons";
 import { SiteLogo } from "@/components/layout/SiteLogo";
 
@@ -31,7 +32,9 @@ const legalLinks = [
   ["Terms of Service", "/policies/terms-of-service"],
 ];
 
-export function Footer() {
+export async function Footer() {
+  const collections = await getShopifyCollections();
+
   return (
     <footer className="bg-slate-950 px-3 pb-3 text-white">
       <div className="mx-auto max-w-7xl overflow-hidden rounded-t-lg bg-slate-950">

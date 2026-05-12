@@ -30,7 +30,94 @@
 
 ---
 
+## 2026-05-12
+
+### 当前对话收尾 / 交接：真实 Shopify collections、产品筛选与分类轮播优化
+
+- 当前状态：
+  - 已完成本轮 Shopify collection 数据映射、产品页 URL 筛选落地，以及 `/products` 分类轮播和筛选器交互修复。
+  - 当前分支为 `codex-homepage-ui-v1`，存在未提交改动；本轮没有执行 git commit。
+- 本次目标：
+  - 将前端分类来源从 V1 本地占位分类逐步切到真实 Shopify collections。
+  - 让 `/products` 的 category、price、pieces、sort 筛选参数真正生效并可通过 URL 保留状态。
+  - 修复产品页顶部分类卡片多行展示、筛选后右侧信息框变形、筛选器折叠和类别列表过长问题。
+- 本次完成：
+  - `lib/shopify.ts` 已读取 Shopify product 所属 collections，并新增 collection 列表和按 handle 获取 collection 商品的数据函数。
+  - `Product.category` 和 `Product.collectionHandle` 优先来自 Shopify collection；本地 collections / products 保留为开发 fallback。
+  - `/collections/[handle]` 的静态参数、metadata、hero 和商品列表优先使用 Shopify collection 数据；缺图显示中性 `Image pending`，不再用旧 Unsplash 分类图冒充真实图片。
+  - 首页 Featured Categories、Products 分类入口、Footer、Sitemap、About portfolio chips 等分类入口已改为优先读取 Shopify collections。
+  - `/products` 已接收 URL `searchParams`，支持 `category`、`pieces`、`price`、`sort` 单选筛选和排序；筛选状态、数量和清除链接基于真实过滤结果显示。
+  - 新增 `components/product/CategoryCarousel.tsx`，产品页顶部分类入口改为单行横向轮播，左右箭头可按页滚动。
+  - 分类轮播箭头默认隐藏，hover 整个分类区域或键盘 focus 时显示；已修复外层 hover 导致所有分类卡标题和箭头同时变红的问题。
+  - 筛选器 Price、Category、Piece Count 改为原生 `details/summary` 可展开收起；Category 模块内部最多显示约 10 项，超出后在模块内滚动。
+  - 修复筛选后右侧 toolbar 和筛选状态提示框被左侧筛选栏高度拉伸的问题。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已通过本地 HTTP 验证：`http://127.0.0.1:3002/products` 返回 200。
+  - 已通过本地 HTTP 验证：`http://127.0.0.1:3002/products?price=50-100&category=technic` 返回 200。
+  - 项目 owner 已在 in-app browser 中指出并确认需要修复分类轮播 hover 作用域问题；代码已按该反馈修复。
+- 未完成事项：
+  - 本轮改动尚未提交。
+  - Shopify 后台 collection 仍需要继续补齐真实英文简介和封面图；当前缺图 collection 前端显示 `Image pending`。
+  - 当前 `pnpm build` 期间 Shopify Storefront API 可能偶发连接超时，但 fallback 后构建可完成。
+  - 本轮 in-app browser 自动化连接两次超时，未完成自动截图级视觉验证；主要依赖用户当前浏览器观察、本地 HTTP 和构建验证。
+  - 产品详情页 Related Products 仍待后续改为真实 Shopify 推荐或同 collection 商品。
+- 发现的问题：
+  - Tailwind 同名 `group` 嵌套会让外层 hover 触发内层卡片 hover 样式；已用 `group/carousel` 隔离轮播箭头 hover 作用域。
+  - Shopify collection handle 是前端 URL 和筛选参数的关键约束；如后台 handle 与期望 URL 不一致，应优先在 Shopify 后台修正。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 先复查当前未提交 diff，重点检查 `lib/shopify.ts`、`app/products/page.tsx`、`components/product/ProductCatalog.tsx`、`components/product/CategoryCarousel.tsx`。
+  - 在浏览器中继续验证 `/products`、`/products?price=50-100&category=technic`、一个真实 collection 页面和一个空/缺图 collection 页面。
+  - 若视觉和数据方向确认，整理并提交本轮 Shopify collection + filter + 产品页 UI 改动。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有修改 `.env.local`，没有暴露 Shopify token。
+  - 前台页面文案仍保持英文；本交接记录按规则使用中文。
+
 ## 2026-05-11
+
+### 今日工作收尾 / 对话交接：Shopify 产品规格元字段迁移
+
+- 当前状态：
+  - 已完成今天工作收尾记录。
+  - 当前分支为 `codex-homepage-ui-v1`，已同步到 `origin/codex-homepage-ui-v1`。
+  - 最新代码提交：`267353a feat: read product specs from Shopify metafields`，已推送到 GitHub。
+- 本次目标：
+  - 在 Shopify 后台建立并填写产品规格元字段。
+  - 将产品详情页 Details / Product Specifications 的主要规格数据源从本地 Markdown 切换到 Shopify product metafields。
+- 本次完成：
+  - Shopify 后台已保留 5 个产品规格元字段：`specs.difficulty_level`、`specs.piece_count`、`specs.recommended_age`、`specs.finished_model_size`、`specs.package_size`。
+  - 已将本地 Markdown 中可匹配的第一批 21 个 Shopify 商品规格写入 Shopify 后台。
+  - `lib/shopify.ts` 已通过 Storefront API 读取上述 5 个 metafields。
+  - 产品详情页 Details 板块已改为显示：SKU、Difficulty Level、Piece Count、Recommended Age、Finished Model Size、Package Size、Material、Shipping。
+  - SKU 仍来自 Shopify variant SKU；Material 和 Shipping 作为固定值显示，不从 Shopify 元字段读取。
+  - `Piece Count` 在 Shopify 后台存纯数字，前台显示时格式化为 `739 pcs` 形式。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`，build 需要访问 Shopify Storefront API，网络授权后通过。
+  - 已通过本地请求验证 `/products/flowers` 的 Details 区域显示 `JJ9236`、`Intermediate`、`739 pcs`、`8+`、`Variable`、`28 × 22 × 6 cm`、`ABS plastic`、`Calculated at checkout.`。
+  - 已确认 Shopify 产品元字段定义列表中 5 个规格字段均显示已关联 21 个产品；`specs.material` 和 `specs.shipping` 未恢复。
+- 未完成事项：
+  - 当前产品详情页 Related Products 仍使用本地 mock 产品，真实 Shopify 商品详情页下仍可能混入 mock related products。
+  - Shopify collection/category 仍主要依赖现有 fallback，尚未完成真实 Shopify collections/tags/metafields 映射。
+  - Release Date 目前不再显示在 Details 板块；如后续需要展示发布时间，应新增 Shopify 元字段或明确数据来源。
+  - 还未完成完整移动端截图回归。
+- 发现的问题：
+  - in-app browser 对本地 `localhost` / `127.0.0.1` 页面跳转出现 `ERR_BLOCKED_BY_CLIENT`，本次改用本地 HTTP 请求验证渲染结果。
+  - `pnpm build` 在无网络权限时可能因 Shopify 请求超时失败，需要允许网络访问后重跑。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先处理真实 Shopify 商品详情页 Related Products，改为真实 Shopify 商品推荐或同 collection 商品。
+  - 继续规划 Shopify collections/tags/metafields 映射，让产品分类、筛选和详情规格完全由 Shopify 后台维护。
+  - 做一轮移动端产品详情页视觉回归，重点检查 Details 卡片、图库缩略图、Description 详情图和 CTA 区域。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有修改 `.env.local`，没有暴露 Shopify token。
+  - Shopify 后台数据已被修改；代码提交已推送到 GitHub。
 
 ### 当前对话收尾 / 交接：产品展示与 Shopify checkout 改动复查并提交
 

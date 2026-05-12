@@ -9,7 +9,7 @@ import { HomeHero } from "@/components/sections/HomeHero";
 import { ProductCategories } from "@/components/sections/ProductCategories";
 import { QualitySafety } from "@/components/sections/QualitySafety";
 import { createMetadata } from "@/lib/seo";
-import { getShopifyProducts } from "@/lib/shopify";
+import { getShopifyCollections, getShopifyProducts } from "@/lib/shopify";
 
 export const metadata = createMetadata({
   title: "JIESTAR Toys | Building Block Sets, Wholesale & Custom Solutions",
@@ -20,11 +20,12 @@ export const metadata = createMetadata({
 
 export default async function Home() {
   const products = await getShopifyProducts();
+  const collections = await getShopifyCollections();
 
   return (
     <>
       <HomeHero />
-      <ProductCategories />
+      <ProductCategories collections={collections} products={products} />
       <FeaturedProducts products={products} />
       <B2BCooperation />
       <CustomSolutions />

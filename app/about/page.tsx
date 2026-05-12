@@ -15,8 +15,9 @@ import { SubBrandCarousel } from "@/components/sections/SubBrandCarousel";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { collections, products } from "@/lib/data";
+import { products } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
+import { getShopifyCollections } from "@/lib/shopify";
 import { subBrands } from "@/lib/sub-brands";
 
 export const metadata = createMetadata({
@@ -84,9 +85,10 @@ const documentationItems = [
 ];
 
 const portfolioProducts = products.slice(0, 4);
-const portfolioCollections = collections.slice(0, 4);
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const portfolioCollections = (await getShopifyCollections()).slice(0, 4);
+
   return (
     <div className="bg-slate-50 text-slate-950">
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">

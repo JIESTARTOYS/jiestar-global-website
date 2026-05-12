@@ -2,22 +2,25 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CatalogProductCard } from "@/components/product/CatalogProductCard";
-import { ArrowRightIcon, HomeIcon, PackageIcon, ShieldIcon, SlidersIcon, TruckIcon } from "@/components/ui/Icons";
+import { ArrowRightIcon, HomeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
-import { collections, getCollection, getProductsByCollection } from "@/lib/data";
+import { getCollection, getProductsByCollection } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
+import { getShopifyCollection, getShopifyCollections } from "@/lib/shopify";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
 };
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const collections = await getShopifyCollections();
+
   return collections.map((collection) => ({ handle: collection.handle }));
 }
 
 export async function generateMetadata({ params }: PageProps) {
   const { handle } = await params;
-  const collection = getCollection(handle);
+  const collection = (await getShopifyCollection(handle))?.collection ?? getCollection(handle);
 
   if (!collection) {
     return {};
@@ -32,13 +35,14 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function CollectionPage({ params }: PageProps) {
   const { handle } = await params;
-  const collection = getCollection(handle);
+  const shopifyCollection = await getShopifyCollection(handle);
+  const collection = shopifyCollection?.collection ?? getCollection(handle);
 
   if (!collection) {
     notFound();
   }
 
-  const products = getProductsByCollection(handle);
+  const products = shopifyCollection?.products ?? getProductsByCollection(handle);
 
   return (
     <div className="bg-[#f7f8fa] px-4 py-8 sm:px-5 lg:px-8 lg:py-12">
@@ -64,8 +68,8 @@ export default async function CollectionPage({ params }: PageProps) {
               <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">{collection.description}</p>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {[
-                  { title: `${products.length} products`, text: "Preview catalog", icon: PackageIcon },
-                  { title: "Shopify ready", text: "Filters connect later", icon: SlidersIcon },
+                  { title: `${products.length} products`, text: "Available in this collection", icon: PackageIcon },
+                  { title: "Shopify catalog", text: "Product data managed in Shopify", icon: StoreIcon },
                   { title: "B2B support", text: "Wholesale inquiry available", icon: ShieldIcon },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -81,27 +85,38 @@ export default async function CollectionPage({ params }: PageProps) {
               </div>
             </div>
             <div className="relative min-h-64 bg-slate-100 lg:min-h-full">
-              <Image
-                src={collection.image}
-                alt={`${collection.title} collection banner`}
-                fill
-                sizes="(min-width: 1024px) 45vw, 100vw"
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent" />
+              {collection.image ? (
+                <>
+                  <Image
+                    src={collection.image}
+                    alt={collection.imageAlt ?? `${collection.title} collection banner`}
+                    fill
+                    sizes="(min-width: 1024px) 45vw, 100vw"
+                    className="object-cover"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent" />
+                </>
+              ) : (
+                <div className="flex h-full min-h-64 items-center justify-center bg-slate-100 px-6 text-center text-sm font-black uppercase text-slate-500">
+                  Collection image pending
+                </div>
+              )}
             </div>
           </div>
         </section>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
           <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.03] lg:sticky lg:top-24 lg:self-start">
-            <p className="text-sm font-black text-slate-950">Collection note</p>
+            <p className="text-sm font-black text-slate-950">Collection options</p>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              This collection is displayed with preview product data. Live availability, variants, filters, and checkout will come from Shopify.
+              Browse this product direction, compare available sets, or contact JIESTAR for wholesale supply and custom cooperation.
             </p>
             <div className="mt-5 grid gap-3 text-sm">
               <LinkButton href="/products" variant="secondary" className="w-full px-4">All Products</LinkButton>
+              <LinkButton href={`/products?category=${collection.handle}`} variant="secondary" className="w-full px-4">
+                Filter Catalog
+              </LinkButton>
               <LinkButton href="/wholesale" className="w-full px-4">
                 Wholesale Inquiry
                 <ArrowRightIcon className="ml-2 h-4 w-4" />
@@ -118,7 +133,9 @@ export default async function CollectionPage({ params }: PageProps) {
           <div>
             <div className="mb-4 flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/[0.03] sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-black text-slate-950">{products.length} products in this collection</p>
-              <p className="text-xs leading-5 text-slate-500">Preview sorting and filtering are intentionally not active yet.</p>
+              <Link href={`/products?category=${collection.handle}`} className="text-xs font-black leading-5 text-red-600 transition hover:text-red-700">
+                Open with catalog filters
+              </Link>
             </div>
             {products.length ? (
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -130,8 +147,12 @@ export default async function CollectionPage({ params }: PageProps) {
               <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
                 <h2 className="text-xl font-black text-slate-950">Products are being prepared</h2>
                 <p className="mt-3 text-slate-600">
-                  Shopify products or collection data will appear here once the store is connected.
+                  Add products to this Shopify collection to display them here, or browse the full catalog while this category is being prepared.
                 </p>
+                <LinkButton href="/products" className="mt-6">
+                  Browse All Products
+                  <ArrowRightIcon className="ml-2 h-4 w-4" />
+                </LinkButton>
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { products, type Product } from "./data";
+import { collections, products, type Collection, type Product } from "./data";
 import { getLocalProductSpecifications } from "./product-specifications";
 
 const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION ?? "2026-01";
@@ -16,10 +16,19 @@ type ShopifyProductNode = {
   title: string;
   description: string;
   descriptionHtml: string;
+  createdAt: string;
   featuredImage?: {
     url: string;
     altText?: string | null;
   } | null;
+  collections: {
+    edges: Array<{
+      node: {
+        handle: string;
+        title: string;
+      };
+    }>;
+  };
   images: {
     edges: Array<{
       node: {
@@ -54,8 +63,36 @@ type ShopifyProductsResponse = {
   };
 };
 
+type ShopifyCollectionsResponse = {
+  collections: {
+    edges: Array<{
+      node: ShopifyCollectionNode;
+    }>;
+  };
+};
+
 type ShopifyProductResponse = {
   product?: ShopifyProductNode | null;
+};
+
+type ShopifyCollectionNode = {
+  id: string;
+  handle: string;
+  title: string;
+  description: string;
+  image?: {
+    url: string;
+    altText?: string | null;
+  } | null;
+  products?: {
+    edges: Array<{
+      node: ShopifyProductNode;
+    }>;
+  };
+};
+
+type ShopifyCollectionResponse = {
+  collection?: ShopifyCollectionNode | null;
 };
 
 type ShopifyCartCreateResponse = {
@@ -66,6 +103,13 @@ type ShopifyCartCreateResponse = {
     userErrors: Array<{ message: string }>;
   };
 };
+
+export class ShopifyUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ShopifyUnavailableError";
+  }
+}
 
 function hasShopifyConfig() {
   return Boolean(SHOPIFY_STORE_DOMAIN && SHOPIFY_STOREFRONT_ACCESS_TOKEN);
@@ -129,6 +173,16 @@ function formatPieceCount(value?: string) {
   return value.toLowerCase().includes("pcs") ? value : `${value} pcs`;
 }
 
+function pickPrimaryCollection(node: ShopifyProductNode) {
+  const shopifyCollections = node.collections.edges.map(({ node: collection }) => collection);
+  const configuredCollection =
+    shopifyCollections.find((collection) =>
+      collections.some((localCollection) => localCollection.handle === collection.handle),
+    ) ?? shopifyCollections[0];
+
+  return configuredCollection;
+}
+
 function mapShopifyProduct(node: ShopifyProductNode): Product {
   const variant = node.variants.edges[0]?.node;
   const localSpecs = getLocalProductSpecifications({
@@ -152,13 +206,14 @@ function mapShopifyProduct(node: ShopifyProductNode): Product {
     alt: node.featuredImage?.altText ?? `${node.title} product image`,
   };
   const images = productImages.length ? productImages : [fallbackImage];
+  const primaryCollection = pickPrimaryCollection(node);
 
   return {
     id: node.id,
     handle: node.handle,
     title: node.title,
-    category: localSpecs?.series ?? "Building Block Sets",
-    collectionHandle: "new-arrivals",
+    category: primaryCollection?.title ?? localSpecs?.series ?? "Building Block Sets",
+    collectionHandle: primaryCollection?.handle ?? "new-arrivals",
     price: formatPrice(node.priceRange.minVariantPrice),
     image: images[0].src,
     imageAlt: images[0].alt,
@@ -177,6 +232,30 @@ function mapShopifyProduct(node: ShopifyProductNode): Product {
     shipping: "Calculated at checkout.",
     series: localSpecs?.series,
     releaseDate: localSpecs?.releaseDate,
+    createdAt: node.createdAt,
+  };
+}
+
+function mapShopifyCollection(node: ShopifyCollectionNode): Collection {
+  return {
+    handle: node.handle,
+    title: node.title,
+    description: node.description || "Explore JIESTAR building block sets in this collection.",
+    image: node.image?.url,
+    imageAlt: node.image?.altText ?? `${node.title} collection`,
+  };
+}
+
+function getLocalCollectionProducts(handle: string) {
+  const collection = collections.find((item) => item.handle === handle);
+
+  if (!collection) {
+    return undefined;
+  }
+
+  return {
+    collection,
+    products: products.filter((product) => product.collectionHandle === handle),
   };
 }
 
@@ -187,9 +266,18 @@ const productFragment = `
     title
     description
     descriptionHtml
+    createdAt
     featuredImage {
       url
       altText
+    }
+    collections(first: 5) {
+      edges {
+        node {
+          handle
+          title
+        }
+      }
     }
     images(first: 12) {
       edges {
@@ -227,27 +315,84 @@ const productFragment = `
   }
 `;
 
+const collectionSummaryFragment = `
+  fragment CollectionSummaryFields on Collection {
+    id
+    handle
+    title
+    description
+    image {
+      url
+      altText
+    }
+  }
+`;
+
+const collectionFragment = `
+  fragment CollectionFields on Collection {
+    ...CollectionSummaryFields
+    products(first: 24) {
+      edges {
+        node {
+          ...ProductFields
+        }
+      }
+    }
+  }
+`;
+
 export async function getShopifyProducts(): Promise<Product[]> {
   if (!hasShopifyConfig()) {
     return products;
   }
 
-  const data = await shopifyFetch<ShopifyProductsResponse>(
-    `
-      ${productFragment}
-      query Products {
-        products(first: 24) {
-          edges {
-            node {
-              ...ProductFields
+  try {
+    const data = await shopifyFetch<ShopifyProductsResponse>(
+      `
+        ${productFragment}
+        query Products {
+          products(first: 24) {
+            edges {
+              node {
+                ...ProductFields
+              }
             }
           }
         }
-      }
-    `,
-  );
+      `,
+    );
 
-  return data.products.edges.map(({ node }) => mapShopifyProduct(node));
+    return data.products.edges.map(({ node }) => mapShopifyProduct(node));
+  } catch {
+    return products;
+  }
+}
+
+export async function getShopifyCollections(): Promise<Collection[]> {
+  if (!hasShopifyConfig()) {
+    return collections;
+  }
+
+  try {
+    const data = await shopifyFetch<ShopifyCollectionsResponse>(
+      `
+        ${collectionSummaryFragment}
+        query Collections {
+          collections(first: 30) {
+            edges {
+              node {
+                ...CollectionSummaryFields
+              }
+            }
+          }
+        }
+      `,
+    );
+
+    return data.collections.edges.map(({ node }) => mapShopifyCollection(node));
+  } catch {
+    return collections;
+  }
 }
 
 export async function getShopifyProduct(handle: string): Promise<Product | undefined> {
@@ -255,19 +400,65 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
     return products.find((product) => product.handle === handle);
   }
 
-  const data = await shopifyFetch<ShopifyProductResponse>(
-    `
-      ${productFragment}
-      query Product($handle: String!) {
-        product(handle: $handle) {
-          ...ProductFields
+  try {
+    const data = await shopifyFetch<ShopifyProductResponse>(
+      `
+        ${productFragment}
+        query Product($handle: String!) {
+          product(handle: $handle) {
+            ...ProductFields
+          }
         }
-      }
-    `,
-    { handle },
-  );
+      `,
+      { handle },
+    );
 
-  return data.product ? mapShopifyProduct(data.product) : undefined;
+    return data.product ? mapShopifyProduct(data.product) : undefined;
+  } catch (error) {
+    const localProduct = products.find((product) => product.handle === handle);
+
+    if (localProduct) {
+      return localProduct;
+    }
+
+    const message = error instanceof Error ? error.message : "Shopify product request failed.";
+    throw new ShopifyUnavailableError(message);
+  }
+}
+
+export async function getShopifyCollection(
+  handle: string,
+): Promise<{ collection: Collection; products: Product[] } | undefined> {
+  if (!hasShopifyConfig()) {
+    return getLocalCollectionProducts(handle);
+  }
+
+  try {
+    const data = await shopifyFetch<ShopifyCollectionResponse>(
+      `
+        ${productFragment}
+        ${collectionSummaryFragment}
+        ${collectionFragment}
+        query Collection($handle: String!) {
+          collection(handle: $handle) {
+            ...CollectionFields
+          }
+        }
+      `,
+      { handle },
+    );
+
+    if (!data.collection) {
+      return getLocalCollectionProducts(handle);
+    }
+
+    return {
+      collection: mapShopifyCollection(data.collection),
+      products: data.collection.products?.edges.map(({ node }) => mapShopifyProduct(node)) ?? [],
+    };
+  } catch {
+    return getLocalCollectionProducts(handle);
+  }
 }
 
 export async function createCheckoutUrl(variantId: string) {
