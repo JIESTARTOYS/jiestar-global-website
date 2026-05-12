@@ -4,6 +4,7 @@ import { getLocalProductSpecifications } from "./product-specifications";
 const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION ?? "2026-01";
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
 const SHOPIFY_STOREFRONT_ACCESS_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
+const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 
 type ShopifyMoney = {
   amount: string;
@@ -113,6 +114,67 @@ export class ShopifyUnavailableError extends Error {
 
 function hasShopifyConfig() {
   return Boolean(SHOPIFY_STORE_DOMAIN && SHOPIFY_STOREFRONT_ACCESS_TOKEN);
+}
+
+function getShopifyConfigState() {
+  return {
+    hasStoreDomain: Boolean(SHOPIFY_STORE_DOMAIN),
+    hasStorefrontAccessToken: Boolean(SHOPIFY_STOREFRONT_ACCESS_TOKEN),
+    hasApiVersion: Boolean(SHOPIFY_API_VERSION),
+    apiVersion: SHOPIFY_API_VERSION,
+    isVercel: Boolean(process.env.VERCEL),
+    nodeEnv: process.env.NODE_ENV ?? "unknown",
+  };
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function logShopifyDataSource(
+  operation: string,
+  source: "shopify" | "fallback" | "error",
+  details?: Record<string, unknown>,
+) {
+  const payload = {
+    operation,
+    source,
+    ...getShopifyConfigState(),
+    ...details,
+  };
+
+  if (source === "shopify") {
+    console.info("[shopify:data-source]", payload);
+    return;
+  }
+
+  console.warn("[shopify:data-source]", payload);
+}
+
+function getShopifyConfigError(operation: string) {
+  const message = "Shopify environment variables are not configured.";
+
+  logShopifyDataSource(operation, IS_DEVELOPMENT ? "fallback" : "error", {
+    reason: "env_missing",
+    message,
+  });
+
+  return new ShopifyUnavailableError(message);
+}
+
+function getShopifyRequestError(operation: string, error: unknown) {
+  const message = getErrorMessage(error, "Shopify request failed.");
+
+  logShopifyDataSource(operation, IS_DEVELOPMENT ? "fallback" : "error", {
+    reason: "request_failed",
+    message,
+  });
+
+  return new ShopifyUnavailableError(message);
+}
+
+function shouldUseLocalFallback() {
+  return IS_DEVELOPMENT;
 }
 
 async function shopifyFetch<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
@@ -343,7 +405,13 @@ const collectionFragment = `
 
 export async function getShopifyProducts(): Promise<Product[]> {
   if (!hasShopifyConfig()) {
-    return products;
+    const error = getShopifyConfigError("getShopifyProducts");
+
+    if (shouldUseLocalFallback()) {
+      return products;
+    }
+
+    throw error;
   }
 
   try {
@@ -362,15 +430,30 @@ export async function getShopifyProducts(): Promise<Product[]> {
       `,
     );
 
-    return data.products.edges.map(({ node }) => mapShopifyProduct(node));
-  } catch {
-    return products;
+    const shopifyProducts = data.products.edges.map(({ node }) => mapShopifyProduct(node));
+    logShopifyDataSource("getShopifyProducts", "shopify", { count: shopifyProducts.length });
+
+    return shopifyProducts;
+  } catch (error) {
+    const shopifyError = getShopifyRequestError("getShopifyProducts", error);
+
+    if (shouldUseLocalFallback()) {
+      return products;
+    }
+
+    throw shopifyError;
   }
 }
 
 export async function getShopifyCollections(): Promise<Collection[]> {
   if (!hasShopifyConfig()) {
-    return collections;
+    const error = getShopifyConfigError("getShopifyCollections");
+
+    if (shouldUseLocalFallback()) {
+      return collections;
+    }
+
+    throw error;
   }
 
   try {
@@ -389,15 +472,30 @@ export async function getShopifyCollections(): Promise<Collection[]> {
       `,
     );
 
-    return data.collections.edges.map(({ node }) => mapShopifyCollection(node));
-  } catch {
-    return collections;
+    const shopifyCollections = data.collections.edges.map(({ node }) => mapShopifyCollection(node));
+    logShopifyDataSource("getShopifyCollections", "shopify", { count: shopifyCollections.length });
+
+    return shopifyCollections;
+  } catch (error) {
+    const shopifyError = getShopifyRequestError("getShopifyCollections", error);
+
+    if (shouldUseLocalFallback()) {
+      return collections;
+    }
+
+    throw shopifyError;
   }
 }
 
 export async function getShopifyProduct(handle: string): Promise<Product | undefined> {
   if (!hasShopifyConfig()) {
-    return products.find((product) => product.handle === handle);
+    const error = getShopifyConfigError("getShopifyProduct");
+
+    if (shouldUseLocalFallback()) {
+      return products.find((product) => product.handle === handle);
+    }
+
+    throw error;
   }
 
   try {
@@ -413,16 +511,23 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
       { handle },
     );
 
-    return data.product ? mapShopifyProduct(data.product) : undefined;
+    const product = data.product ? mapShopifyProduct(data.product) : undefined;
+    logShopifyDataSource("getShopifyProduct", "shopify", {
+      found: Boolean(product),
+      handle,
+    });
+
+    return product;
   } catch (error) {
     const localProduct = products.find((product) => product.handle === handle);
 
-    if (localProduct) {
+    const shopifyError = getShopifyRequestError("getShopifyProduct", error);
+
+    if (shouldUseLocalFallback() && localProduct) {
       return localProduct;
     }
 
-    const message = error instanceof Error ? error.message : "Shopify product request failed.";
-    throw new ShopifyUnavailableError(message);
+    throw shopifyError;
   }
 }
 
@@ -430,7 +535,13 @@ export async function getShopifyCollection(
   handle: string,
 ): Promise<{ collection: Collection; products: Product[] } | undefined> {
   if (!hasShopifyConfig()) {
-    return getLocalCollectionProducts(handle);
+    const error = getShopifyConfigError("getShopifyCollection");
+
+    if (shouldUseLocalFallback()) {
+      return getLocalCollectionProducts(handle);
+    }
+
+    throw error;
   }
 
   try {
@@ -449,15 +560,29 @@ export async function getShopifyCollection(
     );
 
     if (!data.collection) {
-      return getLocalCollectionProducts(handle);
+      logShopifyDataSource("getShopifyCollection", "shopify", { found: false, handle });
+      return shouldUseLocalFallback() ? getLocalCollectionProducts(handle) : undefined;
     }
+
+    const collectionProducts = data.collection.products?.edges.map(({ node }) => mapShopifyProduct(node)) ?? [];
+    logShopifyDataSource("getShopifyCollection", "shopify", {
+      found: true,
+      handle,
+      productCount: collectionProducts.length,
+    });
 
     return {
       collection: mapShopifyCollection(data.collection),
-      products: data.collection.products?.edges.map(({ node }) => mapShopifyProduct(node)) ?? [],
+      products: collectionProducts,
     };
-  } catch {
-    return getLocalCollectionProducts(handle);
+  } catch (error) {
+    const shopifyError = getShopifyRequestError("getShopifyCollection", error);
+
+    if (shouldUseLocalFallback()) {
+      return getLocalCollectionProducts(handle);
+    }
+
+    throw shopifyError;
   }
 }
 
