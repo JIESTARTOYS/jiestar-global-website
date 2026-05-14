@@ -3,10 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import type { Product } from "@/lib/data";
-
-function isShopifyImage(src: string) {
-  return src.startsWith("https://cdn.shopify.com/");
-}
+import { shouldBypassNextImageOptimization } from "@/lib/images";
 
 export function ProductGallery({ product }: { product: Product }) {
   const images = product.images?.length
@@ -45,7 +42,7 @@ export function ProductGallery({ product }: { product: Product }) {
             sizes="(min-width: 1024px) 50vw, 100vw"
             className="object-contain"
             priority
-            unoptimized={isShopifyImage(activeImage.src)}
+            unoptimized={shouldBypassNextImageOptimization(activeImage.src)}
             onError={() => markImageFailed(activeImage.src)}
           />
         )}
@@ -81,7 +78,7 @@ export function ProductGallery({ product }: { product: Product }) {
                     sizes="96px"
                     className="pointer-events-none object-contain p-1.5"
                     loading="lazy"
-                    unoptimized={isShopifyImage(image.src)}
+                    unoptimized={shouldBypassNextImageOptimization(image.src)}
                     onError={() => markImageFailed(image.src)}
                   />
                 )}

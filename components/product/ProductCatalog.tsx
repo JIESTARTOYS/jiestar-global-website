@@ -499,8 +499,8 @@ function MobileControls({
 function TrustStrip() {
   const items = [
     { title: "Official JIESTAR Store", text: "Genuine products & quality guarantee", icon: StoreIcon },
-    { title: "Free Shipping", text: "On orders $49 and above", icon: TruckIcon },
-    { title: "30-Day Returns", text: "Hassle-free returns", icon: RotateIcon },
+    { title: "Shipping Support", text: "Options confirmed at checkout", icon: TruckIcon },
+    { title: "Returns Review", text: "Clear support path after purchase", icon: RotateIcon },
     { title: "Secure Checkout", text: "100% secure payments", icon: ShieldIcon },
   ];
 
@@ -585,7 +585,7 @@ export function ProductCatalog(props: ProductCatalogProps) {
             </div>
             <div className="hidden rounded-lg border border-red-200 bg-white px-4 py-3 text-sm font-black text-red-600 shadow-sm shadow-slate-950/[0.03] lg:flex lg:items-center lg:gap-2">
               <TruckIcon className="h-5 w-5" />
-              Free Shipping on orders $49+
+              Shipping confirmed at checkout
             </div>
           </div>
 

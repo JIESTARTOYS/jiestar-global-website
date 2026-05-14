@@ -5,12 +5,15 @@ import { CatalogProductCard } from "@/components/product/CatalogProductCard";
 import { ArrowRightIcon, HomeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { getCollection, getProductsByCollection } from "@/lib/data";
+import { shouldBypassNextImageOptimization } from "@/lib/images";
 import { createMetadata } from "@/lib/seo";
 import { getShopifyCollection, getShopifyCollections } from "@/lib/shopify";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
 };
+
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const collections = await getShopifyCollections();
@@ -69,13 +72,13 @@ export default async function CollectionPage({ params }: PageProps) {
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {[
                   { title: `${products.length} products`, text: "Available in this collection", icon: PackageIcon },
-                  { title: "Shopify catalog", text: "Product data managed in Shopify", icon: StoreIcon },
-                  { title: "B2B support", text: "Wholesale inquiry available", icon: ShieldIcon },
+                  { title: "Live catalog", text: "Updated from the store catalog", icon: StoreIcon },
+                  { title: "Business inquiry", text: "Wholesale and custom support", icon: ShieldIcon },
                 ].map((item) => {
                   const Icon = item.icon;
 
                   return (
-                    <div key={item.title} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <div key={item.title} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                       <Icon className="h-5 w-5 text-red-600" />
                       <p className="mt-2 text-sm font-black text-slate-950">{item.title}</p>
                       <p className="mt-1 text-xs leading-5 text-slate-500">{item.text}</p>
@@ -94,6 +97,7 @@ export default async function CollectionPage({ params }: PageProps) {
                     sizes="(min-width: 1024px) 45vw, 100vw"
                     className="object-cover"
                     priority
+                    unoptimized={shouldBypassNextImageOptimization(collection.image)}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent" />
                 </>

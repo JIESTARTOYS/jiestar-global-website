@@ -1,30 +1,31 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/data";
-import { getShopifyCollections } from "@/lib/shopify";
 import { ArrowRightIcon } from "@/components/ui/Icons";
 import { SiteLogo } from "@/components/layout/SiteLogo";
+
+const exploreLinks = [
+  ["Home", "/"],
+  ["Products", "/products"],
+  ["Blog", "/blog"],
+  ["Contact", "/contact"],
+];
 
 const b2bLinks = [
   ["Wholesale", "/wholesale"],
   ["Custom Solutions", "/custom-solutions"],
-  ["Become a Distributor", "/wholesale"],
-  ["Co-Branding", "/custom-solutions"],
-  ["Partner Login", "/contact"],
+  ["Business Contact", "/contact"],
 ];
 
 const supportLinks = [
-  ["Help Center", "/support/replacement-parts"],
-  ["Contact Us", "/contact"],
-  ["Shipping Policy", "/policies/shipping-policy"],
   ["Replacement Parts", "/support/replacement-parts"],
+  ["Shipping Policy", "/policies/shipping-policy"],
   ["Returns & Refunds", "/policies/refund-policy"],
+  ["Contact Support", "/contact"],
 ];
 
 const companyLinks = [
   ["About Us", "/about"],
   ["Quality & Safety", "/quality-safety"],
-  ["Blog", "/blog"],
-  ["Sustainability", "/quality-safety"],
 ];
 
 const legalLinks = [
@@ -32,24 +33,22 @@ const legalLinks = [
   ["Terms of Service", "/policies/terms-of-service"],
 ];
 
-export async function Footer() {
-  const collections = await getShopifyCollections();
-
+export function Footer() {
   return (
     <footer className="bg-slate-950 px-3 pb-3 text-white">
       <div className="mx-auto max-w-7xl overflow-hidden rounded-t-lg bg-slate-950">
-        <div className="grid gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_0.9fr_1.1fr] lg:px-8">
-          <div>
+        <div className="grid gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.35fr_0.85fr_1fr_0.9fr_1.15fr_1.25fr] lg:gap-12 lg:px-8">
+          <div className="min-w-0">
             <div className="flex items-center gap-3">
               <SiteLogo className="size-14" />
             </div>
             <p className="mt-5 max-w-xs text-sm leading-6 text-slate-300">{siteConfig.description}</p>
           </div>
-          <FooterColumn title="Shop" links={collections.slice(0, 5).map((item) => [item.title, `/collections/${item.handle}`])} />
+          <FooterColumn title="Explore" links={exploreLinks} />
           <FooterColumn title="Support" links={supportLinks} />
           <FooterColumn title="Company" links={companyLinks} />
           <FooterColumn title="Partnership" links={b2bLinks} />
-          <div className="flex items-center gap-3">
+          <div className="min-w-0">
             <div>
               <h2 className="text-sm font-bold uppercase tracking-normal text-white">Newsletter</h2>
               <p className="mt-4 text-sm leading-6 text-slate-300">
@@ -93,12 +92,12 @@ export async function Footer() {
 
 function FooterColumn({ title, links }: { title: string; links: string[][] }) {
   return (
-    <div>
+    <div className="min-w-0">
       <h2 className="text-sm font-bold uppercase tracking-normal text-white">{title}</h2>
       <ul className="mt-4 grid gap-3">
         {links.map(([label, href]) => (
           <li key={href + label}>
-            <Link href={href} className="text-sm text-slate-300 hover:text-white">
+            <Link href={href} className="block text-sm leading-6 text-slate-300 transition hover:text-white">
               {label}
             </Link>
           </li>

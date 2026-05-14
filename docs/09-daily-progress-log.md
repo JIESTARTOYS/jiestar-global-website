@@ -30,6 +30,152 @@
 
 ---
 
+## 2026-05-14
+
+### 当前对话记录：Shopify 产品 / 分类页间歇性 404 与图片加载失败修复
+
+- 当前状态：
+  - 已定位并修复产品详情页、产品分类页偶发 404，以及 Shopify 图片偶发加载失败的问题。
+  - 当前对话已收尾，3000 端口 dev server 已准备关闭。
+- 本次目标：
+  - 解决 `/products/[handle]` 和 `/collections/[handle]` 有时 404、过一会儿又正常的问题。
+  - 解决 Shopify CDN 图片有时不显示或本地 Next 图片代理超时的问题。
+  - 将处理方法记录下来，后续遇到同类问题可直接按固定流程排查。
+- 本次完成：
+  - `lib/shopify.ts` 的 Storefront API 请求已增加 3 次轻量重试，降低 `fetch failed`、`ECONNRESET`、`ConnectTimeoutError` 对页面和 build 的影响。
+  - `getShopifyProduct()` 已增加 Shopify catalog 产品缓存快速路径，减少商品详情页在已有产品目录数据时再次等待单个 product 请求。
+  - `getShopifyCollection()` 已增加 Shopify catalog 内存缓存快速路径，避免用户点击分类页时每个 collection 都重新等待单独的 Shopify 请求。
+  - `app/collections/[handle]/page.tsx` 已显式启用 `dynamicParams = true`，避免静态参数列表不完整时真实 Shopify collection 被误判为 404。
+  - `app/layout.tsx` 已加入 `translate="no"`、`body.notranslate` 和 `meta name="google" content="notranslate"`，用于规避 Chrome 自动翻译改写 React DOM 后触发 `removeChild` / `NotFoundError`。
+  - 新增 `lib/images.ts`，统一判断 Shopify CDN 图片并绕过 Next 图片优化代理。
+  - 首页 Featured Categories、产品页 Shop by category、产品分类页 banner、产品详情图和产品卡片图已使用统一的 Shopify 图片处理逻辑。
+  - 新增 `docs/11-shopify-runtime-troubleshooting.md`，记录同类问题的根因、日志特征、当前方案和后续处理流程。
+  - `AGENTS.md` 与 `CLAUDE.md` 已加入提示：遇到产品 / 分类页间歇性 404 或 Shopify 图片失败时，先查 `docs/11-shopify-runtime-troubleshooting.md`。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。构建过程中曾出现 Shopify `ECONNRESET` 和 `ConnectTimeoutError`，但重试后继续完成，说明本次修复生效。
+  - 已通过本地 HTTP 验证：`/collections/trains` 返回 200。
+  - 已通过本地 HTTP 验证：`/collections/pirates` 返回 200。
+  - 已通过本地 HTTP 验证：`/products/steam-train-1` 返回 200。
+  - 二次复测：此前可慢到约 21 秒的 `/collections/movie-game`、`/collections/castle`、`/collections/weapon` 已降到约 0.35-0.41 秒返回 200；后续缓存命中日志显示可在几十毫秒级返回。
+  - Chrome 复测：`/products/sherlock-holmes-memorial-hall` 正常显示，未出现 Next runtime overlay，控制台未再出现 `removeChild` / `NotFoundError`。
+  - Chrome 路径复测：从 `/collections/movie-game` 再进入 `/products/sherlock-holmes-memorial-hall`，分类页和商品页均正常显示，控制台无相关错误。
+- 未完成事项：
+  - 线上 Vercel 部署后仍建议检查一次 `/products`、几个 `/products/[handle]` 和几个 `/collections/[handle]`，确认生产环境 Shopify 请求稳定。
+  - 如果后续 Shopify collection 超过 30 个，需要继续调整 `getShopifyCollections()` 的分页逻辑，不要只取 `first: 30`。
+- 发现的问题：
+  - 同一个 URL 一会儿 404、一会儿正常，通常不是 handle 写错，而是 Shopify 请求失败后被误判成 `notFound()`。
+  - 分类页如果“不是 404 但一直转圈”，通常是 Shopify 单个 collection 请求在等待超时和重试，需要优先走已加载 catalog 缓存。
+  - 商品详情页如果在 Chrome 中出现 `Failed to execute 'removeChild' on 'Node'`，且刷新后恢复，优先怀疑 Chrome 自动翻译或翻译扩展改写了 React 管理的 DOM。
+  - Next 图片优化代理拉 `cdn.shopify.com` 图片时会偶发 `upstream image response timed out`；Shopify CDN 图片更适合直连显示。
+- 下一次对话建议目标：
+  - 如果继续产品体验，优先处理真实 Shopify 商品详情页 Related Products，不再混用本地 mock related products。
+  - 如果继续稳定性优化，优先补 Shopify collections 分页和请求日志的 retry attempt 记录。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有修改 `.env.local`，没有暴露 Shopify token。
+  - 本轮相关改动尚未提交；工作区仍包含此前政策页、页脚、缺件补件表单和分类图片等未提交改动，下一次继续前应先复查 `git status --short`。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
+
+## 2026-05-13
+
+### 当前对话收尾 / 交接：子品牌展示、Logo 规范与短简介调整
+
+- 当前状态：
+  - 子品牌展示规则已完成并已落地到 About 和 Custom Solutions 页面。
+  - 子品牌数据已统一到 `lib/sub-brands.ts`，后续新增子品牌只需要维护这一处数据源。
+  - 当前工作区仍存在其他未提交改动，主要来自政策页、缺件补件表单、页脚和分类图片相关文件；本小项相关文件当前未显示未提交 diff。
+- 本次目标：
+  - 将 GULY、JAKI 加入子品牌展示。
+  - 将子品牌展示从多列卡片改为横向单行滚动，适配后续更多子品牌。
+  - 去掉左右方向按钮，保留自动无限滚动、鼠标悬停暂停和鼠标拖拽快速浏览。
+  - 统一子品牌 logo 展示尺寸，避免 JAKI、GULY、iBlock 等视觉大小差距过大。
+  - 将子品牌简介改为短定位文案，减少横向滚动卡片中的文字负担。
+- 本次完成：
+  - 新增并使用 `components/sections/SubBrandCarousel.tsx`，支持横向循环滚动、悬停暂停、鼠标拖拽和边界无感回到中间段。
+  - 新增 `public/images/sub-brands/jaki-logo.png` 与 `public/images/sub-brands/guly-logo.png`，并裁掉 JAKI / GULY logo 外围多余白边。
+  - `app/about/page.tsx` 和 `app/custom-solutions/page.tsx` 已改为复用统一子品牌数据和轮播组件。
+  - `lib/sub-brands.ts` 已维护 5 个子品牌：JAKI、GULY、iBlock、Small Angle、Xbert。
+  - 小角度展示名已改为 `Small Angle`。
+  - 子品牌短简介已改为一行定位：
+    - JAKI：`Oriental culture, display sets, space, plants and giftable brick products.`
+    - GULY：`Technic-style cars, motorcycles, mechanical models and RC upgrade sets.`
+    - iBlock：`Creative sets across military, city, insects, mecha and themed collections.`
+    - Small Angle：`Compact vehicle models, mechanical subjects and MOC-style designs.`
+    - Xbert：`Modular buildings, vehicles and fantasy-themed display sets.`
+  - `docs/06-asset-checklist.md` 已记录新增子品牌 logo 规则：先裁掉外边距、保留真实宽高、不要为单个品牌写一-off Tailwind 尺寸，统一由 `SubBrandCarousel` 控制展示。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`（在子品牌轮播和拖拽逻辑调整后验证通过）。
+  - 已通过本地 HTTP 验证：`/about` 返回 200。
+  - 已通过本地 HTTP 验证：`/custom-solutions` 返回 200。
+- 未完成事项：
+  - 后续新增子品牌前，需要先确认是否允许公开展示。
+  - 如果继续新增大量子品牌，建议优先准备裁边后的 PNG / SVG 规范素材，避免前端逐个做视觉补偿。
+  - 仍建议用浏览器再做一次桌面端和移动端视觉回归，重点看自动滚动速度、拖拽手感、logo 视觉大小和短简介换行。
+- 发现的问题：
+  - 仅通过 Tailwind 放大 JAKI / GULY 会导致图片位置变大但白边仍在；正确处理方式是先裁掉源图边缘留白。
+  - CSS transform marquee 与可拖拽滚动容器叠加时会暴露真实滚动尽头；已改为三段重复内容 + scrollLeft 归位的 JS 循环方案。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 先确认是否继续处理当前未提交的政策页 / 缺件补件表单 / 页脚改动，或回到子品牌模块做最终视觉回归。
+  - 如果继续子品牌模块，优先用浏览器检查 `/about` 和 `/custom-solutions` 的桌面端、移动端、hover pause 和拖拽循环。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 前台文案保持英文；本交接记录按规则使用中文。
+
+### 当前对话收尾 / 交接：政策页面、缺件补件表单与页脚导航优化
+
+- 当前状态：
+  - 已完成本轮 5 个政策 / 支持页面文案与页面结构优化。
+  - 已完成 Replacement Parts / Missing Pieces 页面专用缺件补件联系表单。
+  - 已完成页脚导航去重和显示优化。
+  - 当前分支为 `codex-homepage-ui-v1`，本轮改动尚未提交；本地分支显示 `ahead 1`，并存在未提交文件。
+- 本次目标：
+  - 完善配送政策、替换零件、退货与退款、隐私政策和服务条款页面，使其从占位文案升级为 V1 可上线草稿。
+  - 避免写死未确认的配送时效、免邮门槛、30 天退货、退货地址或具体法域承诺。
+  - 在 replacement-parts 页面加入顾客联系表单，先收集订单和联系方式，具体缺件信息后续建联确认。
+  - 根据页面截图优化页脚，移除不合适的产品分类入口、重复入口和指向同一页面的变体链接。
+- 本次完成：
+  - `components/ui/PolicyPage.tsx` 已从简单段落组件升级为支持简介、更新时间、分区标题、列表、提示块、CTA 和页面专属内容插槽的结构化政策页组件。
+  - `app/policies/shipping-policy/page.tsx` 已重写为 DTC checkout 确认 + B2B 单独确认的灵活配送政策。
+  - `app/support/replacement-parts/page.tsx` 已重写缺件 / 错件 / 破损件支持说明，并加入 `ReplacementPartsForm`。
+  - 新增 `components/forms/ReplacementPartsForm.tsx`，收集姓名、邮箱、国家 / 地区、订单号、购买渠道；产品名、SKU、WhatsApp、问题类型为辅助信息。
+  - `app/policies/refund-policy/page.tsx` 已补齐未发货、已发货、质量问题、B2B / custom order 的退货退款处理口径。
+  - `app/policies/privacy-policy/page.tsx` 已改为全球基础版隐私政策，覆盖 Shopify checkout、询盘、客服、支持请求和基础网站数据。
+  - `app/policies/terms-of-service/page.tsx` 已补齐网站使用、产品信息、checkout、B2B 合作和政策更新条款。
+  - `components/product/ProductCatalog.tsx` 已软化 `$49+ Free Shipping` 和 `30-Day Returns`，改为 checkout/support 确认口径。
+  - `app/api/inquiry/route.ts` 已在日志中记录 replacement request 的订单号、购买渠道、产品名和 SKU，便于当前 MVP 接收缺件补件表单信息。
+  - `components/layout/Footer.tsx` 已优化页脚：移除 Shopify collection 驱动的 Shop 列，改为 Explore 主站入口；去掉重复和同页变体链接。
+  - 当前页脚结构为：Explore（Home / Products / Blog / Contact）、Support（Replacement Parts / Shipping Policy / Returns & Refunds / Contact Support）、Company（About Us / Quality & Safety）、Partnership（Wholesale / Custom Solutions / Business Contact）。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`；其中一次普通 build 在 Shopify 请求阶段偶发 `fetch failed`，随后授权网络重跑通过。
+  - 已通过本地 HTTP 验证：`/support/replacement-parts` 返回 `200 OK`。
+  - 已通过 API 验证：`POST /api/inquiry` 使用 replacement payload 返回 `{"ok":true}`。
+  - 已用 in-app browser 验证：replacement 页面表单字段、标题层级和页脚链接存在。
+  - 已用 in-app browser 验证：页脚不再显示产品分类列，且重复链接已去除。
+- 未完成事项：
+  - 本轮代码尚未提交。
+  - 缺件补件表单当前仍提交到通用 `/api/inquiry`，后续如果要真正运营，需要接入邮件、CRM、Shopify customer/order lookup 或工单系统。
+  - 表单暂不要求用户填写具体缺件编号、照片或零件数量；这些信息按本轮决策在建联后再确认。
+  - 页脚 Newsletter 仍是前端占位按钮，尚未接入订阅服务。
+- 发现的问题：
+  - 直接在页脚读取 Shopify collections 会导致出现 `Home page` 或产品分类等不适合主页脚的入口；已改为固定主站入口。
+  - 页脚中 `Help Center` / `Replacement Parts`、`OEM / ODM` / `Custom Solutions`、`Distributor Inquiry` / `Wholesale` 等存在同页重复；已去重。
+  - in-app browser 自动填写 email input 时出现插件侧 `setRangeText` 限制；页面渲染和 API 提交已通过 DOM、截图和 curl POST 补充验证。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 先复查当前未提交 diff，重点检查政策页文案、`ReplacementPartsForm` 表单字段、`/api/inquiry` 日志字段和页脚最终结构。
+  - 如页面方向确认，执行一次最终浏览器视觉回归后提交本轮政策页 + 页脚优化改动。
+  - 后续可继续处理真实 Shopify 商品详情页 Related Products，或规划 inquiry / replacement request 的真实邮件与工单接收方式。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有修改 `.env.local`，没有暴露 Shopify token。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
+
 ## 2026-05-12
 
 ### 今日工作收尾 / 对话交接：产品筛选客户端化与分类轮播拖拽优化

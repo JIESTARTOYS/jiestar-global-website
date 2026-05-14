@@ -5,6 +5,11 @@ const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION ?? "2026-01";
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
 const SHOPIFY_STOREFRONT_ACCESS_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
+const SHOPIFY_FETCH_ATTEMPTS = 3;
+const SHOPIFY_RETRY_DELAY_MS = 500;
+
+let cachedShopifyProducts: Product[] | undefined;
+let cachedShopifyCollections: Collection[] | undefined;
 
 type ShopifyMoney = {
   amount: string;
@@ -133,7 +138,7 @@ function getErrorMessage(error: unknown, fallback: string) {
 
 function logShopifyDataSource(
   operation: string,
-  source: "shopify" | "fallback" | "error",
+  source: "shopify" | "cache" | "fallback" | "error",
   details?: Record<string, unknown>,
 ) {
   const payload = {
@@ -143,7 +148,7 @@ function logShopifyDataSource(
     ...details,
   };
 
-  if (source === "shopify") {
+  if (source === "shopify" || source === "cache") {
     console.info("[shopify:data-source]", payload);
     return;
   }
@@ -177,39 +182,72 @@ function shouldUseLocalFallback() {
   return IS_DEVELOPMENT;
 }
 
+function wait(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function isRetriableStatus(status: number) {
+  return status === 429 || status >= 500;
+}
+
 async function shopifyFetch<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
   if (!hasShopifyConfig()) {
     throw new Error("Shopify environment variables are not configured.");
   }
 
-  const response = await fetch(
-    `https://${SHOPIFY_STORE_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_ACCESS_TOKEN ?? "",
-      },
-      body: JSON.stringify({ query, variables }),
-      next: { revalidate: 300 },
-    },
-  );
+  let lastError: unknown;
 
-  if (!response.ok) {
-    throw new Error(`Shopify request failed with status ${response.status}`);
+  for (let attempt = 1; attempt <= SHOPIFY_FETCH_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetch(
+        `https://${SHOPIFY_STORE_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_ACCESS_TOKEN ?? "",
+          },
+          body: JSON.stringify({ query, variables }),
+          next: { revalidate: 300 },
+        },
+      );
+
+      if (!response.ok) {
+        const error = new Error(`Shopify request failed with status ${response.status}`);
+
+        if (attempt < SHOPIFY_FETCH_ATTEMPTS && isRetriableStatus(response.status)) {
+          lastError = error;
+          await wait(SHOPIFY_RETRY_DELAY_MS * attempt);
+          continue;
+        }
+
+        throw error;
+      }
+
+      const json = (await response.json()) as { data?: T; errors?: Array<{ message: string }> };
+
+      if (json.errors?.length) {
+        throw new Error(json.errors.map((error) => error.message).join(", "));
+      }
+
+      if (!json.data) {
+        throw new Error("Shopify response did not include data.");
+      }
+
+      return json.data;
+    } catch (error) {
+      lastError = error;
+
+      if (attempt < SHOPIFY_FETCH_ATTEMPTS) {
+        await wait(SHOPIFY_RETRY_DELAY_MS * attempt);
+        continue;
+      }
+    }
   }
 
-  const json = (await response.json()) as { data?: T; errors?: Array<{ message: string }> };
-
-  if (json.errors?.length) {
-    throw new Error(json.errors.map((error) => error.message).join(", "));
-  }
-
-  if (!json.data) {
-    throw new Error("Shopify response did not include data.");
-  }
-
-  return json.data;
+  throw lastError instanceof Error ? lastError : new Error("Shopify request failed.");
 }
 
 function formatPrice(money: ShopifyMoney) {
@@ -319,6 +357,27 @@ function getLocalCollectionProducts(handle: string) {
     collection,
     products: products.filter((product) => product.collectionHandle === handle),
   };
+}
+
+function getCachedCatalogCollection(handle: string) {
+  if (!cachedShopifyCollections || !cachedShopifyProducts) {
+    return undefined;
+  }
+
+  const collection = cachedShopifyCollections.find((item) => item.handle === handle);
+
+  if (!collection) {
+    return undefined;
+  }
+
+  return {
+    collection,
+    products: cachedShopifyProducts.filter((product) => product.collectionHandle === handle),
+  };
+}
+
+function getCachedCatalogProduct(handle: string) {
+  return cachedShopifyProducts?.find((product) => product.handle === handle);
 }
 
 const productFragment = `
@@ -431,11 +490,20 @@ export async function getShopifyProducts(): Promise<Product[]> {
     );
 
     const shopifyProducts = data.products.edges.map(({ node }) => mapShopifyProduct(node));
+    cachedShopifyProducts = shopifyProducts;
     logShopifyDataSource("getShopifyProducts", "shopify", { count: shopifyProducts.length });
 
     return shopifyProducts;
   } catch (error) {
     const shopifyError = getShopifyRequestError("getShopifyProducts", error);
+
+    if (cachedShopifyProducts?.length) {
+      logShopifyDataSource("getShopifyProducts", "cache", {
+        count: cachedShopifyProducts.length,
+        reason: "request_failed",
+      });
+      return cachedShopifyProducts;
+    }
 
     if (shouldUseLocalFallback()) {
       return products;
@@ -473,11 +541,20 @@ export async function getShopifyCollections(): Promise<Collection[]> {
     );
 
     const shopifyCollections = data.collections.edges.map(({ node }) => mapShopifyCollection(node));
+    cachedShopifyCollections = shopifyCollections;
     logShopifyDataSource("getShopifyCollections", "shopify", { count: shopifyCollections.length });
 
     return shopifyCollections;
   } catch (error) {
     const shopifyError = getShopifyRequestError("getShopifyCollections", error);
+
+    if (cachedShopifyCollections?.length) {
+      logShopifyDataSource("getShopifyCollections", "cache", {
+        count: cachedShopifyCollections.length,
+        reason: "request_failed",
+      });
+      return cachedShopifyCollections;
+    }
 
     if (shouldUseLocalFallback()) {
       return collections;
@@ -496,6 +573,18 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
     }
 
     throw error;
+  }
+
+  const cachedProduct = getCachedCatalogProduct(handle);
+
+  if (cachedProduct) {
+    logShopifyDataSource("getShopifyProduct", "cache", {
+      found: true,
+      handle,
+      reason: "memory_catalog",
+    });
+
+    return cachedProduct;
   }
 
   try {
@@ -544,6 +633,44 @@ export async function getShopifyCollection(
     throw error;
   }
 
+  const cachedCatalogCollection = getCachedCatalogCollection(handle);
+
+  if (cachedCatalogCollection) {
+    logShopifyDataSource("getShopifyCollection", "cache", {
+      found: true,
+      handle,
+      productCount: cachedCatalogCollection.products.length,
+      reason: "memory_catalog",
+    });
+
+    return cachedCatalogCollection;
+  }
+
+  try {
+    const [shopifyCollections, shopifyProducts] = await Promise.all([
+      getShopifyCollections(),
+      getShopifyProducts(),
+    ]);
+    const collection = shopifyCollections.find((item) => item.handle === handle);
+
+    if (collection) {
+      const collectionProducts = shopifyProducts.filter((product) => product.collectionHandle === handle);
+      logShopifyDataSource("getShopifyCollection", "cache", {
+        found: true,
+        handle,
+        productCount: collectionProducts.length,
+        reason: "catalog_data",
+      });
+
+      return {
+        collection,
+        products: collectionProducts,
+      };
+    }
+  } catch {
+    // Fall through to the direct collection query below.
+  }
+
   try {
     const data = await shopifyFetch<ShopifyCollectionResponse>(
       `
@@ -579,7 +706,11 @@ export async function getShopifyCollection(
     const shopifyError = getShopifyRequestError("getShopifyCollection", error);
 
     if (shouldUseLocalFallback()) {
-      return getLocalCollectionProducts(handle);
+      const localCollectionProducts = getLocalCollectionProducts(handle);
+
+      if (localCollectionProducts) {
+        return localCollectionProducts;
+      }
     }
 
     throw shopifyError;

@@ -936,6 +936,10 @@ Use Shopify checkout for transaction stability.
 
 
 
+When product or collection pages intermittently show 404, or Shopify images intermittently fail to load, check `docs/11-shopify-runtime-troubleshooting.md` before changing routes, handles, or product data. Treat repeated `fetch failed`, `ConnectTimeoutError`, `ShopifyUnavailableError`, and `upstream image response timed out` logs as Shopify/network resilience issues first.
+
+
+
 \---
 
 

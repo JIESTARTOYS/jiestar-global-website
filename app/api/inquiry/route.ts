@@ -17,6 +17,10 @@ export async function POST(request: Request) {
     email: body.email,
     company: body.company,
     cooperationType: body.cooperationType,
+    orderNumber: body.orderNumber,
+    purchaseChannel: body.purchaseChannel,
+    productName: body.productName,
+    productSku: body.productSku,
   });
 
   return NextResponse.json({ ok: true });
