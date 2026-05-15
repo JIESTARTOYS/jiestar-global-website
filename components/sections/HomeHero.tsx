@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { LinkButton } from "@/components/ui/LinkButton";
-import { FactoryIcon, PackageIcon, ShieldIcon, SparkIcon, TruckIcon } from "@/components/ui/Icons";
+import { FactoryIcon, PackageIcon, ShieldIcon, TruckIcon } from "@/components/ui/Icons";
 
 const stats = [
   ["10,000+", "Designs"],
@@ -42,14 +42,14 @@ export function HomeHero() {
               Build Beyond Imagination<span className="text-red-600">.</span>
             </h1>
             <p className="mt-6 max-w-md text-base leading-7 text-slate-600 sm:text-lg">
-              Premium building block sets for creators, dreamers and builders of all ages.
+              Factory-direct building block sets and custom product solutions for global retailers, brand partners, collectors and builders.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <LinkButton href="/products" className="min-w-32">
-                Shop Now
+                Explore Products
               </LinkButton>
-              <LinkButton href="/products" variant="secondary" className="min-w-44">
-                Explore Collections
+              <LinkButton href="/custom-solutions" variant="secondary" className="min-w-44">
+                Start a Project
               </LinkButton>
             </div>
             <div className="mt-9 hidden max-w-lg grid-cols-2 gap-x-5 gap-y-4 border-t border-slate-200 pt-5 sm:grid sm:grid-cols-4">
@@ -62,33 +62,37 @@ export function HomeHero() {
             </div>
           </div>
 
-          <div className="relative z-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-950/[0.07] sm:min-h-[360px] lg:min-h-[430px]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_18%,rgba(230,0,18,.16),transparent_30%),linear-gradient(135deg,#ffffff_0%,#f4f6f8_54%,#e8edf3_100%)]" />
-            <div className="absolute left-6 top-6 h-16 w-16 rounded-full border border-slate-200 bg-white/70" />
-            <div className="absolute right-5 top-8 hidden rounded-md border border-slate-200 bg-white/80 px-3 py-2 text-xs font-black text-slate-950 shadow-sm sm:block">
-              Collector Display
+          <div className="relative z-0 -mx-2 aspect-[1890/1206] w-[calc(100%+1rem)] overflow-visible sm:mx-0 sm:w-full lg:-mb-9 lg:-mr-10 lg:translate-x-4 lg:scale-[1.1]">
+            <div
+              aria-hidden="true"
+              className="absolute bottom-[31%] left-[8%] right-[2%] top-[4%] overflow-hidden rounded-2xl border border-slate-200/70 bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_52%,#f5f8fb_100%)] shadow-[0_20px_48px_rgba(15,23,42,0.10)]"
+            >
+              <span className="absolute -right-[8%] top-0 h-full w-[28%] -skew-x-12 bg-slate-950/[0.018]" />
+              <span className="absolute right-[18%] top-0 h-full w-[8%] -skew-x-12 bg-red-600/[0.055]" />
+              <span className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-200/22 to-transparent" />
             </div>
-            <div className="relative min-h-[230px] sm:min-h-[360px] lg:min-h-[430px]">
-              <Image
-                src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&w=1500&q=85"
-                alt="Red sports car display model representing JIESTAR building block sets"
-                fill
-                priority
-                sizes="(min-width: 1024px) 58vw, 100vw"
-                className="object-cover object-center sm:object-contain sm:p-8 lg:p-10"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/55 to-transparent p-4 sm:hidden">
-                <p className="text-xs font-bold uppercase text-white/70">Featured Build</p>
-                <p className="mt-1 text-sm font-black text-white">Display-ready model sets for creators and collectors</p>
-              </div>
+            <div
+              aria-hidden="true"
+              className="absolute bottom-[25%] left-[11%] right-[5%] h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-[3%] left-[23%] right-[1%] h-[22%] rounded-full bg-slate-950/10 blur-2xl"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute right-[8%] top-[14%] rounded-md border border-slate-200 bg-white/80 px-4 py-2 text-xs font-black text-slate-950 shadow-sm"
+            >
+              Product Line Showcase
             </div>
-            <div className="absolute bottom-4 left-4 hidden rounded-md border border-white/70 bg-white/85 px-3 py-2 text-xs font-bold text-slate-700 shadow-sm sm:block">
-              Factory-direct building block sets
-            </div>
-            <FloatingBrick className="left-4 top-4 rotate-[-18deg] bg-red-600" />
-            <FloatingBrick className="bottom-12 left-12 rotate-[-12deg] bg-yellow-400" />
-            <FloatingBrick className="right-7 top-16 rotate-[18deg] bg-slate-200" />
-            <FloatingBrick className="bottom-6 right-12 rotate-[10deg] bg-slate-900" />
+            <Image
+              src="/images/home/jiestar-home-hero-user-composite-wechat-v2-web.png"
+              alt="JIESTAR product line showcase with real car, train, modular building, flower, space and ship building block models"
+              fill
+              priority
+              sizes="(min-width: 1024px) 58vw, 100vw"
+              className="relative z-10 object-contain object-center drop-shadow-[0_32px_38px_rgba(15,23,42,0.18)]"
+            />
           </div>
         </div>
 
@@ -110,16 +114,5 @@ export function HomeHero() {
         </div>
       </div>
     </section>
-  );
-}
-
-function FloatingBrick({ className }: { className: string }) {
-  return (
-    <span className={`absolute hidden h-7 w-14 rounded-sm shadow-lg shadow-slate-950/10 sm:block ${className}`}>
-      <span className="absolute left-2 top-1.5 h-3 w-3 rounded-full bg-white/30" />
-      <span className="absolute left-6 top-1.5 h-3 w-3 rounded-full bg-white/30" />
-      <span className="absolute right-2 top-1.5 h-3 w-3 rounded-full bg-white/30" />
-      <SparkIcon className="sr-only" />
-    </span>
   );
 }
