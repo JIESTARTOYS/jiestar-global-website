@@ -5,9 +5,9 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { ArrowRightIcon, PackageIcon, ShieldIcon, TruckIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
-import { products } from "@/lib/data";
+import type { Product } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
-import { getShopifyProduct, getShopifyProducts } from "@/lib/shopify";
+import { getShopifyCollection, getShopifyProduct, getShopifyProducts } from "@/lib/shopify";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
@@ -27,6 +27,29 @@ function cleanDescriptionHtml(html: string) {
   }
 
   return cleaned.replace(/^(?:\s|&nbsp;|&#160;|<br\s*\/?>)+/gi, "").trim();
+}
+
+async function getRelatedProducts(product: Product) {
+  try {
+    const collectionProducts = (await getShopifyCollection(product.collectionHandle))?.products ?? [];
+    const relatedFromCollection = collectionProducts.filter((item) => item.handle !== product.handle);
+
+    if (relatedFromCollection.length) {
+      return relatedFromCollection.slice(0, 4);
+    }
+
+    const catalogProducts = await getShopifyProducts();
+
+    return catalogProducts.filter((item) => item.handle !== product.handle).slice(0, 4);
+  } catch (error) {
+    console.warn("[product-detail:related-products]", {
+      handle: product.handle,
+      collectionHandle: product.collectionHandle,
+      message: error instanceof Error ? error.message : "Related products lookup failed.",
+    });
+
+    return [];
+  }
 }
 
 export async function generateStaticParams() {
@@ -58,7 +81,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const related = products.filter((item) => item.handle !== product.handle).slice(0, 4);
+  const related = await getRelatedProducts(product);
   const specs = [
     ["SKU", product.sku],
     ["Difficulty Level", product.difficulty],

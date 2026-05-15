@@ -30,7 +30,95 @@
 
 ---
 
+## 2026-05-15
+
+### 当前对话收尾 / 交接：Shopify 分类完整性、产品类型过滤与内容检查阶段翻译调整
+
+- 当前状态：
+  - 已完成今天主线：商品详情页 Related Products Shopify 化、Shopify collections 分页读取、产品类型 collection 过滤、以及内容检查阶段临时恢复 Chrome / Google 页面翻译。
+  - 当前分支为 `codex-homepage-ui-v1`，本轮改动尚未提交。
+  - 当前工作区仍有未提交改动：`app/layout.tsx`、`app/products/[handle]/page.tsx`、`lib/shopify.ts`、`docs/11-shopify-runtime-troubleshooting.md`、`docs/09-daily-progress-log.md`。
+- 本次目标：
+  - 继续昨天 Shopify 稳定性修复后的产品体验整理。
+  - 解决产品详情页 Related Products 混用本地 mock 数据的问题。
+  - 确认首页 Featured Categories 和产品页 Shop by category 是否显示完整 Shopify 分类。
+  - 避免未来新增品牌系列、专题系列后自动混入前台产品类型分类轮播。
+  - 按“结束当前对话”规则更新交接日志。
+- 本次完成：
+  - `app/products/[handle]/page.tsx` 已新增 Related Products 选择逻辑：优先同 Shopify collection 商品，排除当前商品；同分类没有可推荐商品时，再退回 Shopify catalog，不再直接使用本地 mock products。
+  - `app/layout.tsx` 已按项目 owner 当前内容检查需求，临时移除 `meta google:notranslate`、`html translate="no"` 和 `body.notranslate`，方便使用 Chrome / Google 页面翻译。
+  - `docs/11-shopify-runtime-troubleshooting.md` 已记录：notranslate 防护当前是临时移除，上线前或再次遇到 Chrome 翻译导致的 `removeChild` / `NotFoundError` 时应恢复。
+  - `lib/shopify.ts` 的 `getShopifyCollections()` 已从 `collections(first: 30)` 改为分页读取全部 Shopify collections；当前 Shopify 后台可读到 46 个 collections。
+  - `lib/shopify.ts` 已新增产品类型 collection 过滤层：当前 46 个产品类型 collection handle 作为 allowlist；同时支持未来通过 Shopify collection metafield `custom.website_collection_type=product_type` 自动纳入。
+  - 首页 Featured Categories、产品页 Shop by category、分类 sitemap 和静态分类页生成现在都只使用“产品类型 collection”，避免未来品牌系列 / 专题系列自动混入产品类型导航。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 本地 HTTP 抽查通过：`/products`、`/products/steam-train-1`、`/products/sherlock-holmes-memorial-hall`、`/collections/trains`、`/collections/pirates`、`/collections/movie-game` 均返回 200。
+  - 构建日志确认：`getShopifyCollections` 当前返回 `totalCount: 46`、`count: 46`、`filter: 'product_type'`。
+  - 页面 HTML 已确认不再输出 `notranslate` / `translate="no"` / `google:notranslate`，方便当前阶段用浏览器翻译检查英文内容。
+- 未完成事项：
+  - 本轮改动尚未提交。
+  - 上线前建议恢复 `app/layout.tsx` 的 notranslate 防护，降低 Chrome 自动翻译改写 React DOM 后触发 runtime overlay 的风险。
+  - 如果后续新增新的“产品类型”collection，需要加入 `PRODUCT_TYPE_COLLECTION_HANDLES`，或在 Shopify collection metafield 设置 `custom.website_collection_type=product_type`。
+  - 如果后续新增品牌系列 / 活动专题 / 子品牌系列，不要标记为 `product_type`，否则会进入首页和产品页分类轮播。
+  - 仍建议用真实浏览器做一次首页和产品页分类轮播视觉检查，重点看 46 个分类横向滚动、图片、标题换行和移动端宽度。
+- 发现的问题：
+  - Shopify 的 Collections / 产品系列并不天然等同于网站“产品类型分类”；未来品牌系列也会使用 collection，因此前台必须做过滤。
+  - Storefront API 可读取 collection metafield，但不能读取后台自动 collection 的 ruleSet，所以不能直接用“产品类型 等于 X”这个后台条件做前台判断。
+  - 当前 Shopify 产品数量为 21，部分产品类型 collection 的产品数仍为 0；这是后台产品归属 / 数据完整性问题，不是前端渲染问题。
+  - notranslate 防护和项目 owner 当前使用 Google 页面翻译检查内容的需求存在冲突；当前选择以内容检查便利优先，上线前再恢复稳定性防护。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 先复查当前未提交 diff，重点看 `lib/shopify.ts` 的产品类型 collection 过滤策略和 `app/products/[handle]/page.tsx` 的 Related Products 逻辑。
+  - 如果视觉方向确认，做一次浏览器视觉回归后提交本轮改动。
+  - 后续继续整理 Shopify 后台产品归属，优先处理产品数为 0 的产品类型 collection 是否需要保留在前台。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有修改 `.env.local`，没有暴露 Shopify token。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
+
 ## 2026-05-14
+
+### 今日工作收尾 / 明日方向：Shopify 稳定性修复后续与产品体验整理
+
+- 当前状态：
+  - 今天主线已完成：Shopify 产品详情页 / 分类页间歇性 404、Shopify 图片偶发加载失败、Chrome 翻译触发 React runtime overlay 的排查与稳定性修复。
+  - 最新提交为 `26e02ed feat: polish support pages and stabilize Shopify catalog`，当前分支为 `codex-homepage-ui-v1`。
+  - 当前工作区仍有 1 个未提交改动：`app/layout.tsx`。
+- 本次目标：
+  - 按“结束今天的工作”规则更新项目交接日志。
+  - 给明天继续推进的方向和大致内容，方便下一次对话直接进入执行。
+- 本次完成：
+  - 已复查今日日志，确认今天的核心修复已记录在下方“Shopify 产品 / 分类页间歇性 404 与图片加载失败修复”小项中。
+  - 已复查当前 Git 状态：目前只有 `app/layout.tsx` 处于 modified 状态。
+  - 已确认 `docs/11-shopify-runtime-troubleshooting.md` 已作为后续同类问题的优先排查文档。
+- 验证结果：
+  - 今日核心修复此前已通过：`git diff --check`、`pnpm lint`、`pnpm build`。
+  - 今日核心修复此前已通过本地 HTTP 和 Chrome 路径复测，分类页和商品页均能返回 200，且未再出现 `removeChild` / `NotFoundError`。
+  - 本次收尾仅更新交接日志，未重新运行完整 build。
+- 未完成事项：
+  - 明天开始前先确认 `app/layout.tsx` 的未提交改动是否保留。当前 diff 显示它移除了 `translate="no"`、`body.notranslate` 和 `google:notranslate`，这与 `docs/11-shopify-runtime-troubleshooting.md` 中规避 Chrome 自动翻译 DOM 改写的建议不一致。
+  - 线上 Vercel 部署后仍建议再检查一次 `/products`、几个 `/products/[handle]` 和几个 `/collections/[handle]`。
+  - 产品详情页 Related Products 仍建议改成真实 Shopify 同类 / 同 collection 商品，不要继续混用本地 mock related products。
+  - 如果 Shopify collection 后续超过 30 个，需要补 `getShopifyCollections()` 分页逻辑。
+- 发现的问题：
+  - 当前未提交的 `app/layout.tsx` 改动可能会重新放大 Chrome 自动翻译导致的 `removeChild` / `NotFoundError` 风险；明天应先决定是否恢复 notranslate 标记。
+  - Shopify 请求偶发失败仍可能存在，当前方案是增强韧性和避免误判为 404，不代表 Shopify 网络完全不会抖动。
+- 明天建议方向：
+  - 第一优先级：先处理 `app/layout.tsx` 未提交 diff，确认是否恢复 notranslate 标记，然后跑 `git diff --check`、`pnpm lint`、`pnpm build`。
+  - 第二优先级：做一轮线上 / 本地产品路径抽查，重点看 `/products`、热门商品详情页、`/collections/trains`、`/collections/pirates`、`/collections/movie-game` 等路径。
+  - 第三优先级：开始整理 Product Detail 的 Related Products，改为基于真实 Shopify catalog / collection 的推荐逻辑。
+  - 第四优先级：继续补 Shopify 后台 collection 内容质量，包括英文简介、封面图、产品归属和 handle 规范。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 先复查 `git status --short --branch` 和 `app/layout.tsx` diff，再决定是否恢复 notranslate 标记。
+  - 然后选择进入“产品详情页 Related Products Shopify 化”或“线上稳定性抽查 + collection 内容整理”。
+- 备注：
+  - 本次没有新增第三方依赖。
+  - 本次没有修改 `.env.local`，没有暴露 Shopify token。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
 
 ### 当前对话记录：Shopify 产品 / 分类页间歇性 404 与图片加载失败修复
 

@@ -11,6 +11,55 @@ const SHOPIFY_RETRY_DELAY_MS = 500;
 let cachedShopifyProducts: Product[] | undefined;
 let cachedShopifyCollections: Collection[] | undefined;
 
+const PRODUCT_TYPE_COLLECTION_HANDLES = new Set([
+  "pirates",
+  "fairground",
+  "technic",
+  "movie-game",
+  "modular-buildings",
+  "other",
+  "gun",
+  "trains",
+  "military",
+  "space",
+  "character-figure",
+  "warship",
+  "frozen",
+  "animal",
+  "chemical",
+  "christmas",
+  "scene",
+  "tank",
+  "castle",
+  "city",
+  "girl",
+  "furniture",
+  "home-appliance",
+  "engineering",
+  "dinosaur",
+  "ornament",
+  "storage-box",
+  "constellation",
+  "mecha",
+  "weapon",
+  "ocean-underwater",
+  "fire-rescue",
+  "hot-air-balloon",
+  "ranch",
+  "swat",
+  "arcade-game",
+  "boy",
+  "legendary-dragon",
+  "ship-model",
+  "flower",
+  "street-view",
+  "police",
+  "car-model",
+  "aircraft",
+  "brick-alliance",
+  "fairy-tale",
+]);
+
 type ShopifyMoney = {
   amount: string;
   currencyCode: string;
@@ -71,7 +120,12 @@ type ShopifyProductsResponse = {
 
 type ShopifyCollectionsResponse = {
   collections: {
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor?: string | null;
+    };
     edges: Array<{
+      cursor: string;
       node: ShopifyCollectionNode;
     }>;
   };
@@ -86,6 +140,9 @@ type ShopifyCollectionNode = {
   handle: string;
   title: string;
   description: string;
+  websiteCollectionType?: {
+    value: string;
+  } | null;
   image?: {
     url: string;
     altText?: string | null;
@@ -346,6 +403,16 @@ function mapShopifyCollection(node: ShopifyCollectionNode): Collection {
   };
 }
 
+function isProductTypeCollection(node: ShopifyCollectionNode) {
+  const websiteCollectionType = node.websiteCollectionType?.value.trim().toLowerCase();
+
+  if (websiteCollectionType) {
+    return websiteCollectionType === "product_type";
+  }
+
+  return PRODUCT_TYPE_COLLECTION_HANDLES.has(node.handle);
+}
+
 function getLocalCollectionProducts(handle: string) {
   const collection = collections.find((item) => item.handle === handle);
 
@@ -442,6 +509,9 @@ const collectionSummaryFragment = `
     handle
     title
     description
+    websiteCollectionType: metafield(namespace: "custom", key: "website_collection_type") {
+      value
+    }
     image {
       url
       altText
@@ -525,24 +595,46 @@ export async function getShopifyCollections(): Promise<Collection[]> {
   }
 
   try {
-    const data = await shopifyFetch<ShopifyCollectionsResponse>(
-      `
-        ${collectionSummaryFragment}
-        query Collections {
-          collections(first: 30) {
-            edges {
-              node {
-                ...CollectionSummaryFields
+    const collectionNodes: ShopifyCollectionNode[] = [];
+    let cursor: string | undefined;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+      const data = await shopifyFetch<ShopifyCollectionsResponse>(
+        `
+          ${collectionSummaryFragment}
+          query Collections($cursor: String) {
+            collections(first: 50, after: $cursor) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+              edges {
+                cursor
+                node {
+                  ...CollectionSummaryFields
+                }
               }
             }
           }
-        }
-      `,
-    );
+        `,
+        { cursor },
+      );
 
-    const shopifyCollections = data.collections.edges.map(({ node }) => mapShopifyCollection(node));
+      collectionNodes.push(...data.collections.edges.map(({ node }) => node));
+      hasNextPage = data.collections.pageInfo.hasNextPage;
+      cursor = data.collections.pageInfo.endCursor ?? undefined;
+    }
+
+    const shopifyCollections = collectionNodes
+      .filter((node) => isProductTypeCollection(node))
+      .map((node) => mapShopifyCollection(node));
     cachedShopifyCollections = shopifyCollections;
-    logShopifyDataSource("getShopifyCollections", "shopify", { count: shopifyCollections.length });
+    logShopifyDataSource("getShopifyCollections", "shopify", {
+      count: shopifyCollections.length,
+      totalCount: collectionNodes.length,
+      filter: "product_type",
+    });
 
     return shopifyCollections;
   } catch (error) {
