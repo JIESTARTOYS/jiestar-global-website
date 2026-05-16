@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { navigation, type Product } from "@/lib/data";
-import { MenuIcon, SearchIcon, UserIcon } from "@/components/ui/Icons";
+import { MenuIcon, UserIcon } from "@/components/ui/Icons";
 import { SiteLogo } from "@/components/layout/SiteLogo";
 import { CartHeaderButton } from "@/components/cart/CartHeaderButton";
-import { HeaderSearch } from "@/components/layout/HeaderSearch";
+import { HeaderMobileSearch, HeaderSearch } from "@/components/layout/HeaderSearch";
 
 type HeaderProps = {
   searchProducts?: Product[];
@@ -39,9 +39,7 @@ export function Header({ searchProducts = [] }: HeaderProps) {
         </div>
 
         <div className="ml-auto flex items-center gap-2 lg:hidden">
-          <Link href="/products" aria-label="Search products" className="rounded-md p-2 text-slate-800 hover:bg-slate-100">
-            <SearchIcon className="h-5 w-5" />
-          </Link>
+          <HeaderMobileSearch products={searchProducts} />
           <CartHeaderButton compact />
         </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Collection, Product } from "@/lib/data";
 import { CatalogProductCard } from "@/components/product/CatalogProductCard";
 import { CategoryCarousel } from "@/components/product/CategoryCarousel";
@@ -223,47 +223,6 @@ function buildFilters(selectedFilters: ProductFilters, key: FilterKey, value?: s
   }
 
   return nextFilters;
-}
-
-function SearchWithinCatalog({
-  selectedFilters,
-  onFilterChange,
-}: {
-  selectedFilters: ProductFilters;
-  onFilterChange: FilterAction;
-}) {
-  const searchId = useId();
-
-  return (
-    <form
-      role="search"
-      className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 shadow-sm shadow-slate-950/[0.03] focus-within:border-red-300 focus-within:ring-2 focus-within:ring-red-100"
-      onSubmit={(event) => {
-        event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-        onFilterChange("query", String(formData.get("q") ?? ""));
-      }}
-    >
-      <label htmlFor={searchId} className="sr-only">
-        Search products
-      </label>
-      <input
-        key={selectedFilters.query ?? "empty-search"}
-        id={searchId}
-        name="q"
-        type="search"
-        defaultValue={selectedFilters.query ?? ""}
-        placeholder="Search products..."
-        className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
-      />
-      <button
-        type="submit"
-        className="rounded-md px-3 py-2 text-sm font-black text-red-600 transition hover:bg-red-50 hover:text-red-700"
-      >
-        Search
-      </button>
-    </form>
-  );
 }
 
 function FilterSection({
@@ -491,9 +450,6 @@ function CatalogToolbar({
     <div className="hidden items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white px-5 py-3 shadow-sm shadow-slate-950/[0.03] lg:flex">
       <p className="shrink-0 text-sm font-semibold text-slate-700">{productCount} Products</p>
       <div className="flex min-w-0 flex-1 items-center justify-end gap-4">
-        <div className="w-full max-w-sm">
-          <SearchWithinCatalog selectedFilters={selectedFilters} onFilterChange={onFilterChange} />
-        </div>
         <details className="group relative">
           <summary className="flex cursor-pointer list-none items-center gap-2 text-sm text-slate-700 transition hover:text-slate-950">
             <span>Sort by:</span>
@@ -536,10 +492,8 @@ function MobileControls({
   onFilterChange: FilterAction;
   onClearFilters: () => void;
 }) {
-
   return (
     <div className="grid gap-3 lg:hidden">
-      <SearchWithinCatalog selectedFilters={selectedFilters} onFilterChange={onFilterChange} />
       <div className="flex items-center justify-between gap-3">
         <details className="group relative">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-black text-slate-950 shadow-sm">

@@ -1,5 +1,6 @@
 import { collections, products, type Collection, type Product } from "./data";
 import { getLocalProductSpecifications } from "./product-specifications";
+import { readShopifyConnectionPages } from "./shopify-pagination";
 
 const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION ?? "2026-01";
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
@@ -112,7 +113,12 @@ type ShopifyProductNode = {
 
 type ShopifyProductsResponse = {
   products: {
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor?: string | null;
+    };
     edges: Array<{
+      cursor: string;
       node: ShopifyProductNode;
     }>;
   };
@@ -415,7 +421,11 @@ function formatPieceCount(value?: string) {
 
 function pickPrimaryCollection(node: ShopifyProductNode) {
   const shopifyCollections = node.collections.edges.map(({ node: collection }) => collection);
+  const productTypeCollection = shopifyCollections.find((collection) =>
+    PRODUCT_TYPE_COLLECTION_HANDLES.has(collection.handle),
+  );
   const configuredCollection =
+    productTypeCollection ??
     shopifyCollections.find((collection) =>
       collections.some((localCollection) => localCollection.handle === collection.handle),
     ) ?? shopifyCollections[0];
@@ -453,7 +463,7 @@ function mapShopifyProduct(node: ShopifyProductNode): Product {
     handle: node.handle,
     title: node.title,
     category: primaryCollection?.title ?? localSpecs?.series ?? "Building Block Sets",
-    collectionHandle: primaryCollection?.handle ?? "new-arrivals",
+    collectionHandle: primaryCollection?.handle ?? "other",
     price: formatPrice(node.priceRange.minVariantPrice),
     image: images[0].src,
     imageAlt: images[0].alt,
@@ -605,7 +615,7 @@ const collectionSummaryFragment = `
 const collectionFragment = `
   fragment CollectionFields on Collection {
     ...CollectionSummaryFields
-    products(first: 24) {
+    products(first: 100) {
       edges {
         node {
           ...ProductFields
@@ -715,22 +725,36 @@ export async function getShopifyProducts(): Promise<Product[]> {
   }
 
   try {
-    const data = await shopifyFetch<ShopifyProductsResponse>(
-      `
-        ${productFragment}
-        query Products {
-          products(first: 24) {
-            edges {
-              node {
-                ...ProductFields
+    const productNodes = await readShopifyConnectionPages(async (cursor) => {
+      const data = await shopifyFetch<ShopifyProductsResponse>(
+        `
+          ${productFragment}
+          query Products($cursor: String) {
+            products(first: 50, after: $cursor) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+              edges {
+                cursor
+                node {
+                  ...ProductFields
+                }
               }
             }
           }
-        }
-      `,
-    );
+        `,
+        { cursor },
+      );
 
-    const shopifyProducts = data.products.edges.map(({ node }) => mapShopifyProduct(node));
+      return {
+        nodes: data.products.edges.map(({ node }) => node),
+        hasNextPage: data.products.pageInfo.hasNextPage,
+        endCursor: data.products.pageInfo.endCursor,
+      };
+    });
+
+    const shopifyProducts = productNodes.map((node) => mapShopifyProduct(node));
     cachedShopifyProducts = shopifyProducts;
     logShopifyDataSource("getShopifyProducts", "shopify", { count: shopifyProducts.length });
 

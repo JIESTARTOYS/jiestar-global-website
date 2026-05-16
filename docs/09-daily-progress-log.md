@@ -32,6 +32,80 @@
 
 ## 2026-05-16
 
+### 今日工作收尾 / 交接：安全稳定性优化、产品页搜索体验与代码发布
+
+- 当前状态：
+  - 当前分支为 `codex-homepage-ui-v1`，本地包含上一轮购物车提交 `fcca33e feat: complete Shopify cart flow`，以及本轮安全 / 稳定性 / 搜索体验优化改动。
+  - 本地 dev server 仍在 `http://localhost:3000` 运行，可继续预览 `/products`。
+  - 本轮准备统一提交并 push 到 GitHub。
+- 本次目标：
+  - 按项目 owner 要求完成今天收尾：更新交接记录、检查无误、提交代码并 push。
+  - 先处理本轮发现的高优先级问题：依赖安全、Shopify 数据分页与分类归属、HTML 描述清洗、询盘接口基础校验 / 限流、产品页搜索体验。
+- 本次完成：
+  - 将 `next` / `eslint-config-next` 升级到 `16.2.6`，并通过 `pnpm.overrides` 固定 `postcss@8.5.12`，当前生产依赖 audit 无已知漏洞。
+  - 新增 Shopify connection 分页 helper，`getShopifyProducts()` 改为分页读取，避免产品超过单页数量后被截断；collection 查询也提高到 `first: 100`。
+  - 产品详情页 Shopify `descriptionHtml` 增加保守 HTML 清洗，避免不安全标签 / 事件属性直接进入 `dangerouslySetInnerHTML`。
+  - `/api/inquiry` 增加 JSON 解析保护、字段规范化、长度校验、邮箱校验和基础内存限流；前端成功提示改为真实状态，不再暗示自动发送 catalog。
+  - About 页面和 sitemap 改为读取 Shopify 产品 / collection 数据，减少本地 mock 数据继续参与线上页面。
+  - 产品页内容区域的搜索框已移除；移动端头部放大镜改为展开全宽搜索条，点击后输入框自动聚焦。
+- 验证结果：
+  - 已通过：`pnpm test`，8 个测试全部通过。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`，构建生成 93 个页面 / 路由条目；构建日志确认 Shopify 当前读取 21 个产品、46 个产品类型 collection。
+  - 已通过：`pnpm audit --prod`，联网权限下返回 `No known vulnerabilities found`。
+  - 已通过：`git diff --check`。
+  - 已在浏览器 QA `/products`：桌面产品内容区不再出现独立搜索框；移动端点击放大镜后出现页面全宽搜索条，输入框自动聚焦。
+- 未完成事项：
+  - Shopify 店铺 checkout 最终页仍受后台 storefront password / 开店状态影响，正式上线前需要再做生产环境完整 checkout 复测。
+  - 当前询盘接口仍只是服务端接收与日志记录，后续需要接入邮件、CRM 或持久化存储后才算完整业务闭环。
+  - Chrome 页面翻译仍可能影响 DOM / 可访问性树判断；上线前需要再次决定是否恢复全站 `notranslate` 防护。
+- 发现的问题：
+  - 受限沙盒下 `pnpm audit --prod` 会因 npm registry DNS 解析失败而报 `ENOTFOUND`；使用联网权限重跑后 audit 通过。
+  - Header 搜索应作为全站唯一主搜索入口；产品列表区域再放一个搜索框会造成桌面和移动端体验重复。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先复查 GitHub 远端是否已包含本轮提交与 `fcca33e`。
+  - 下一轮可继续做生产环境 checkout 复测、询盘接口真实投递、或恢复 / 验证 `notranslate` 防护。
+- 备注：
+  - 本轮没有修改 `.env.local`，没有暴露 Shopify token。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
+
+### 当前对话收尾 / 交接：购物车 bug 修复、提交与素材草稿清理
+
+- 当前状态：
+  - Shopify 购物车基础流程、Header 搜索建议、产品图库交互和 Account 入口已合并为一次提交：`fcca33e feat: complete Shopify cart flow`。
+  - 当前分支为 `codex-homepage-ui-v1`，本地比远端 ahead 1，尚未 push。
+  - 已清理未使用的首页素材草稿；`public/images/home/` 只保留已跟踪的正式 Hero 图片 `jiestar-home-hero-user-composite-wechat-v2-web.png`。
+- 本次目标：
+  - 修复购物车删除与数量增减偶发使用旧 Shopify cart line id 导致的错误。
+  - 提交已验证的购物车相关代码，并删除未使用的首页素材草稿。
+- 本次完成：
+  - `components/cart/CartProvider.tsx` 的数量更新和删除操作改为同时携带 `lineId` 与 `merchandiseId`，操作前会用当前 cart state 重新定位 line。
+  - `/api/cart/lines` 在 Shopify 返回 `line ... does not exist` 时，会重新读取当前 cart，并按 `merchandiseId` 找到真实 line 后再更新或删除。
+  - `/api/cart` 避免复用空的旧 cart id；空 cart 或失效 cart 会重新创建 Shopify cart。
+  - 已提交当前代码范围，提交号为 `fcca33e`；未把首页素材草稿纳入提交。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已在本地浏览器 QA `/products/steam-train-1`：Add to Cart 后点击 `+` 可从 1 到 2，小计从 `$99.99` 到 `$199.98`；点击 `-` 可回到 1，小计回到 `$99.99`，不再出现 `line id does not exist`。
+  - 删除第二个商品时已验证不会误删全部商品。
+- 未完成事项：
+  - 当前提交尚未 push 到远端。
+  - 本交接日志更新本身尚未提交；如果下一次要保持文档同步，可单独提交一条 `docs: update cart handoff log`。
+  - Shopify 店铺仍处于 storefront password 状态，真实顾客 checkout 最终页仍需等 Shopify 后台开放后再完整复测。
+- 发现的问题：
+  - Shopify cart line id 可能在 cart mutation 后变化；前端不能长期只依赖旧 line id。
+  - Chrome 自动翻译仍可能影响页面可访问性树和视觉 QA 判断；源码前台文案仍为英文。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先确认是否 push `fcca33e` 到 GitHub。
+  - 如继续购物车，可做生产环境 Shopify checkout 复测、移动端 cart drawer QA，或评估列表页 quick add 是否进入下一轮。
+- 备注：
+  - 本轮没有新增第三方依赖。
+  - 本轮没有修改 `.env.local`，没有暴露 Shopify token。
+  - dev server 按前序要求保留在 `http://localhost:3000`。
+
 ### 当前对话收尾 / 交接：Header 产品搜索建议下拉
 
 - 当前状态：

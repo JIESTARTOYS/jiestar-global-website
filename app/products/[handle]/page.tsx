@@ -7,6 +7,7 @@ import { ArrowRightIcon, PackageIcon, ShieldIcon, TruckIcon } from "@/components
 import { LinkButton } from "@/components/ui/LinkButton";
 import type { Product } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
+import { sanitizeShopifyHtml } from "@/lib/sanitize-html";
 import { getShopifyCollection, getShopifyProduct, getShopifyProducts } from "@/lib/shopify";
 
 type PageProps = {
@@ -92,7 +93,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     ["Material", product.material],
     ["Shipping", product.shipping],
   ].filter((spec): spec is [string, string] => Boolean(spec[1]));
-  const descriptionHtml = cleanDescriptionHtml(product.descriptionHtml ?? "");
+  const descriptionHtml = sanitizeShopifyHtml(cleanDescriptionHtml(product.descriptionHtml ?? ""));
   const hasDescriptionHtmlContent = Boolean(
     descriptionHtml?.replace(/<[^>]*>/g, "").trim() || descriptionHtml?.includes("<img"),
   );

@@ -13,12 +13,14 @@ const fieldClass =
 export function InquiryForm({ type }: InquiryFormProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const isWholesale = type === "wholesale";
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("loading");
     setErrorMessage(null);
+    setSuccessMessage(null);
     const form = event.currentTarget;
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
@@ -30,12 +32,22 @@ export function InquiryForm({ type }: InquiryFormProps) {
         body: JSON.stringify({ type, ...payload }),
       });
 
+      const data = (await response.json().catch(() => null)) as {
+        contactEmail?: string;
+        deliveryConfigured?: boolean;
+        error?: string;
+      } | null;
+
       if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { error?: string } | null;
         throw new Error(data?.error ?? "Submission failed. Please check the required fields and try again.");
       }
 
       form.reset();
+      setSuccessMessage(
+        isWholesale
+          ? `Thank you. Your wholesale inquiry has been received. For urgent catalog or pricing requests, email ${data?.contactEmail ?? "info@jiestartoys.com"} directly.`
+          : `Inquiry received. Our team can follow up by email or WhatsApp. For urgent requests, email ${data?.contactEmail ?? "info@jiestartoys.com"} directly.`,
+      );
       setStatus("success");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Submission failed. Please email info@jiestartoys.com directly.");
@@ -133,9 +145,7 @@ export function InquiryForm({ type }: InquiryFormProps) {
 
       {status === "success" ? (
         <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
-          {isWholesale
-            ? "Thank you. We will send the wholesale catalog and pricing information to your email, then follow up by WhatsApp if provided."
-            : "Inquiry received. Our team will follow up by email or WhatsApp."}
+          {successMessage}
         </p>
       ) : null}
       {status === "error" ? (

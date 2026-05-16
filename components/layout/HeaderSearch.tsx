@@ -7,6 +7,8 @@ import { SearchIcon } from "@/components/ui/Icons";
 
 type HeaderSearchProps = {
   products: Product[];
+  className?: string;
+  autoFocusSignal?: number;
 };
 
 function normalizeSearchText(value: string) {
@@ -26,11 +28,12 @@ function productSearchText(product: Product) {
     .toLowerCase();
 }
 
-export function HeaderSearch({ products }: HeaderSearchProps) {
+export function HeaderSearch({ products, className = "h-11 w-64", autoFocusSignal }: HeaderSearchProps) {
   const router = useRouter();
   const searchId = useId();
   const listboxId = useId();
   const containerRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -64,6 +67,14 @@ export function HeaderSearch({ products }: HeaderSearchProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (autoFocusSignal === undefined) {
+      return;
+    }
+
+    inputRef.current?.focus();
+  }, [autoFocusSignal]);
+
   function goToProduct(product: Product) {
     setQuery("");
     setIsOpen(false);
@@ -76,7 +87,7 @@ export function HeaderSearch({ products }: HeaderSearchProps) {
       ref={containerRef}
       action="/products"
       role="search"
-      className="relative flex h-11 w-64 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm text-slate-500 shadow-sm transition focus-within:border-red-300 focus-within:ring-2 focus-within:ring-red-100 hover:border-slate-300"
+      className={`relative flex items-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm text-slate-500 shadow-sm transition focus-within:border-red-300 focus-within:ring-2 focus-within:ring-red-100 hover:border-slate-300 ${className}`}
       onSubmit={(event) => {
         const activeSuggestion = activeIndex >= 0 ? suggestions[activeIndex] : undefined;
 
@@ -90,6 +101,7 @@ export function HeaderSearch({ products }: HeaderSearchProps) {
         Search products
       </label>
       <input
+        ref={inputRef}
         id={searchId}
         name="q"
         type="search"
@@ -165,5 +177,69 @@ export function HeaderSearch({ products }: HeaderSearchProps) {
         </div>
       ) : null}
     </form>
+  );
+}
+
+export function HeaderMobileSearch({ products }: Pick<HeaderSearchProps, "products">) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [focusSignal, setFocusSignal] = useState(0);
+
+  useEffect(() => {
+    function closeOnOutsidePointer(event: MouseEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", closeOnOutsidePointer);
+
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsidePointer);
+    };
+  }, []);
+
+  function toggleSearch() {
+    const nextIsOpen = !isOpen;
+
+    setIsOpen(nextIsOpen);
+
+    if (nextIsOpen) {
+      setFocusSignal((currentSignal) => currentSignal + 1);
+    }
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative lg:hidden"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          setIsOpen(false);
+        }
+      }}
+    >
+      <button
+        type="button"
+        aria-label={isOpen ? "Close product search" : "Open product search"}
+        aria-expanded={isOpen}
+        aria-controls="mobile-header-search"
+        className="rounded-md p-2 text-slate-800 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-red-200"
+        onClick={toggleSearch}
+      >
+        <SearchIcon className="h-5 w-5" />
+      </button>
+
+      {isOpen ? (
+        <div
+          id="mobile-header-search"
+          className="fixed left-0 right-0 top-24 z-50 border-b border-slate-200 bg-white px-4 py-3 shadow-lg shadow-slate-950/10"
+        >
+          <div className="mx-auto max-w-7xl">
+            <HeaderSearch products={products} className="h-12 w-full" autoFocusSignal={focusSignal} />
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }

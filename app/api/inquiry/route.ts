@@ -1,27 +1,46 @@
 import { NextResponse } from "next/server";
+import { siteConfig } from "@/lib/data";
+import { createRateLimiter, getRequestIp } from "@/lib/rate-limit";
+import { normalizeInquiryPayload } from "@/lib/request-validation";
 
-const requiredFields = ["name", "country", "email", "message"];
-const wholesaleRequiredFields = ["email"];
+const inquiryLimiter = createRateLimiter({
+  limit: 8,
+  windowMs: 60_000,
+});
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as Record<string, unknown>;
-  const required = body.type === "wholesale" ? wholesaleRequiredFields : requiredFields;
-  const missing = required.filter((field) => !String(body[field] ?? "").trim());
+  const rateLimit = inquiryLimiter.check(getRequestIp(request));
 
-  if (missing.length) {
-    return NextResponse.json({ error: `Missing fields: ${missing.join(", ")}` }, { status: 400 });
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many submissions. Please wait a moment and try again." },
+      { status: 429 },
+    );
   }
 
-  console.info("JIESTAR inquiry received", {
-    type: body.type,
-    email: body.email,
-    company: body.company,
-    cooperationType: body.cooperationType,
-    orderNumber: body.orderNumber,
-    purchaseChannel: body.purchaseChannel,
-    productName: body.productName,
-    productSku: body.productSku,
-  });
+  let body: Record<string, unknown>;
 
-  return NextResponse.json({ ok: true });
+  try {
+    body = (await request.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON request body." }, { status: 400 });
+  }
+
+  const normalized = normalizeInquiryPayload(body);
+
+  if (!normalized.ok) {
+    return NextResponse.json(
+      { error: normalized.error, missingFields: normalized.missingFields },
+      { status: 400 },
+    );
+  }
+
+  console.info("JIESTAR inquiry received", normalized.payload);
+
+  return NextResponse.json({
+    ok: true,
+    deliveryConfigured: false,
+    contactEmail:
+      normalized.payload.type === "replacement-parts" ? siteConfig.supportEmail : siteConfig.businessEmail,
+  });
 }

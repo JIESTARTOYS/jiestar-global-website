@@ -15,9 +15,8 @@ import { SubBrandCarousel } from "@/components/sections/SubBrandCarousel";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { products } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
-import { getShopifyCollections } from "@/lib/shopify";
+import { getShopifyCollections, getShopifyProducts } from "@/lib/shopify";
 import { subBrands } from "@/lib/sub-brands";
 
 export const metadata = createMetadata({
@@ -84,10 +83,11 @@ const documentationItems = [
   ["Compliance file readiness", "Specific certificates and market documents can be reviewed when official materials are provided."],
 ];
 
-const portfolioProducts = products.slice(0, 4);
-
 export default async function AboutPage() {
-  const portfolioCollections = (await getShopifyCollections()).slice(0, 4);
+  const [portfolioProducts, portfolioCollections] = await Promise.all([
+    getShopifyProducts().then((items) => items.slice(0, 4)),
+    getShopifyCollections().then((items) => items.slice(0, 4)),
+  ]);
 
   return (
     <div className="bg-slate-50 text-slate-950">
