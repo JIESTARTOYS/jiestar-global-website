@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import type { Collection, Product } from "@/lib/data";
 import { CatalogProductCard } from "@/components/product/CatalogProductCard";
 import { CategoryCarousel } from "@/components/product/CategoryCarousel";
@@ -19,6 +19,7 @@ type ProductCatalogProps = {
   allProducts: Product[];
   collections: Collection[];
   selectedFilters: {
+    query?: string;
     category?: string;
     pieces?: string;
     price?: string;
@@ -26,7 +27,7 @@ type ProductCatalogProps = {
   };
 };
 
-type FilterKey = "category" | "pieces" | "price" | "sort";
+type FilterKey = "query" | "category" | "pieces" | "price" | "sort";
 type ProductFilters = ProductCatalogProps["selectedFilters"];
 type FilterAction = (key: FilterKey, value?: string) => void;
 
@@ -113,6 +114,34 @@ function sortProducts(products: Product[], sort?: string) {
   return sortedProducts;
 }
 
+function normalizeSearchText(value?: string) {
+  return value?.trim().toLowerCase() ?? "";
+}
+
+function productMatchesQuery(product: Product, query?: string) {
+  const normalizedQuery = normalizeSearchText(query);
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  const searchableText = [
+    product.title,
+    product.sku,
+    product.category,
+    product.collectionHandle,
+    product.series,
+    product.description,
+    product.sellingPoint,
+    product.pieceCount,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return searchableText.includes(normalizedQuery);
+}
+
 function filterProducts(products: Product[], selectedFilters: ProductFilters) {
   return sortProducts(
     products.filter((product) => {
@@ -123,6 +152,7 @@ function filterProducts(products: Product[], selectedFilters: ProductFilters) {
         product.category.toLowerCase() === selectedCategory.toLowerCase();
 
       return (
+        productMatchesQuery(product, selectedFilters.query) &&
         matchesCategory &&
         filterByPieceCount(product, selectedFilters.pieces) &&
         filterByPrice(product, selectedFilters.price)
@@ -140,6 +170,7 @@ function filtersFromUrl(defaultFilters: ProductFilters): ProductFilters {
   const params = new URLSearchParams(window.location.search);
 
   return {
+    query: params.get("q") ?? undefined,
     category: params.get("category") ?? undefined,
     pieces: params.get("pieces") ?? undefined,
     price: params.get("price") ?? undefined,
@@ -159,13 +190,13 @@ function buildFilterHref(
       continue;
     }
 
-    params.set(filterKey, filterValue);
+    params.set(filterKey === "query" ? "q" : filterKey, filterValue);
   }
 
   if (value) {
-    params.set(key, value);
+    params.set(key === "query" ? "q" : key, value);
   } else {
-    params.delete(key);
+    params.delete(key === "query" ? "q" : key);
   }
 
   if (params.get("sort") === "popular") {
@@ -179,9 +210,10 @@ function buildFilterHref(
 
 function buildFilters(selectedFilters: ProductFilters, key: FilterKey, value?: string): ProductFilters {
   const nextFilters = { ...selectedFilters };
+  const cleanValue = value?.trim();
 
-  if (value) {
-    nextFilters[key] = value;
+  if (cleanValue) {
+    nextFilters[key] = cleanValue;
   } else {
     delete nextFilters[key];
   }
@@ -191,6 +223,47 @@ function buildFilters(selectedFilters: ProductFilters, key: FilterKey, value?: s
   }
 
   return nextFilters;
+}
+
+function SearchWithinCatalog({
+  selectedFilters,
+  onFilterChange,
+}: {
+  selectedFilters: ProductFilters;
+  onFilterChange: FilterAction;
+}) {
+  const searchId = useId();
+
+  return (
+    <form
+      role="search"
+      className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 shadow-sm shadow-slate-950/[0.03] focus-within:border-red-300 focus-within:ring-2 focus-within:ring-red-100"
+      onSubmit={(event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        onFilterChange("query", String(formData.get("q") ?? ""));
+      }}
+    >
+      <label htmlFor={searchId} className="sr-only">
+        Search products
+      </label>
+      <input
+        key={selectedFilters.query ?? "empty-search"}
+        id={searchId}
+        name="q"
+        type="search"
+        defaultValue={selectedFilters.query ?? ""}
+        placeholder="Search products..."
+        className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
+      />
+      <button
+        type="submit"
+        className="rounded-md px-3 py-2 text-sm font-black text-red-600 transition hover:bg-red-50 hover:text-red-700"
+      >
+        Search
+      </button>
+    </form>
+  );
 }
 
 function FilterSection({
@@ -416,8 +489,11 @@ function CatalogToolbar({
 
   return (
     <div className="hidden items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white px-5 py-3 shadow-sm shadow-slate-950/[0.03] lg:flex">
-      <p className="text-sm font-semibold text-slate-700">{productCount} Products</p>
-      <div className="flex items-center gap-4">
+      <p className="shrink-0 text-sm font-semibold text-slate-700">{productCount} Products</p>
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-4">
+        <div className="w-full max-w-sm">
+          <SearchWithinCatalog selectedFilters={selectedFilters} onFilterChange={onFilterChange} />
+        </div>
         <details className="group relative">
           <summary className="flex cursor-pointer list-none items-center gap-2 text-sm text-slate-700 transition hover:text-slate-950">
             <span>Sort by:</span>
@@ -463,6 +539,7 @@ function MobileControls({
 
   return (
     <div className="grid gap-3 lg:hidden">
+      <SearchWithinCatalog selectedFilters={selectedFilters} onFilterChange={onFilterChange} />
       <div className="flex items-center justify-between gap-3">
         <details className="group relative">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-black text-slate-950 shadow-sm">
@@ -531,7 +608,13 @@ export function ProductCatalog(props: ProductCatalogProps) {
   const { allProducts } = props;
   const [selectedFilters, setSelectedFilters] = useState<ProductFilters>(props.selectedFilters);
   const products = useMemo(() => filterProducts(allProducts, selectedFilters), [allProducts, selectedFilters]);
-  const activeFilterCount = [selectedFilters.category, selectedFilters.pieces, selectedFilters.price].filter(Boolean).length;
+  const activeFilterCount = [
+    selectedFilters.query,
+    selectedFilters.category,
+    selectedFilters.pieces,
+    selectedFilters.price,
+  ].filter(Boolean).length;
+  const searchQuery = normalizeSearchText(selectedFilters.query);
   const updateFilters = useCallback(
     (nextFilters: ProductFilters) => {
       setSelectedFilters(nextFilters);
@@ -619,7 +702,15 @@ export function ProductCatalog(props: ProductCatalogProps) {
               {activeFilterCount > 0 ? (
                 <div className="flex items-start justify-between gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">
                   <p>
-                    Showing <strong>{products.length}</strong> of <strong>{allProducts.length}</strong> products for the selected filters.
+                    Showing <strong>{products.length}</strong> of <strong>{allProducts.length}</strong> products
+                    {searchQuery ? (
+                      <>
+                        {" "}
+                        for <strong>&ldquo;{selectedFilters.query?.trim()}&rdquo;</strong>
+                      </>
+                    ) : null}
+                    {" "}
+                    with the selected filters.
                   </p>
                   <button
                     type="button"
@@ -639,9 +730,11 @@ export function ProductCatalog(props: ProductCatalogProps) {
                 </div>
               ) : (
                 <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
-                  <h2 className="text-xl font-black text-slate-950">No products match these filters</h2>
+                  <h2 className="text-xl font-black text-slate-950">
+                    {searchQuery ? "No products match this search" : "No products match these filters"}
+                  </h2>
                   <p className="mt-3 text-slate-600">
-                    Clear the filters or choose another category, price range, or piece count.
+                    Clear the search or choose another category, price range, or piece count.
                   </p>
                 </div>
               )}

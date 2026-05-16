@@ -10,6 +10,7 @@ export const metadata = createMetadata({
 });
 
 type ProductSearchParams = {
+  q?: string | string[];
   category?: string | string[];
   pieces?: string | string[];
   price?: string | string[];
@@ -28,6 +29,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const params = await searchParams;
   const products = await getShopifyProducts();
   const collections = await getShopifyCollections();
+  const selectedQuery = getParamValue(params.q);
   const selectedCategory = getParamValue(params.category);
   const selectedPieces = getParamValue(params.pieces);
   const selectedPrice = getParamValue(params.price);
@@ -38,6 +40,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       allProducts={products}
       collections={collections}
       selectedFilters={{
+        query: selectedQuery,
         category: selectedCategory,
         pieces: selectedPieces,
         price: selectedPrice,

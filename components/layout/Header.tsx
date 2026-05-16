@@ -24,13 +24,25 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link
-            href="/products"
-            className="flex h-11 w-56 items-center justify-between rounded-md border border-slate-200 bg-white px-4 text-sm text-slate-500 shadow-sm transition hover:border-slate-300"
+          <form
+            action="/products"
+            role="search"
+            className="flex h-11 w-64 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm text-slate-500 shadow-sm transition focus-within:border-red-300 focus-within:ring-2 focus-within:ring-red-100 hover:border-slate-300"
           >
-            Search products...
-            <SearchIcon className="h-4 w-4 text-slate-700" />
-          </Link>
+            <label htmlFor="site-search" className="sr-only">
+              Search products
+            </label>
+            <input
+              id="site-search"
+              name="q"
+              type="search"
+              placeholder="Search products..."
+              className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
+            />
+            <button type="submit" aria-label="Search products" className="rounded-sm p-1 text-slate-700 transition hover:text-red-600">
+              <SearchIcon className="h-4 w-4" />
+            </button>
+          </form>
           <Link href="/contact" className="flex h-11 items-center gap-2 rounded-md px-2 text-sm font-bold text-slate-700 hover:text-red-600">
             <UserIcon className="h-5 w-5" />
             <span>Account</span>
