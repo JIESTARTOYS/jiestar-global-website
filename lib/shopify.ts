@@ -160,11 +160,94 @@ type ShopifyCollectionResponse = {
 
 type ShopifyCartCreateResponse = {
   cartCreate: {
-    cart?: {
-      checkoutUrl: string;
-    } | null;
+    cart?: ShopifyCartNode | null;
     userErrors: Array<{ message: string }>;
   };
+};
+
+type ShopifyCartResponse = {
+  cart?: ShopifyCartNode | null;
+};
+
+type ShopifyCartLinesAddResponse = {
+  cartLinesAdd: {
+    cart?: ShopifyCartNode | null;
+    userErrors: Array<{ message: string }>;
+  };
+};
+
+type ShopifyCartLinesUpdateResponse = {
+  cartLinesUpdate: {
+    cart?: ShopifyCartNode | null;
+    userErrors: Array<{ message: string }>;
+  };
+};
+
+type ShopifyCartLinesRemoveResponse = {
+  cartLinesRemove: {
+    cart?: ShopifyCartNode | null;
+    userErrors: Array<{ message: string }>;
+  };
+};
+
+type ShopifyCartNode = {
+  id: string;
+  checkoutUrl: string;
+  cost: {
+    subtotalAmount: ShopifyMoney;
+    totalAmount: ShopifyMoney;
+  };
+  totalQuantity: number;
+  lines: {
+    edges: Array<{
+      node: {
+        id: string;
+        quantity: number;
+        cost: {
+          totalAmount: ShopifyMoney;
+        };
+        merchandise: {
+          id: string;
+          title: string;
+          product: {
+            handle: string;
+            title: string;
+            featuredImage?: {
+              url: string;
+              altText?: string | null;
+            } | null;
+          };
+          image?: {
+            url: string;
+            altText?: string | null;
+          } | null;
+          price: ShopifyMoney;
+        };
+      };
+    }>;
+  };
+};
+
+export type CartLine = {
+  id: string;
+  quantity: number;
+  merchandiseId: string;
+  merchandiseTitle: string;
+  productHandle: string;
+  productTitle: string;
+  image?: string;
+  imageAlt?: string;
+  price: string;
+  lineTotal: string;
+};
+
+export type Cart = {
+  id: string;
+  checkoutUrl: string;
+  totalQuantity: number;
+  subtotal: string;
+  total: string;
+  lines: CartLine[];
 };
 
 export class ShopifyUnavailableError extends Error {
@@ -532,6 +615,94 @@ const collectionFragment = `
   }
 `;
 
+const cartFragment = `
+  fragment CartFields on Cart {
+    id
+    checkoutUrl
+    totalQuantity
+    cost {
+      subtotalAmount {
+        amount
+        currencyCode
+      }
+      totalAmount {
+        amount
+        currencyCode
+      }
+    }
+    lines(first: 50) {
+      edges {
+        node {
+          id
+          quantity
+          cost {
+            totalAmount {
+              amount
+              currencyCode
+            }
+          }
+          merchandise {
+            ... on ProductVariant {
+              id
+              title
+              price {
+                amount
+                currencyCode
+              }
+              image {
+                url
+                altText
+              }
+              product {
+                handle
+                title
+                featuredImage {
+                  url
+                  altText
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+function assertCartUserErrors(errors: Array<{ message: string }>) {
+  const error = errors[0];
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+function mapShopifyCart(cart: ShopifyCartNode): Cart {
+  return {
+    id: cart.id,
+    checkoutUrl: cart.checkoutUrl,
+    totalQuantity: cart.totalQuantity,
+    subtotal: formatPrice(cart.cost.subtotalAmount),
+    total: formatPrice(cart.cost.totalAmount),
+    lines: cart.lines.edges.map(({ node }) => {
+      const image = node.merchandise.image ?? node.merchandise.product.featuredImage;
+
+      return {
+        id: node.id,
+        quantity: node.quantity,
+        merchandiseId: node.merchandise.id,
+        merchandiseTitle: node.merchandise.title,
+        productHandle: node.merchandise.product.handle,
+        productTitle: node.merchandise.product.title,
+        image: image?.url,
+        imageAlt: image?.altText ?? `${node.merchandise.product.title} product image`,
+        price: formatPrice(node.merchandise.price),
+        lineTotal: formatPrice(node.cost.totalAmount),
+      };
+    }),
+  };
+}
+
 export async function getShopifyProducts(): Promise<Product[]> {
   if (!hasShopifyConfig()) {
     const error = getShopifyConfigError("getShopifyProducts");
@@ -809,13 +980,30 @@ export async function getShopifyCollection(
   }
 }
 
-export async function createCheckoutUrl(variantId: string) {
+export async function getCart(cartId: string): Promise<Cart | undefined> {
+  const data = await shopifyFetch<ShopifyCartResponse>(
+    `
+      ${cartFragment}
+      query Cart($cartId: ID!) {
+        cart(id: $cartId) {
+          ...CartFields
+        }
+      }
+    `,
+    { cartId },
+  );
+
+  return data.cart ? mapShopifyCart(data.cart) : undefined;
+}
+
+export async function createCart(variantId: string, quantity = 1): Promise<Cart> {
   const data = await shopifyFetch<ShopifyCartCreateResponse>(
     `
+      ${cartFragment}
       mutation CartCreate($lines: [CartLineInput!]!) {
         cartCreate(input: { lines: $lines }) {
           cart {
-            checkoutUrl
+            ...CartFields
           }
           userErrors {
             message
@@ -824,14 +1012,111 @@ export async function createCheckoutUrl(variantId: string) {
       }
     `,
     {
-      lines: [{ merchandiseId: variantId, quantity: 1 }],
+      lines: [{ merchandiseId: variantId, quantity }],
     },
   );
 
-  const error = data.cartCreate.userErrors[0];
-  if (error) {
-    throw new Error(error.message);
+  assertCartUserErrors(data.cartCreate.userErrors);
+
+  if (!data.cartCreate.cart) {
+    throw new Error("Shopify did not return a cart.");
   }
 
-  return data.cartCreate.cart?.checkoutUrl;
+  return mapShopifyCart(data.cartCreate.cart);
+}
+
+export async function addCartLine(cartId: string, variantId: string, quantity = 1): Promise<Cart> {
+  const data = await shopifyFetch<ShopifyCartLinesAddResponse>(
+    `
+      ${cartFragment}
+      mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
+        cartLinesAdd(cartId: $cartId, lines: $lines) {
+          cart {
+            ...CartFields
+          }
+          userErrors {
+            message
+          }
+        }
+      }
+    `,
+    {
+      cartId,
+      lines: [{ merchandiseId: variantId, quantity }],
+    },
+  );
+
+  assertCartUserErrors(data.cartLinesAdd.userErrors);
+
+  if (!data.cartLinesAdd.cart) {
+    throw new Error("Shopify did not return a cart.");
+  }
+
+  return mapShopifyCart(data.cartLinesAdd.cart);
+}
+
+export async function updateCartLine(cartId: string, lineId: string, quantity: number): Promise<Cart> {
+  const data = await shopifyFetch<ShopifyCartLinesUpdateResponse>(
+    `
+      ${cartFragment}
+      mutation CartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+        cartLinesUpdate(cartId: $cartId, lines: $lines) {
+          cart {
+            ...CartFields
+          }
+          userErrors {
+            message
+          }
+        }
+      }
+    `,
+    {
+      cartId,
+      lines: [{ id: lineId, quantity }],
+    },
+  );
+
+  assertCartUserErrors(data.cartLinesUpdate.userErrors);
+
+  if (!data.cartLinesUpdate.cart) {
+    throw new Error("Shopify did not return a cart.");
+  }
+
+  return mapShopifyCart(data.cartLinesUpdate.cart);
+}
+
+export async function removeCartLine(cartId: string, lineId: string): Promise<Cart> {
+  const data = await shopifyFetch<ShopifyCartLinesRemoveResponse>(
+    `
+      ${cartFragment}
+      mutation CartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
+        cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+          cart {
+            ...CartFields
+          }
+          userErrors {
+            message
+          }
+        }
+      }
+    `,
+    {
+      cartId,
+      lineIds: [lineId],
+    },
+  );
+
+  assertCartUserErrors(data.cartLinesRemove.userErrors);
+
+  if (!data.cartLinesRemove.cart) {
+    throw new Error("Shopify did not return a cart.");
+  }
+
+  return mapShopifyCart(data.cartLinesRemove.cart);
+}
+
+export async function createCheckoutUrl(variantId: string) {
+  const cart = await createCart(variantId);
+
+  return cart.checkoutUrl;
 }

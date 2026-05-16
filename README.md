@@ -66,11 +66,14 @@ NEXT_PUBLIC_SITE_URL=
 SHOPIFY_STORE_DOMAIN=
 SHOPIFY_STOREFRONT_ACCESS_TOKEN=
 SHOPIFY_API_VERSION=
+SHOPIFY_CUSTOMER_ACCOUNT_URL=
 CONTACT_EMAIL=
 SUPPORT_EMAIL=
 ```
 
 Do not commit real tokens, API keys, customer data, or private credentials.
+
+`SHOPIFY_CUSTOMER_ACCOUNT_URL` is optional and not secret. Use it when Shopify customer accounts are hosted on a dedicated account domain; otherwise the site falls back to `https://SHOPIFY_STORE_DOMAIN/account`.
 
 ## Inquiry Forms
 

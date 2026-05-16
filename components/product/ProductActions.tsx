@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useCart } from "@/components/cart/CartProvider";
 import { CartIcon, ShieldIcon } from "@/components/ui/Icons";
 
 type ProductActionsProps = {
@@ -10,14 +11,27 @@ type ProductActionsProps = {
 
 export function ProductActions({ productTitle, variantId }: ProductActionsProps) {
   const [status, setStatus] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
+  const { addItem } = useCart();
 
-  function handleAddToCart() {
-    setStatus(
-      variantId
-        ? "Cart drawer is coming later. Use Buy Now to continue through Shopify checkout."
-        : "Preview mode: Shopify cart and checkout will be enabled after product variant IDs are connected.",
-    );
+  async function handleAddToCart() {
+    if (!variantId) {
+      setStatus("Preview mode: Shopify cart and checkout will be enabled after product variant IDs are connected.");
+      return;
+    }
+
+    setIsAdding(true);
+    setStatus("Adding this product to your Shopify cart...");
+
+    try {
+      await addItem(variantId);
+      setStatus("Added to cart. Review your cart drawer or continue browsing.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable to add product to cart.");
+    } finally {
+      setIsAdding(false);
+    }
   }
 
   async function handleBuyNow() {
@@ -71,11 +85,12 @@ export function ProductActions({ productTitle, variantId }: ProductActionsProps)
       <button
         type="button"
         onClick={handleAddToCart}
+        disabled={isAdding}
         className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-red-600 px-5 py-3 text-sm font-black text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
         aria-label={`Add ${productTitle} to cart`}
       >
         <CartIcon className="h-4 w-4" />
-        Add to Cart
+        {isAdding ? "Adding..." : "Add to Cart"}
       </button>
       <button
         type="button"
@@ -89,7 +104,7 @@ export function ProductActions({ productTitle, variantId }: ProductActionsProps)
       <p className="rounded-md bg-white px-3 py-2 text-sm leading-6 text-slate-600 sm:col-span-2">
         {status ??
           (variantId
-            ? "Shopify checkout is available for this product. Add to Cart will be expanded in a later cart drawer pass."
+            ? "Add this product to your cart or continue directly through secure Shopify checkout."
             : "Buttons are shown in preview mode. They will connect to Shopify checkout after Storefront API product data is live.")}
       </p>
     </div>

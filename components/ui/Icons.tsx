@@ -28,6 +28,17 @@ export function SearchIcon(props: IconProps) {
   );
 }
 
+export function ZoomInIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <circle cx="10.5" cy="10.5" r="5.5" />
+      <path d="m15 15 5 5" />
+      <path d="M10.5 8v5" />
+      <path d="M8 10.5h5" />
+    </IconBase>
+  );
+}
+
 export function UserIcon(props: IconProps) {
   return (
     <IconBase {...props}>
@@ -43,6 +54,44 @@ export function CartIcon(props: IconProps) {
       <path d="M4 5h2l1.5 10h10.2L20 8H8" />
       <circle cx="10" cy="20" r="1.4" />
       <circle cx="17" cy="20" r="1.4" />
+    </IconBase>
+  );
+}
+
+export function XIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M6 6l12 12" />
+      <path d="M18 6 6 18" />
+    </IconBase>
+  );
+}
+
+export function PlusIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </IconBase>
+  );
+}
+
+export function MinusIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M5 12h14" />
+    </IconBase>
+  );
+}
+
+export function TrashIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M4 7h16" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M6 7l1 14h10l1-14" />
+      <path d="M9 7V4h6v3" />
     </IconBase>
   );
 }

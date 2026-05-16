@@ -30,6 +30,121 @@
 
 ---
 
+## 2026-05-16
+
+### 当前对话收尾 / 交接：Header 产品搜索建议下拉
+
+- 当前状态：
+  - 已完成桌面端 Header 搜索框的产品自动建议下拉，当前分支为 `codex-homepage-ui-v1`，本轮搜索建议改动尚未提交。
+  - 本地已有 dev server 在 `http://localhost:3000` 运行；尝试启动新 dev server 时发现 3000 端口已有进程，因此继续复用现有服务做浏览器检查。
+  - 当前工作区仍包含此前购物车、产品图库、Shopify helper、首页素材草稿等未提交 / 未跟踪内容；后续提交时需要分清本轮 Header 搜索建议范围。
+- 本次目标：
+  - 在 Header 桌面搜索框中增加自动建议下拉：输入前几位字母后显示匹配产品。
+  - 点击建议或键盘高亮后回车直接进入对应产品详情页。
+  - 保持原有搜索提交行为：没有高亮建议时回车 / 搜索按钮仍进入 `/products?q=...`。
+- 本次完成：
+  - 新增 `components/layout/HeaderSearch.tsx` 客户端组件，支持 2 个字符以上触发建议、最多显示 5 个产品、点击产品跳转详情页、方向键高亮、`Escape` / 点击外部关闭。
+  - `components/layout/Header.tsx` 已将桌面搜索框替换为 `HeaderSearch`，移动端搜索入口保持原样。
+  - `app/layout.tsx` 已通过 `getShopifyProducts()` 为 Header 注入产品建议数据；如果 Shopify lookup 失败，Header 建议数据回退为空数组，不阻断页面渲染。
+  - 建议匹配字段包括产品 title、SKU、category、collection handle、series；建议项展示产品名和 `SKU / category` 小字。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已在 Chrome 本地 QA：`/products` 输入 `flo` 会出现 `Flowers` / `Flowerhouse Book Stand` 等建议；方向键高亮后回车可进入 `/products/flowers`。
+  - 已在 Chrome 本地 QA：输入 `tra` 后不选择建议直接回车，仍进入 `/products?q=tra` 并显示 3 个匹配产品。
+- 未完成事项：
+  - 本轮 Header 搜索建议改动尚未提交。
+  - 如要提交，建议重点纳入 `components/layout/HeaderSearch.tsx`、`components/layout/Header.tsx`、`app/layout.tsx`；但 `app/layout.tsx` 和 `Header.tsx` 当前也包含此前购物车相关改动，提交前需要重新复查 diff 边界。
+  - 上线前建议在 Chrome 自动翻译关闭状态下再做一次视觉复查，避免翻译弹窗遮挡 Header 搜索框判断。
+- 发现的问题：
+  - Chrome 自动翻译仍会把页面文案和可访问性树翻成中文；本轮 QA 中实际源码仍为英文文案。
+  - 本地启动 `pnpm dev` 时提示已有 3000 端口 dev server，尝试转 3001 后失败，因为同项目已有 dev server 运行；最终复用 3000 完成检查。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 如果继续搜索体验，优先检查 Header 搜索建议在移动端是否也需要扩展；当前实现只覆盖桌面端。
+  - 如果准备提交，先按功能边界拆分：Header 搜索建议、购物车、产品图库、首页素材草稿不要混在同一个提交里。
+- 备注：
+  - 本轮没有新增第三方依赖。
+  - 本轮没有修改 `.env.local`，没有暴露 Shopify token。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
+
+### 当前对话收尾 / 交接：产品详情页主图切换与放大浏览优化
+
+- 当前状态：
+  - 已完成产品详情页主图区域交互优化，当前分支为 `codex-homepage-ui-v1`，本轮图库 UI 改动尚未提交。
+  - 本地 `http://localhost:3000/products/flowers` 可继续预览；Chrome 页面翻译仍处于可用状态，因此可访问性树里部分英文文案会显示为中文。
+  - 当前工作区仍包含此前购物车、Header、Shopify helper、首页素材草稿等未提交 / 未跟踪内容；这些不属于本轮图库 UI 范围，后续提交时需要分清边界。
+- 本次目标：
+  - 去掉主图左上角 `Product Preview` 标签。
+  - 在主图左右两侧增加半透明圆形切图按钮，支持前后循环切换，hover 变红。
+  - 在主图右上角增加放大镜，打开全屏大图浏览；放大层支持左右切图、底部页码和关闭。
+  - 根据项目 owner 反馈，继续微调按钮视觉：主图放大镜改为透明背景、白色大图标，hover 时图标变红。
+- 本次完成：
+  - `components/product/ProductGallery.tsx` 已新增主图前后切换、全屏预览层、`Escape` 关闭、预览层左右切图与底部 `当前/总数` 页码。
+  - 放大层底部页码已加 `translate="no"` / `notranslate`，降低 Chrome 自动翻译影响数字同步的概率；实测切图时页码可从 `1/5` 更新到 `2/5`。
+  - 主图右上角放大镜已调整为透明背景、白色图标、hover 红色图标；图标和触控区已放大以提高可见性。
+  - `components/ui/Icons.tsx` 已新增 `ZoomInIcon`，继续使用项目内自有 SVG icon 风格，没有新增第三方依赖。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已在 Chrome 本地 QA `/products/flowers`：主图标签已移除，主图左右按钮可切图，放大层可打开 / 关闭，放大层页码随切图变化，底部页码字体已缩小。
+- 未完成事项：
+  - 本轮图库 UI 改动尚未提交。
+  - 如要提交，建议只纳入 `components/product/ProductGallery.tsx` 和 `components/ui/Icons.tsx`，避免误带此前购物车与首页素材草稿。
+  - 上线前建议再做一次移动端真实浏览器检查，重点看主图放大镜在浅色图片上的可见性、全屏预览层底部控制条是否遮挡产品主体。
+- 发现的问题：
+  - Chrome 自动翻译会改写部分页面文本和可访问性树，曾影响放大层底部数字显示判断；当前对页码节点做了局部 `notranslate` 处理。
+  - 放大镜如果使用浅灰圆形背景，在部分主图上存在视觉过重的问题；当前按反馈改为透明背景白色图标。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 如果继续产品详情页 UI，先复查 `ProductGallery` 当前视觉效果，再决定是否做移动端微调或统一图库按钮尺寸。
+  - 如果准备提交，先确认是否只提交图库 UI，还是连同此前购物车功能一起分批提交。
+- 备注：
+  - 本轮没有新增第三方依赖。
+  - 本轮没有修改 `.env.local`，没有暴露 Shopify token。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
+
+### 当前对话收尾 / 交接：Shopify 购物车基础可用流程完善
+
+- 当前状态：
+  - 已完成 Shopify 购物车基础可用流程实现，当前分支为 `codex-homepage-ui-v1`，本轮购物车改动尚未提交。
+  - 本地 dev server 仍在 3000 端口运行，可通过 `http://localhost:3000` 继续预览。
+  - 当前工作区还有 `public/images/home/` 下未跟踪的首页素材草稿文件，和本轮购物车功能无关，后续提交时不要误包含。
+- 本次目标：
+  - 完善 DTC 基础购物车流程：商品详情页 Add to Cart、Header 数量、购物车抽屉、数量调整、删除商品、继续 Shopify Checkout。
+  - 保持 Buy Now 可用：为当前商品创建一件商品的 Shopify cart，并跳转到 Shopify checkout。
+  - 商品列表和首页商品卡片本轮继续保持“进入详情页优先”，不做 quick add。
+- 本次完成：
+  - `lib/shopify.ts` 已新增 Shopify Cart API helper：创建 cart、读取 cart、添加 line、更新数量、删除 line，并返回 `checkoutUrl`。
+  - 新增 `/api/cart` 与 `/api/cart/lines` 服务端 route，所有 Shopify Storefront API 调用仍在服务端执行，客户端只保存 Shopify `cartId`。
+  - 新增全局 cart provider、cart drawer 和 Header cart count；购物车状态可在全站共享，并可从 `localStorage` 恢复。
+  - 商品详情页 Add to Cart 已改为真实加购并打开 cart drawer；Buy Now 继续创建单商品 Shopify checkout。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`。
+  - 已在 Chrome 本地 QA `/products/steam-train-1`：Add to Cart 打开抽屉，Header 数量更新，数量加减更新 totals / count，Remove 后购物车为空，关闭后重新打开可继续读取本地 cart 状态。
+  - Continue to checkout 和 Buy Now 均可跳转 Shopify；当前 Shopify 店铺处于 password locked 状态，因此最终进入 `jiestartoys.myshopify.com/password`，这不是前端错误。
+- 未完成事项：
+  - 本轮购物车改动尚未提交。
+  - 独立 `/cart` 页面、列表页 quick add、账号登录、折扣码 UI、运费估算、B2B cart 和 abandoned-cart 行为不在本轮范围。
+  - 上线前建议在 Vercel / 生产环境再复查 Add to Cart、Checkout 跳转，以及 Shopify password / 正式开店状态。
+  - 当前 Chrome 自动翻译仍可能影响视觉检查和 DOM 稳定性；上线前仍需决定是否恢复 notranslate 防护。
+- 发现的问题：
+  - Shopify 店铺当前仍有 storefront password，Checkout / Buy Now 会进入 Shopify password 页面。
+  - 浏览器 QA 时 Chrome 自动翻译处于开启状态，部分可访问性树文本显示为中文；源码前台文案仍保持英文。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 先复查购物车 diff 和未跟踪文件边界，避免把首页素材草稿纳入购物车提交。
+  - 如项目 owner 确认购物车体验，建议再运行 `git diff --check`、`pnpm lint`、`pnpm build`，然后提交购物车功能。
+  - 后续可选方向：生产环境 Shopify checkout 复测、恢复 notranslate 防护，或单独做产品列表 quick add。
+- 备注：
+  - 本轮没有新增第三方依赖。
+  - 本轮没有修改 `.env.local`，没有暴露 Shopify token。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
+
 ## 2026-05-15
 
 ### 当前对话收尾 / 交接：首页 Hero Banner 真实产品合成图替换与网页显示优化

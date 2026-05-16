@@ -1,9 +1,15 @@
 import Link from "next/link";
-import { navigation } from "@/lib/data";
-import { CartIcon, MenuIcon, SearchIcon, UserIcon } from "@/components/ui/Icons";
+import { navigation, type Product } from "@/lib/data";
+import { MenuIcon, SearchIcon, UserIcon } from "@/components/ui/Icons";
 import { SiteLogo } from "@/components/layout/SiteLogo";
+import { CartHeaderButton } from "@/components/cart/CartHeaderButton";
+import { HeaderSearch } from "@/components/layout/HeaderSearch";
 
-export function Header() {
+type HeaderProps = {
+  searchProducts?: Product[];
+};
+
+export function Header({ searchProducts = [] }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center gap-5 px-5 py-4 lg:px-8">
@@ -24,48 +30,19 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <form
-            action="/products"
-            role="search"
-            className="flex h-11 w-64 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm text-slate-500 shadow-sm transition focus-within:border-red-300 focus-within:ring-2 focus-within:ring-red-100 hover:border-slate-300"
-          >
-            <label htmlFor="site-search" className="sr-only">
-              Search products
-            </label>
-            <input
-              id="site-search"
-              name="q"
-              type="search"
-              placeholder="Search products..."
-              className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
-            />
-            <button type="submit" aria-label="Search products" className="rounded-sm p-1 text-slate-700 transition hover:text-red-600">
-              <SearchIcon className="h-4 w-4" />
-            </button>
-          </form>
-          <Link href="/contact" className="flex h-11 items-center gap-2 rounded-md px-2 text-sm font-bold text-slate-700 hover:text-red-600">
+          <HeaderSearch products={searchProducts} />
+          <Link href="/account" className="flex h-11 items-center gap-2 rounded-md px-2 text-sm font-bold text-slate-700 hover:text-red-600">
             <UserIcon className="h-5 w-5" />
             <span>Account</span>
           </Link>
-          <Link href="/products" className="relative flex h-11 items-center gap-2 rounded-md px-2 text-sm font-bold text-slate-700 hover:text-red-600">
-            <CartIcon className="h-5 w-5" />
-            <span>Cart</span>
-            <span className="absolute -right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
-              0
-            </span>
-          </Link>
+          <CartHeaderButton />
         </div>
 
         <div className="ml-auto flex items-center gap-2 lg:hidden">
           <Link href="/products" aria-label="Search products" className="rounded-md p-2 text-slate-800 hover:bg-slate-100">
             <SearchIcon className="h-5 w-5" />
           </Link>
-          <Link href="/products" aria-label="Cart" className="relative rounded-md p-2 text-slate-800 hover:bg-slate-100">
-            <CartIcon className="h-5 w-5" />
-            <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
-              0
-            </span>
-          </Link>
+          <CartHeaderButton compact />
         </div>
 
         <details className="group lg:hidden">
@@ -79,6 +56,10 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
+              <Link href="/account" className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-bold text-slate-800 hover:bg-slate-50">
+                <UserIcon className="h-5 w-5 text-red-600" />
+                Account
+              </Link>
             </nav>
           </div>
         </details>
