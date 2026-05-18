@@ -50,8 +50,8 @@ export const navigation = [
   { label: "Products", href: "/products" },
   { label: "Wholesale", href: "/wholesale" },
   { label: "Custom Solutions", href: "/custom-solutions" },
-  { label: "About", href: "/about" },
   { label: "Blog", href: "/blog" },
+  { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
 
