@@ -30,6 +30,83 @@
 
 ---
 
+## 2026-05-18
+
+### 当前对话收口 / 交接：V1 页面复查、Checkout 与询盘边界确认
+
+- 当前状态：
+  - 当前分支仍为 `codex-homepage-ui-v1`。
+  - 代码在本轮继续做了小范围 V1 收口修复，重点是产品列表 CTA、Wholesale 目录请求文案、分类轮播首屏图片加载。
+  - 本地 dev server 在 `http://localhost:3000` 用于浏览器复查。
+- 本次目标：
+  - 执行上一轮计划：复查 Products / Product Detail / Collections / Contact，确认 Shopify checkout 与询盘闭环状态，并做上线前必要小修。
+- 本次完成：
+  - Products / Product Detail / Collections / Contact / Wholesale 已做桌面与移动端浏览器 QA。
+  - 产品列表卡片 CTA 从 `Add to Cart` 改为 `View Details`，避免列表页按钮看起来像直接加购但实际进入详情页。
+  - 分类轮播首屏可见图片改为优先加载，减少首屏类别卡片图片空白。
+  - Wholesale 表单和 FAQ 文案收紧为“Request / review / follow-up”，避免在邮件或 CRM 未接入前承诺自动发送 catalog / price list。
+  - 已验证 Add to Cart 后可生成 Shopify checkout URL，但最终仍进入 Shopify password 页面。
+  - 已验证 `/api/inquiry` 可接收 wholesale 请求并返回 `deliveryConfigured:false`。
+- 验证结果：
+  - `pnpm test` 已通过：8 个测试全部通过。
+  - 浏览器 QA 结果：上述关键页面在 1366px 桌面与 390px 移动端无水平溢出，首屏可见图片无加载失败，关键 H1 / CTA / 表单入口存在。
+  - Checkout 验证结果：`Continue to Shopify Checkout` 可生成 `jiestartoys.myshopify.com/cart/...` URL，但最终落到 `https://jiestartoys.myshopify.com/password`。
+  - 询盘接口验证结果：本地 POST `/api/inquiry` 返回 `{"ok":true,"deliveryConfigured":false,"contactEmail":"info@jiestartoys.com"}`。
+- 未完成事项：
+  - 真实 Shopify checkout 仍需等 Shopify storefront password / 开店状态处理后再做生产完整复测。
+  - 询盘接口仍未接邮件、CRM 或持久化存储；上线前如果要业务闭环，需要新增真实投递方案。
+  - About 页面和其他品牌信任区仍需要真实 JIESTAR 工厂、团队、检测资料、非产品图片替换占位素材。
+- 发现的问题：
+  - 产品列表按钮文案与实际行为不一致，已修正。
+  - Wholesale 文案此前仍存在“发送 catalog / price list”的偏强承诺，已收紧。
+  - 浏览器中残留旧 cart 状态会影响 QA 判断，本轮已通过 UI 删除残留商品后复查。
+- 下一次对话建议目标：
+  - 优先决定询盘真实投递方案：邮件发送、CRM、Google Sheet / Airtable、或先接收后人工导出。
+  - 处理 Shopify storefront password / 正式开店状态后，重新完整复测 checkout。
+  - 若业务闭环确认，再进入真实素材替换与最终上线检查。
+- 备注：
+  - 本轮没有新增第三方依赖。
+  - 本轮没有修改 `.env.local`，没有暴露 Shopify token。
+
+### 当前对话收尾 / 交接：About 页面改版、产品分页、Wholesale 文案与导航顺序发布
+
+- 当前状态：
+  - 当前分支为 `codex-homepage-ui-v1`，本地已与 `origin/codex-homepage-ui-v1` 同步。
+  - 本轮涉及的代码已提交并 push 到 GitHub。
+  - 本地 dev server 曾在 `http://localhost:3000` 用于页面预览。
+- 本次目标：
+  - 按页面审核反馈完成 About 页面方向调整、产品页分页、Wholesale 首屏英文文案、以及主导航顺序调整。
+  - 将已确认的小改动提交并推送到 GitHub。
+- 本次完成：
+  - About 页面已改为 factory tour / brand trust 方向，并提交为 `9346727 feat: redesign about page as factory tour`。
+  - Products 页面已加入 `page` 参数和产品目录分页，产品目录信任条与提示文案也完成微调。
+  - Wholesale hero 文案已更新为 `WHOLESALE PROGRAM`、`Request Wholesale Catalog & Pricing`、`Request Catalog`，右侧流程卡也改为 catalog / private pricing / MOQ follow-up 语义。
+  - 主导航顺序已调整为 `Home / Products / Wholesale / Custom Solutions / Blog / About / Contact`，桌面和移动端共用同一顺序。
+  - 已提交并推送：
+    - `d6eb91f feat: improve product catalog pagination and wholesale copy`
+    - `9346727 feat: redesign about page as factory tour`
+    - `77f480c fix: reorder main navigation links`
+- 验证结果：
+  - `d6eb91f` 提交前已通过：`git diff --check`、`pnpm lint`、`pnpm build`。
+  - 导航顺序修改已通过：`git diff --check`、`pnpm lint`。
+  - 已在 in-app browser 验证 `/wholesale` 新文案存在且无水平溢出。
+  - 已在 in-app browser 验证首页主导航顺序为 `Home, Products, Wholesale, Custom Solutions, Blog, About, Contact`。
+  - push 后 `git status --short --branch` 显示本地与远端同步。
+- 未完成事项：
+  - About 页面仍需后续用真实 JIESTAR 工厂、团队、产品、检测资料图片替换当前占位素材。
+  - 后续还需要继续复查 Products / Product Detail / Collections / Contact 等页面的最终视觉和移动端体验。
+  - 如果继续调整页面后需要上线，仍建议跑完整 `pnpm build` 并在浏览器复查关键路径。
+- 发现的问题：
+  - 本轮没有发现新的构建或 lint 问题。
+  - 页面视觉调整期间需要注意 Chrome 自动翻译可能影响浏览器判断，前台源码文案仍以英文为准。
+- 下一次对话建议目标：
+  - 新对话开始后先读取本文件。
+  - 优先继续按浏览器页面逐页检查：Products、Product Detail、Collections、Contact。
+  - 如果页面方向确认，可进入真实素材替换、Shopify checkout 生产复测、询盘真实投递等上线前任务。
+- 备注：
+  - 本轮没有修改 `.env.local`，没有暴露 Shopify token。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
+
 ## 2026-05-16
 
 ### 今日工作收尾 / 交接：安全稳定性优化、产品页搜索体验与代码发布

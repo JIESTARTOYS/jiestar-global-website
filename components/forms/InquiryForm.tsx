@@ -45,7 +45,7 @@ export function InquiryForm({ type }: InquiryFormProps) {
       form.reset();
       setSuccessMessage(
         isWholesale
-          ? `Thank you. Your wholesale inquiry has been received. For urgent catalog or pricing requests, email ${data?.contactEmail ?? "info@jiestartoys.com"} directly.`
+          ? `Thank you. Your wholesale catalog request has been received for review. For urgent pricing discussions, email ${data?.contactEmail ?? "info@jiestartoys.com"} directly.`
           : `Inquiry received. Our team can follow up by email or WhatsApp. For urgent requests, email ${data?.contactEmail ?? "info@jiestartoys.com"} directly.`,
       );
       setStatus("success");
@@ -62,11 +62,11 @@ export function InquiryForm({ type }: InquiryFormProps) {
           {type === "wholesale" ? "Wholesale inquiry" : type === "custom" ? "Custom project inquiry" : "Inquiry form"}
         </p>
         <h2 className="mt-2 text-xl font-black text-slate-950">
-          {type === "wholesale" ? "Get the wholesale price catalog" : type === "custom" ? "Start a custom product discussion" : "Send your message"}
+          {type === "wholesale" ? "Request the wholesale price catalog" : type === "custom" ? "Start a custom product discussion" : "Send your message"}
         </h2>
         <p className="mt-2 text-sm leading-6 text-slate-500">
           {isWholesale
-            ? "Leave your email and the JIESTAR team will send the wholesale catalog with pricing information, then follow up by email or WhatsApp if provided."
+            ? "Leave your email to start the wholesale catalog request. Company, country, WhatsApp, and category details help the JIESTAR team prepare a relevant follow-up."
             : "Fields marked with * are required. Share enough detail for the JIESTAR team to route your inquiry correctly."}
         </p>
       </div>
@@ -140,7 +140,7 @@ export function InquiryForm({ type }: InquiryFormProps) {
         disabled={status === "loading"}
         className="min-h-12 rounded-md bg-red-600 px-5 py-3 text-sm font-black text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-500"
       >
-        {status === "loading" ? "Submitting..." : isWholesale ? "Get Wholesale Catalog" : "Submit Inquiry"}
+        {status === "loading" ? "Submitting..." : isWholesale ? "Request Wholesale Catalog" : "Submit Inquiry"}
       </button>
 
       {status === "success" ? (

@@ -166,7 +166,7 @@ export function CategoryCarousel({ collections, products }: CategoryCarouselProp
               : "scrollbar-none flex cursor-grab gap-3 overflow-x-auto scroll-smooth px-1 pb-1"
           }
         >
-          {collections.map((collection) => {
+          {collections.map((collection, index) => {
             const count = productCount(collection, products);
 
             return (
@@ -185,6 +185,7 @@ export function CategoryCarousel({ collections, products }: CategoryCarouselProp
                       sizes="13rem"
                       draggable={false}
                       unoptimized={shouldBypassNextImageOptimization(collection.image)}
+                      priority={index < 6}
                       className="object-cover transition duration-300 group-hover:scale-105"
                     />
                   ) : (

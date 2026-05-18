@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Product } from "@/lib/data";
-import { CartIcon, HeartIcon } from "@/components/ui/Icons";
+import { ArrowRightIcon, HeartIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 
 export function CatalogProductCard({ product }: { product: Product }) {
@@ -38,11 +38,10 @@ export function CatalogProductCard({ product }: { product: Product }) {
         <Link
           href={`/products/${product.handle}`}
           className="mt-3 flex min-h-9 w-full items-center justify-center gap-2 rounded-md bg-red-600 px-3 py-2 text-xs font-black text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:min-h-10 sm:text-sm"
-          aria-label={`View ${product.title} before adding to cart`}
+          aria-label={`View ${product.title} details`}
         >
-          <CartIcon className="h-4 w-4" />
-          <span className="hidden sm:inline">Add to Cart</span>
-          <span className="sm:hidden">Add</span>
+          <span>View Details</span>
+          <ArrowRightIcon className="h-4 w-4" />
         </Link>
       </div>
     </article>

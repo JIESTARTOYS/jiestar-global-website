@@ -9,7 +9,7 @@ import { createMetadata } from "@/lib/seo";
 export const metadata = createMetadata({
   title: "Request Wholesale Price Catalog",
   description:
-    "Leave your email to request the JIESTAR wholesale price catalog, then continue product, MOQ, and order discussions by email or WhatsApp.",
+    "Leave your email to request JIESTAR wholesale catalog and private pricing follow-up for product, MOQ, and order discussions.",
   path: "/wholesale",
 });
 
@@ -31,14 +31,14 @@ const buyers = [
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 const advantages: Array<[string, string, IconComponent]> = [
-  ["Wholesale price catalog", "Receive product catalog information with wholesale pricing direction by email.", FactoryIcon],
+  ["Wholesale catalog request", "Start a private catalog and pricing follow-up with JIESTAR.", FactoryIcon],
   ["Category options", "Review existing JIESTAR product lines before choosing items for your market.", StoreIcon],
   ["Follow-up discussion", "Continue product, MOQ, logistics, and order questions through WhatsApp, email, or social media.", TruckIcon],
 ];
 
 const process: Array<[string, string, string, IconComponent]> = [
   ["01", "Inquiry Review", "Submit your email and optional business details so the team can identify buyer type, market direction, and product fit.", UserIcon],
-  ["02", "Catalog Matching", "JIESTAR matches suitable existing product lines and sends the relevant wholesale catalog or price list privately.", PackageIcon],
+  ["02", "Catalog Matching", "JIESTAR reviews your market and product direction, then follows up with relevant catalog and pricing information privately.", PackageIcon],
   ["03", "Private Follow-Up", "Continue by email, WhatsApp, or social media to discuss MOQ, hot-selling categories, packaging, and logistics questions.", GlobeIcon],
   ["04", "Order Planning", "Confirm sample needs, quantity direction, lead time, shipping approach, and future replenishment planning.", TruckIcon],
 ];
@@ -46,7 +46,7 @@ const process: Array<[string, string, string, IconComponent]> = [
 const faqs = [
   [
     "Can I request a product catalog before placing an order?",
-    "Yes. Leave your email and JIESTAR can send wholesale catalog and pricing information before detailed order discussion.",
+    "Yes. Leave your email to start a wholesale catalog request before detailed order discussion.",
   ],
   [
     "Do I need to fill in every form field?",
@@ -54,7 +54,7 @@ const faqs = [
   ],
   [
     "How do we continue after receiving the catalog?",
-    "After the catalog is sent, product selection, MOQ, shipping, packaging, and order details can be discussed through WhatsApp, email, or other social media channels.",
+    "After JIESTAR reviews the inquiry and follows up, product selection, MOQ, shipping, packaging, and order details can be discussed through WhatsApp, email, or other social media channels.",
   ],
   [
     "What if I need custom packaging, OEM / ODM, or an exclusive product line?",
@@ -215,11 +215,11 @@ export default function WholesalePage() {
             <p className="text-sm font-semibold uppercase tracking-normal text-red-300">Private wholesale pricing</p>
             <h2 className="mt-3 text-3xl font-semibold tracking-normal text-white">Wholesale pricing is shared after inquiry review</h2>
             <p className="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
-              Submit your email and the JIESTAR team will review your business direction before sending catalog and wholesale pricing information. MOQ, shipping, packaging, product selection, and order planning can be confirmed afterward through WhatsApp, email, or other social media.
+              Submit your email and the JIESTAR team will review your business direction before following up with relevant catalog and wholesale pricing information. MOQ, shipping, packaging, product selection, and order planning can be confirmed afterward through WhatsApp, email, or other social media.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row lg:shrink-0">
-            <HeroBannerButton href="#wholesale-form">Get Wholesale Catalog</HeroBannerButton>
+            <HeroBannerButton href="#wholesale-form">Request Wholesale Catalog</HeroBannerButton>
             <HeroBannerButton href="/products" variant="secondary">View Product Lines</HeroBannerButton>
           </div>
         </div>
@@ -260,8 +260,8 @@ export default function WholesalePage() {
           <div>
             <SectionHeader
               eyebrow="Inquiry"
-              title="Get the wholesale price catalog"
-              description="Submit your email to start the wholesale catalog request. Optional WhatsApp, company, country, and category details help JIESTAR match the right catalog and pricing information before follow-up."
+              title="Request the wholesale price catalog"
+              description="Submit your email to start the wholesale catalog request. Optional WhatsApp, company, country, and category details help JIESTAR prepare the right catalog and pricing follow-up."
             />
             <div className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-sm font-semibold text-slate-950">Useful details for catalog matching</p>
