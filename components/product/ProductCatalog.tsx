@@ -18,6 +18,7 @@ import {
 type ProductCatalogProps = {
   allProducts: Product[];
   collections: Collection[];
+  selectedPage?: string;
   selectedFilters: {
     query?: string;
     category?: string;
@@ -30,6 +31,8 @@ type ProductCatalogProps = {
 type FilterKey = "query" | "category" | "pieces" | "price" | "sort";
 type ProductFilters = ProductCatalogProps["selectedFilters"];
 type FilterAction = (key: FilterKey, value?: string) => void;
+
+const PAGE_SIZE = 12;
 
 function priceNumber(price: string) {
   return Number(price.replace(/[^0-9.]/g, "")) || 0;
@@ -162,6 +165,20 @@ function filterProducts(products: Product[], selectedFilters: ProductFilters) {
   );
 }
 
+function normalizePage(value?: string | number) {
+  const page = typeof value === "number" ? value : Number.parseInt(value ?? "", 10);
+
+  return Number.isFinite(page) && page > 1 ? page : 1;
+}
+
+function pageFromUrl(defaultPage?: string) {
+  if (typeof window === "undefined") {
+    return normalizePage(defaultPage);
+  }
+
+  return normalizePage(new URLSearchParams(window.location.search).get("page") ?? defaultPage);
+}
+
 function filtersFromUrl(defaultFilters: ProductFilters): ProductFilters {
   if (typeof window === "undefined") {
     return defaultFilters;
@@ -178,11 +195,7 @@ function filtersFromUrl(defaultFilters: ProductFilters): ProductFilters {
   };
 }
 
-function buildFilterHref(
-  selectedFilters: ProductFilters,
-  key: FilterKey,
-  value?: string,
-) {
+function buildProductsHref(selectedFilters: ProductFilters, page = 1) {
   const params = new URLSearchParams();
 
   for (const [filterKey, filterValue] of Object.entries(selectedFilters)) {
@@ -193,19 +206,29 @@ function buildFilterHref(
     params.set(filterKey === "query" ? "q" : filterKey, filterValue);
   }
 
-  if (value) {
-    params.set(key === "query" ? "q" : key, value);
-  } else {
-    params.delete(key === "query" ? "q" : key);
-  }
-
-  if (params.get("sort") === "popular") {
-    params.delete("sort");
+  if (page > 1) {
+    params.set("page", String(page));
   }
 
   const query = params.toString();
 
   return query ? `/products?${query}` : "/products";
+}
+
+function buildFilterHref(
+  selectedFilters: ProductFilters,
+  key: FilterKey,
+  value?: string,
+) {
+  const nextFilters = { ...selectedFilters };
+
+  if (value) {
+    nextFilters[key] = value;
+  } else {
+    delete nextFilters[key];
+  }
+
+  return buildProductsHref(nextFilters);
 }
 
 function buildFilters(selectedFilters: ProductFilters, key: FilterKey, value?: string): ProductFilters {
@@ -223,6 +246,81 @@ function buildFilters(selectedFilters: ProductFilters, key: FilterKey, value?: s
   }
 
   return nextFilters;
+}
+
+function Pagination({
+  currentPage,
+  totalPages,
+  selectedFilters,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  selectedFilters: ProductFilters;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+  const linkClass =
+    "flex min-h-10 min-w-10 items-center justify-center rounded-md border px-3 text-sm font-black transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600";
+  const disabledClass = "pointer-events-none border-slate-200 bg-slate-50 text-slate-300";
+  const inactiveClass = "border-slate-200 bg-white text-slate-700 hover:border-red-200 hover:text-red-600";
+  const activeClass = "border-red-600 bg-red-600 text-white shadow-sm shadow-red-600/20";
+
+  return (
+    <nav
+      className="flex flex-wrap items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-3 shadow-sm shadow-slate-950/[0.03] sm:justify-between sm:px-4"
+      aria-label="Product pagination"
+    >
+      <a
+        href={buildProductsHref(selectedFilters, currentPage - 1)}
+        onClick={(event) => {
+          event.preventDefault();
+          if (currentPage > 1) {
+            onPageChange(currentPage - 1);
+          }
+        }}
+        aria-disabled={currentPage === 1 ? "true" : undefined}
+        className={`${linkClass} ${currentPage === 1 ? disabledClass : inactiveClass}`}
+      >
+        Previous
+      </a>
+
+      <div className="flex flex-wrap justify-center gap-2">
+        {pages.map((page) => (
+          <a
+            key={page}
+            href={buildProductsHref(selectedFilters, page)}
+            onClick={(event) => {
+              event.preventDefault();
+              onPageChange(page);
+            }}
+            aria-current={currentPage === page ? "page" : undefined}
+            className={`${linkClass} ${currentPage === page ? activeClass : inactiveClass}`}
+          >
+            {page}
+          </a>
+        ))}
+      </div>
+
+      <a
+        href={buildProductsHref(selectedFilters, currentPage + 1)}
+        onClick={(event) => {
+          event.preventDefault();
+          if (currentPage < totalPages) {
+            onPageChange(currentPage + 1);
+          }
+        }}
+        aria-disabled={currentPage === totalPages ? "true" : undefined}
+        className={`${linkClass} ${currentPage === totalPages ? disabledClass : inactiveClass}`}
+      >
+        Next
+      </a>
+    </nav>
+  );
 }
 
 function FilterSection({
@@ -529,10 +627,10 @@ function MobileControls({
 
 function TrustStrip() {
   const items = [
-    { title: "Official JIESTAR Store", text: "Genuine products & quality guarantee", icon: StoreIcon },
-    { title: "Shipping Support", text: "Options confirmed at checkout", icon: TruckIcon },
-    { title: "Returns Review", text: "Clear support path after purchase", icon: RotateIcon },
-    { title: "Secure Checkout", text: "100% secure payments", icon: ShieldIcon },
+    { title: "Official JIESTAR Store", text: "Genuine products from the brand", icon: StoreIcon },
+    { title: "Tracked Shipping", text: "Clear delivery updates after dispatch", icon: TruckIcon },
+    { title: "After-Sales Support", text: "Help with missing parts and orders", icon: RotateIcon },
+    { title: "Secure Checkout", text: "Encrypted payment and order protection", icon: ShieldIcon },
   ];
 
   return (
@@ -561,7 +659,11 @@ function TrustStrip() {
 export function ProductCatalog(props: ProductCatalogProps) {
   const { allProducts } = props;
   const [selectedFilters, setSelectedFilters] = useState<ProductFilters>(props.selectedFilters);
+  const [currentPage, setCurrentPage] = useState(() => normalizePage(props.selectedPage));
   const products = useMemo(() => filterProducts(allProducts, selectedFilters), [allProducts, selectedFilters]);
+  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedProducts = products.slice((safeCurrentPage - 1) * PAGE_SIZE, safeCurrentPage * PAGE_SIZE);
   const activeFilterCount = [
     selectedFilters.query,
     selectedFilters.category,
@@ -572,9 +674,9 @@ export function ProductCatalog(props: ProductCatalogProps) {
   const updateFilters = useCallback(
     (nextFilters: ProductFilters) => {
       setSelectedFilters(nextFilters);
+      setCurrentPage(1);
 
-      const nextHref = buildFilterHref(nextFilters, "sort", nextFilters.sort);
-      window.history.pushState(null, "", nextHref);
+      window.history.pushState(null, "", buildProductsHref(nextFilters));
     },
     [],
   );
@@ -586,19 +688,36 @@ export function ProductCatalog(props: ProductCatalogProps) {
   );
   const clearFilters = useCallback(() => {
     setSelectedFilters({ sort: "popular" });
+    setCurrentPage(1);
     window.history.pushState(null, "", "/products");
   }, []);
+  const handlePageChange = useCallback(
+    (page: number) => {
+      const nextPage = Math.min(Math.max(1, page), totalPages);
+
+      setCurrentPage(nextPage);
+      window.history.pushState(null, "", buildProductsHref(selectedFilters, nextPage));
+    },
+    [selectedFilters, totalPages],
+  );
 
   useEffect(() => {
     const handlePopState = () => {
       setSelectedFilters(filtersFromUrl(props.selectedFilters));
+      setCurrentPage(pageFromUrl(props.selectedPage));
     };
 
     handlePopState();
     window.addEventListener("popstate", handlePopState);
 
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [props.selectedFilters]);
+  }, [props.selectedFilters, props.selectedPage]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      window.history.replaceState(null, "", buildProductsHref(selectedFilters, totalPages));
+    }
+  }, [currentPage, selectedFilters, totalPages]);
 
   return (
     <div className="bg-[#f7f8fa]">
@@ -622,7 +741,7 @@ export function ProductCatalog(props: ProductCatalogProps) {
             </div>
             <div className="hidden rounded-lg border border-red-200 bg-white px-4 py-3 text-sm font-black text-red-600 shadow-sm shadow-slate-950/[0.03] lg:flex lg:items-center lg:gap-2">
               <TruckIcon className="h-5 w-5" />
-              Shipping confirmed at checkout
+              Global shipping available
             </div>
           </div>
 
@@ -656,15 +775,14 @@ export function ProductCatalog(props: ProductCatalogProps) {
               {activeFilterCount > 0 ? (
                 <div className="flex items-start justify-between gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">
                   <p>
-                    Showing <strong>{products.length}</strong> of <strong>{allProducts.length}</strong> products
+                    Showing <strong>{products.length}</strong> filtered products
                     {searchQuery ? (
                       <>
                         {" "}
                         for <strong>&ldquo;{selectedFilters.query?.trim()}&rdquo;</strong>
                       </>
                     ) : null}
-                    {" "}
-                    with the selected filters.
+                    .
                   </p>
                   <button
                     type="button"
@@ -677,11 +795,19 @@ export function ProductCatalog(props: ProductCatalogProps) {
               ) : null}
 
               {products.length ? (
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3">
-                  {products.map((product) => (
-                    <CatalogProductCard key={product.id} product={product} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                    {paginatedProducts.map((product) => (
+                      <CatalogProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                  <Pagination
+                    currentPage={safeCurrentPage}
+                    totalPages={totalPages}
+                    selectedFilters={selectedFilters}
+                    onPageChange={handlePageChange}
+                  />
+                </>
               ) : (
                 <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
                   <h2 className="text-xl font-black text-slate-950">

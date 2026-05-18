@@ -14,9 +14,9 @@ export const metadata = createMetadata({
 });
 
 const heroStats = [
-  ["Inquiry", "Business profile review"],
-  ["Catalog", "Private wholesale pricing"],
-  ["Follow-up", "Email, WhatsApp, social media"],
+  ["INQUIRY", "Business profile review"],
+  ["CATALOG", "Wholesale catalog and private pricing"],
+  ["FOLLOW-UP", "MOQ, shipping, and order details"],
 ];
 
 const buyers = [
@@ -79,15 +79,18 @@ export default function WholesalePage() {
         </div>
         <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_0.72fr] lg:items-end">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-normal text-red-300">Wholesale price catalog</p>
+            <p className="text-sm font-semibold uppercase tracking-normal text-red-300">WHOLESALE PROGRAM</p>
             <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-normal sm:text-5xl lg:text-[56px]">
-              Request Wholesale Price Catalog
+              Request Wholesale Catalog & Pricing
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-300 sm:text-lg">
-              Request private wholesale catalog and pricing information for retailers, distributors, ecommerce sellers, and channel buyers. JIESTAR reviews your inquiry, sends relevant product materials, then continues MOQ, logistics, and order discussions by email, WhatsApp, or social media.
+              Apply to receive JIESTAR wholesale catalogs, product materials, and private pricing for retailers, distributors, e-commerce sellers, and channel buyers.
+              <br />
+              <br />
+              Our team will review your inquiry and follow up with MOQ, shipping, and order details through your preferred contact channel.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <HeroBannerButton href="#wholesale-form">Get Wholesale Catalog</HeroBannerButton>
+              <HeroBannerButton href="#wholesale-form">Request Catalog</HeroBannerButton>
               <HeroBannerButton href="#catalog-request" variant="secondary">How It Works</HeroBannerButton>
               <HeroBannerButton href="/products" variant="secondary">
                 View Products
@@ -102,8 +105,8 @@ export default function WholesalePage() {
                 <GlobeIcon className="size-5" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">Wholesale request path</p>
-                <p className="text-sm text-slate-400">Inquiry review before private pricing</p>
+                <p className="text-sm font-semibold text-white">How wholesale requests work</p>
+                <p className="text-sm text-slate-400">Reviewed before private pricing</p>
               </div>
             </div>
             <dl className="grid gap-4 pt-5">

@@ -15,6 +15,7 @@ type ProductSearchParams = {
   pieces?: string | string[];
   price?: string | string[];
   sort?: string | string[];
+  page?: string | string[];
 };
 
 type ProductsPageProps = {
@@ -34,6 +35,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const selectedPieces = getParamValue(params.pieces);
   const selectedPrice = getParamValue(params.price);
   const selectedSort = getParamValue(params.sort) ?? "popular";
+  const selectedPage = getParamValue(params.page);
 
   return (
     <ProductCatalog
@@ -46,6 +48,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         price: selectedPrice,
         sort: selectedSort,
       }}
+      selectedPage={selectedPage}
     />
   );
 }
