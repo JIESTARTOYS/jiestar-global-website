@@ -4,9 +4,9 @@ import { getBlogPosts } from "@/lib/blog";
 import { ArrowRightIcon } from "@/components/ui/Icons";
 
 const images = [
-  "https://images.unsplash.com/photo-1560961911-ba7ef651a56c?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=900&q=80",
+  "/images/categories/category-modular-buildings.png",
+  "/images/categories/category-technic.png",
+  "/images/categories/category-brick-alliance.png",
 ];
 
 export function BlogPreview() {

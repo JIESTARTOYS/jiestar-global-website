@@ -17,9 +17,9 @@ export default function BlogPage() {
   const [featuredPost, ...latestPosts] = posts;
   const categories = Array.from(new Set(posts.map((post) => post.category)));
   const articleImages = [
-    "https://images.unsplash.com/photo-1560961911-ba7ef651a56c?auto=format&fit=crop&w=900&q=80",
-    "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=80",
-    "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=900&q=80",
+    "/images/categories/category-modular-buildings.png",
+    "/images/categories/category-technic.png",
+    "/images/categories/category-brick-alliance.png",
   ];
 
   return (
@@ -27,7 +27,7 @@ export default function BlogPage() {
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
         <div className="absolute inset-0 opacity-35">
           <Image
-            src="https://images.unsplash.com/photo-1560961911-ba7ef651a56c?auto=format&fit=crop&w=1800&q=80"
+            src="/images/categories/category-modular-buildings.png"
             alt=""
             fill
             priority

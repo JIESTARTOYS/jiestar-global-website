@@ -452,7 +452,7 @@ function mapShopifyProduct(node: ShopifyProductNode): Product {
   const fallbackImage = {
     src:
       node.featuredImage?.url ??
-      "https://images.unsplash.com/photo-1560961911-ba7ef651a56c?auto=format&fit=crop&w=1200&q=80",
+      "/images/categories/category-other.png",
     alt: node.featuredImage?.altText ?? `${node.title} product image`,
   };
   const images = productImages.length ? productImages : [fallbackImage];
@@ -872,6 +872,22 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
     });
 
     return cachedProduct;
+  }
+
+  try {
+    const catalogProduct = (await getShopifyProducts()).find((product) => product.handle === handle);
+
+    if (catalogProduct) {
+      logShopifyDataSource("getShopifyProduct", "cache", {
+        found: true,
+        handle,
+        reason: "catalog_lookup",
+      });
+
+      return catalogProduct;
+    }
+  } catch {
+    // Fall through to the direct product query below.
   }
 
   try {

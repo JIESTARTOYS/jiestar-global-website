@@ -9,8 +9,8 @@ export function BrandStory() {
         <div className="grid lg:min-h-[28rem] lg:grid-cols-[1fr_1fr]">
           <div className="relative min-h-80 overflow-hidden bg-slate-100 lg:min-h-full">
             <Image
-              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=80"
-              alt="Modern business building representing JIESTAR global brand operations"
+              src="/images/home/jiestar-home-hero-user-composite-wechat-v2-web.png"
+              alt="JIESTAR building block models representing global brand operations"
               fill
               sizes="(min-width: 1024px) 48vw, 100vw"
               className="object-cover"

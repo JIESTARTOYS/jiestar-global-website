@@ -45,7 +45,7 @@ export function QualitySafety() {
           <div className="lg:max-w-md">
             <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm">
               <Image
-                src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80"
+                src="/images/categories/category-scene.png"
                 alt="Detailed product inspection and quality control for building block sets"
                 fill
                 sizes="(min-width: 1024px) 30vw, 100vw"

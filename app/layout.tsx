@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   },
   description:
     "Discover JIESTAR building block sets for collectors, retailers, distributors, and global ecommerce sellers.",
+  other: {
+    google: "notranslate",
+  },
 };
 
 async function getHeaderSearchProducts() {
@@ -36,8 +39,8 @@ export default async function RootLayout({
   const searchProducts = await getHeaderSearchProducts();
 
   return (
-    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
-      <body className="min-h-full bg-[#f6f7f9] text-slate-950">
+    <html lang="en" translate="no" className="h-full antialiased" suppressHydrationWarning>
+      <body className="notranslate min-h-full bg-[#f6f7f9] text-slate-950">
         <CartProvider>
           <Header searchProducts={searchProducts} />
           <main>{children}</main>

@@ -64,7 +64,7 @@ export default function CustomSolutionsPage() {
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
         <div className="absolute inset-0 opacity-35">
           <Image
-            src="https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?auto=format&fit=crop&w=1800&q=80"
+            src="/images/categories/category-technic.png"
             alt=""
             fill
             priority

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ComponentType, SVGProps } from "react";
 import {
   ArrowRightIcon,
@@ -29,9 +30,11 @@ type Capability = {
   icon: IconComponent;
 };
 
-type ShotPlaceholder = {
+type FactoryVisual = {
   label: string;
   note: string;
+  image?: string;
+  priority?: boolean;
   className?: string;
 };
 
@@ -118,52 +121,72 @@ const audiencePaths = [
   },
 ];
 
-const tourShots: ShotPlaceholder[] = [
+const tourShots: FactoryVisual[] = [
   {
-    label: "Factory exterior photo",
-    note: "Shoot the main entrance, factory signage, and a wide exterior angle.",
+    label: "Factory exterior",
+    note: "Onsite shoot target: main entrance, factory signage, and a wide exterior angle.",
+    image: "/images/home/jiestar-home-hero-user-composite-wechat-v2-web.png",
     className: "lg:col-span-2 lg:row-span-2",
   },
   {
-    label: "Showroom photo",
-    note: "Capture finished JIESTAR product displays and brand presentation.",
+    label: "Showroom display",
+    note: "Onsite shoot target: finished JIESTAR product displays and brand presentation.",
+    image: "/images/categories/category-modular-buildings.png",
   },
   {
-    label: "Design office photo",
-    note: "Show product planning, design discussion, or model development work.",
+    label: "Design discussion",
+    note: "Onsite shoot target: product planning, design review, or model development work.",
+    image: "/images/categories/category-technic.png",
   },
   {
-    label: "Sample room photo",
-    note: "Show prototypes, sample shelves, or product testing tables.",
+    label: "Sample room",
+    note: "Onsite shoot target: prototypes, sample shelves, or product testing tables.",
+    image: "/images/categories/category-brick-alliance.png",
   },
   {
-    label: "Production line photo",
-    note: "Capture a clean production or assembly area without sensitive details.",
+    label: "Production line",
+    note: "Onsite shoot target: clean production or assembly area without sensitive details.",
+    image: "/images/categories/category-engineering.png",
   },
   {
-    label: "Packaging area photo",
-    note: "Show box preparation, packed products, or packaging workflow.",
+    label: "Packaging area",
+    note: "Onsite shoot target: box preparation, packed products, or packaging workflow.",
+    image: "/images/categories/category-storage-box.png",
   },
   {
-    label: "Warehouse photo",
-    note: "Show organized product storage, cartons, or shipping preparation.",
+    label: "Warehouse",
+    note: "Onsite shoot target: organized product storage, cartons, or shipping preparation.",
+    image: "/images/categories/category-city.png",
   },
   {
-    label: "QC checking table photo",
-    note: "Show product inspection, part checking, or documentation review.",
+    label: "QC checking table",
+    note: "Onsite shoot target: product inspection, part checking, or documentation review.",
+    image: "/images/categories/category-scene.png",
   },
 ];
 
-function PhotoPlaceholder({ label, note, className = "" }: ShotPlaceholder) {
+function FactoryVisualCard({ label, note, image, priority = false, className = "" }: FactoryVisual) {
   return (
     <div
-      className={`group relative flex min-h-56 overflow-hidden rounded-lg border border-dashed border-slate-300 bg-[linear-gradient(135deg,#f8fafc_0%,#f1f5f9_50%,#fff7f7_100%)] p-5 transition hover:border-red-300 ${className}`}
+      className={`group relative flex min-h-56 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 p-5 shadow-sm shadow-slate-950/[0.04] transition hover:border-red-200 ${className}`}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(220,38,38,0.08),transparent_28%)]" />
-      <div className="relative mt-auto">
-        <p className="text-xs font-bold uppercase tracking-normal text-red-600">Photo needed</p>
-        <h3 className="mt-2 text-xl font-bold tracking-normal text-slate-950">{label}</h3>
-        <p className="mt-2 max-w-md text-sm leading-6 text-slate-600">{note}</p>
+      {image ? (
+        <Image
+          src={image}
+          alt=""
+          fill
+          priority={priority}
+          sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+          className="object-cover opacity-75 transition duration-500 group-hover:scale-[1.03]"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,#0f172a_0%,#1e293b_55%,#7f1d1d_100%)]" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/10" />
+      <div className="relative mt-auto text-white">
+        <p className="text-xs font-bold uppercase tracking-normal text-red-200">Factory image direction</p>
+        <h3 className="mt-2 text-xl font-bold tracking-normal">{label}</h3>
+        <p className="mt-2 max-w-md text-sm leading-6 text-slate-200">{note}</p>
       </div>
     </div>
   );
@@ -208,15 +231,19 @@ export default function AboutPage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-[1fr_0.78fr]">
-            <PhotoPlaceholder
-              label="Factory exterior photo"
-              note="Reserve this hero image for a wide factory entrance or exterior view with clear JIESTAR identity."
+            <FactoryVisualCard
+              label="Factory-backed brand hub"
+              note="Use this hero area for the final factory exterior, showroom, or premium product display image when the onsite shoot is complete."
+              image="/images/home/jiestar-home-hero-user-composite-wechat-v2-web.png"
+              priority
               className="min-h-[360px] sm:min-h-[500px]"
             />
             <div className="grid gap-4">
-              <PhotoPlaceholder
-                label="Showroom photo"
-                note="Use this slot for product walls, finished models, or brand display areas."
+              <FactoryVisualCard
+                label="Showroom product wall"
+                note="Use this slot for final product walls, finished models, or brand display areas."
+                image="/images/categories/category-modular-buildings.png"
+                priority
                 className="min-h-56 sm:min-h-[240px]"
               />
               <div className="rounded-lg bg-slate-950 p-5 text-white">
@@ -224,7 +251,7 @@ export default function AboutPage() {
                   <FactoryIcon className="size-5" />
                 </div>
                 <p className="mt-5 text-sm font-bold uppercase tracking-normal text-red-300">Factory tour page</p>
-                <p className="mt-2 text-2xl font-bold tracking-normal">Built to show real capability, then replace placeholders with factory photos.</p>
+                <p className="mt-2 text-2xl font-bold tracking-normal">Structured for real factory, showroom, production, packaging, and QC photography.</p>
               </div>
             </div>
           </div>
@@ -330,19 +357,19 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
             <div>
-              <p className="text-sm font-bold uppercase tracking-normal text-red-600">Factory photo plan</p>
+              <p className="text-sm font-bold uppercase tracking-normal text-red-600">Factory image brief</p>
               <h2 className="mt-3 text-3xl font-bold tracking-normal text-slate-950 sm:text-4xl">
-                Reserved image slots for the real JIESTAR factory shoot
+                Image directions for the real JIESTAR factory shoot
               </h2>
             </div>
             <p className="text-sm leading-7 text-slate-600 sm:text-base">
-              These placeholders are intentionally visible so the factory shoot can be planned around the actual page. Replace each slot with real photos after the exterior, showroom, sample room, production, packaging, warehouse, and QC areas are photographed.
+              These directions keep the onsite shoot tied to actual page needs. Replace the temporary local visuals with approved photos after the exterior, showroom, sample room, production, packaging, warehouse, and QC areas are photographed.
             </p>
           </div>
 
           <div className="mt-10 grid auto-rows-[minmax(14rem,auto)] gap-4 md:grid-cols-2 lg:grid-cols-4">
             {tourShots.map((shot) => (
-              <PhotoPlaceholder key={shot.label} {...shot} />
+              <FactoryVisualCard key={shot.label} {...shot} />
             ))}
           </div>
         </div>

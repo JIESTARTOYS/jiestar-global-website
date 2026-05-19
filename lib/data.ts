@@ -61,64 +61,56 @@ export const collections: Collection[] = [
     title: "Technic Vehicles",
     description:
       "Mechanical building block sets for builders who love motion, structure, and engineering design.",
-    image:
-      "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-technic.png",
   },
   {
     handle: "super-cars",
     title: "Super Cars",
     description:
       "Display-ready car models with bold silhouettes, detailed interiors, and collector appeal.",
-    image:
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-car-model.png",
   },
   {
     handle: "military-models",
     title: "Military Models",
     description:
       "Detailed model kits for builders interested in tactical forms, vehicles, and display scenes.",
-    image:
-      "https://images.unsplash.com/photo-1519074069444-1ba4fff66d16?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-military.png",
   },
   {
     handle: "trains",
     title: "Trains",
     description:
       "Classic train sets and display models for collectors, families, and channel partners.",
-    image:
-      "https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-trains.png",
   },
   {
     handle: "architecture",
     title: "Architecture",
     description:
       "Architectural display models built for desks, shelves, gifting, and long-term collections.",
-    image:
-      "https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-modular-buildings.png",
   },
   {
     handle: "pirate-ships",
     title: "Pirate Ships",
     description:
       "Adventure-driven building experiences with expressive ships, scenes, and display value.",
-    image:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-pirates.png",
   },
   {
     handle: "book-nooks",
     title: "Book Nooks",
     description:
       "Compact display models that bring atmosphere, story, and lighted shelf scenes to life.",
-    image:
-      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-street-view.png",
   },
   {
     handle: "educational-blocks",
     title: "Educational Blocks",
     description:
       "Accessible building sets designed for learning, gifting, retail programs, and family play.",
-    image:
-      "https://images.unsplash.com/photo-1560961911-ba7ef651a56c?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-brick-alliance.png",
   },
 ];
 
@@ -130,8 +122,7 @@ export const products: Product[] = [
     category: "Super Cars",
     collectionHandle: "super-cars",
     price: "$89.00",
-    image:
-      "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-car-model.png",
     imageAlt: "Display super car model built from building blocks",
     description:
       "A display-focused super car building block set designed for adult builders, collectors, and retail shelves.",
@@ -153,8 +144,7 @@ export const products: Product[] = [
     category: "Trains",
     collectionHandle: "trains",
     price: "$76.00",
-    image:
-      "https://images.unsplash.com/photo-1513128034602-7814ccaddd4e?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-trains.png",
     imageAlt: "Train model displayed in a station scene",
     description:
       "A train-themed building block set for collectors, family gifting, and railway model fans.",
@@ -176,8 +166,7 @@ export const products: Product[] = [
     category: "Pirate Ships",
     collectionHandle: "pirate-ships",
     price: "$112.00",
-    image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-pirates.png",
     imageAlt: "Pirate ship display scene near the sea",
     description:
       "An adventure model with layered details for builders who enjoy story-rich display pieces.",
@@ -199,8 +188,7 @@ export const products: Product[] = [
     category: "Architecture",
     collectionHandle: "architecture",
     price: "$68.00",
-    image:
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/categories/category-modular-buildings.png",
     imageAlt: "Architectural model inspired by modern city buildings",
     description:
       "A clean architectural building block model for home display, office desks, and gift programs.",
