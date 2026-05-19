@@ -32,6 +32,37 @@
 
 ## 2026-05-19
 
+### 当前对话收尾 / 交接：Production Resend 环境变量补齐与表单投递复测
+
+- 当前状态：
+  - 当前分支为 `codex-homepage-ui-v1`，本地与远端同步。
+  - `main` 与 `codex-homepage-ui-v1` 均已包含 `3b02c2f fix: add inquiry delivery timeout`，Production 已重新部署。
+  - Vercel Production / Preview 环境变量已补齐 `RESEND_API_KEY` 与 `INQUIRY_FROM_EMAIL`。
+- 本次目标：
+  - 修复用户在 `https://www.jiestartoys.com/contact` 提交表单后未收到邮件的问题。
+  - 确认线上 Contact 与 Replacement Parts 两条投递路径都能通过 Resend 发信。
+- 本次完成：
+  - 确认 Vercel 原先缺少 `RESEND_API_KEY`，导致 `/api/inquiry` 返回成功但 `deliveryConfigured:false`，实际不投递邮件。
+  - 将用户提供的 Resend API key 添加到 Vercel 项目环境变量，范围为 Production / Preview，未写入 Git。
+  - 发现 Resend 已验证发信用子域名 `send.jiestartoys.com`，并在 Vercel 添加 `INQUIRY_FROM_EMAIL=JIESTAR Website <inquiries@send.jiestartoys.com>`，避免默认 `onboarding@resend.dev` 测试域限制。
+  - 重新部署 Production，使新环境变量进入线上运行时。
+  - 清理了本轮临时创建的本地密钥备份文件，避免密钥残留在 `/tmp`。
+- 验证结果：
+  - `https://www.jiestartoys.com/api/inquiry` 的 Contact 测试返回 `{"ok":true,"deliveryConfigured":true,"contactEmail":"info@jiestartoys.com"}`。
+  - Replacement Parts 测试返回 `{"ok":true,"deliveryConfigured":true,"contactEmail":"support@jiestartoys.com"}`。
+  - 项目 owner 已确认邮箱端也验证通过。
+- 未完成事项：
+  - 后续仍建议在真实用户表单 UI 上做一次最终生产回归：Contact、Wholesale、Custom Solutions、Replacement Parts。
+  - Shopify checkout 子域名与 storefront password / 正式开店状态仍是下一阶段重点。
+- 发现的问题：
+  - Vercel 新增环境变量后必须重新部署，否则线上 Serverless 运行时不会读取新变量。
+  - Resend 默认测试发件域只适合测试，生产收件人需要使用已验证域名的发件地址。
+- 下一次对话建议目标：
+  - 优先继续处理 Shopify checkout 闭环：正式开店状态、checkout 子域名、Add to Cart / Buy Now / Cart drawer / Continue to Checkout 生产复测。
+- 备注：
+  - 本轮没有提交 `.env.local`，没有在 Git 中保存任何密钥。
+  - 线上环境变量已在 Vercel 控制台配置完成。
+
 ### 当前对话收尾 / 交接：询盘 Resend 投递、邮件域名验证与 Vercel 主域名绑定
 
 - 当前状态：
