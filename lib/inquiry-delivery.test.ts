@@ -89,6 +89,24 @@ test("deliverInquiry returns a readable error when Resend fails", async () => {
   assert.equal(result.error, "Email delivery failed: Domain is not verified");
 });
 
+test("deliverInquiry returns a readable error when Resend request times out", async () => {
+  const result = await deliverInquiry(
+    wholesalePayload,
+    createConfig({ timeoutMs: 1 }),
+    async (_url, init) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => {
+          reject(new DOMException("The operation was aborted", "AbortError"));
+        });
+      }),
+  );
+
+  assert.equal(result.ok, false);
+  assert.equal(result.deliveryConfigured, true);
+  assert.equal(result.contactEmail, "info@jiestartoys.com");
+  assert.equal(result.error, "Email delivery failed: Resend request timed out");
+});
+
 test("getInquiryDeliveryConfig falls back when optional email environment variables are empty", () => {
   const previousContactEmail = process.env.CONTACT_EMAIL;
   const previousSupportEmail = process.env.SUPPORT_EMAIL;

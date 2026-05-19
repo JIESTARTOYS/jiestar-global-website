@@ -6,6 +6,7 @@ export type InquiryDeliveryConfig = {
   fromEmail?: string;
   businessEmail: string;
   supportEmail: string;
+  timeoutMs?: number;
 };
 
 export type ResendEmailRequest = {
@@ -33,6 +34,7 @@ type DeliveryResult =
 type FetchLike = typeof fetch;
 
 const defaultFromEmail = "JIESTAR Website <onboarding@resend.dev>";
+const defaultDeliveryTimeoutMs = 10_000;
 
 const labels: Record<string, string> = {
   type: "Inquiry Type",
@@ -86,6 +88,7 @@ export function getInquiryDeliveryConfig(): InquiryDeliveryConfig {
     fromEmail: readEnv("INQUIRY_FROM_EMAIL"),
     businessEmail: readEnv("CONTACT_EMAIL") ?? siteConfig.businessEmail,
     supportEmail: readEnv("SUPPORT_EMAIL") ?? siteConfig.supportEmail,
+    timeoutMs: readNumberEnv("INQUIRY_DELIVERY_TIMEOUT_MS"),
   };
 }
 
@@ -130,14 +133,30 @@ export async function deliverInquiry(
     };
   }
 
-  const response = await fetcher("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${config.resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(buildInquiryEmail(payload, config)),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), config.timeoutMs ?? defaultDeliveryTimeoutMs);
+  let response: Response;
+
+  try {
+    response = await fetcher("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(buildInquiryEmail(payload, config)),
+      signal: controller.signal,
+    });
+  } catch (error) {
+    return {
+      ok: false,
+      deliveryConfigured: true,
+      contactEmail,
+      error: `Email delivery failed: ${getDeliveryErrorMessage(error)}`,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     return {
@@ -189,6 +208,28 @@ function escapeHtml(value: string) {
 function readEnv(name: string) {
   const value = process.env[name]?.trim();
   return value || undefined;
+}
+
+function readNumberEnv(name: string) {
+  const value = readEnv(name);
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function getDeliveryErrorMessage(error: unknown) {
+  if (error instanceof Error && error.name === "AbortError") {
+    return "Resend request timed out";
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Unknown delivery error";
 }
 
 async function readResendError(response: Response) {
