@@ -30,6 +30,46 @@
 
 ---
 
+## 2026-05-19
+
+### 当前对话收尾 / 交接：询盘 Resend 投递、邮件域名验证与 Vercel 主域名绑定
+
+- 当前状态：
+  - 当前分支为 `codex-homepage-ui-v1`。
+  - `/api/inquiry` 已从“只接收并返回 `deliveryConfigured:false`”升级为可通过 Resend 投递内部通知邮件。
+  - Resend 发信用子域名 `send.jiestartoys.com` 已在阿里云 DNS 添加并通过 Resend 验证。
+  - Vercel 项目已绑定 `jiestartoys.com` 与 `www.jiestartoys.com`，根域名 307 跳转到 `www`。
+- 本次目标：
+  - 补齐 Wholesale / Custom Solutions / Contact / Replacement Parts 的真实询盘邮件投递闭环。
+  - 配置并验证 Resend、阿里云 DNS、Gmail 使用入口，以及 Vercel 自定义域名。
+- 本次完成：
+  - 新增 `lib/inquiry-delivery.ts`，负责选择收件人、格式化询盘邮件、调用 Resend API，并在未配置 key 时安全降级。
+  - `/api/inquiry` 校验通过后调用邮件投递模块；商务询盘发送到 `CONTACT_EMAIL`，补件请求发送到 `SUPPORT_EMAIL`。
+  - 前台 Inquiry / Replacement Parts 表单成功文案已按 `deliveryConfigured` 区分：已投递提示团队会跟进，未配置提示直接邮箱联系。
+  - `.env.example` 与 `README.md` 已补充 `RESEND_API_KEY`、`INQUIRY_FROM_EMAIL`、`CONTACT_EMAIL`、`SUPPORT_EMAIL` 说明。
+  - 本地 `.env.local` 由项目 owner 手动配置，未纳入 Git；实际邮件测试已能投递到 Gmail 收件箱。
+  - 已指导并完成 Gmail 网页应用安装，用于管理 `info@jiestartoys.com` / `support@jiestartoys.com` 对应邮箱入口。
+  - 阿里云 DNS 已保留现有 Gmail / Google 验证 / Resend 记录，并新增 Vercel 所需 `@ A 216.198.79.1` 与 `www CNAME c2039313f1f044aa.vercel-dns-017.com`。
+- 验证结果：
+  - Resend 域名 `send.jiestartoys.com` 在 Resend 后台显示已验证。
+  - Vercel 域名页显示 `jiestartoys.com` 与 `www.jiestartoys.com` 均为有效配置。
+  - `https://jiestartoys.com` 已返回 307 并跳转到 `https://www.jiestartoys.com/`。
+  - `https://www.jiestartoys.com` 已返回 200，服务端为 Vercel。
+- 未完成事项：
+  - Shopify checkout 仍建议后续单独绑定子域名，例如 `checkout.jiestartoys.com`，不要占用已经给 Vercel 的 `www.jiestartoys.com`。
+  - Shopify storefront password / 正式开店状态仍需处理后再做完整生产 checkout 复测。
+  - 真实上线前建议再做一次生产表单全链路测试，确认 `info@jiestartoys.com` 与 `support@jiestartoys.com` 都能稳定收件。
+- 发现的问题：
+  - Chrome 自动翻译可能改变 Vercel / 阿里云控制台可访问性文本，但本轮 DNS 记录和 Vercel 状态均已通过页面与 `curl` 结果交叉确认。
+  - 当前发信域名使用 `send.jiestartoys.com` 子域名；后续如要使用根域名发信，需要重新评估对现有 Gmail MX / SPF / DKIM 的影响。
+- 下一次对话建议目标：
+  - 优先处理 Shopify checkout 子域名与 storefront password / 开店状态。
+  - 随后做一次生产环境关键路径复测：主页、产品页、购物车、checkout 跳转、Wholesale / Contact / Replacement Parts 表单。
+- 备注：
+  - 本轮没有新增 npm 依赖。
+  - 没有提交 `.env.local`，没有暴露 Resend、Shopify 或邮箱密钥。
+  - 前台页面文案保持英文；本交接记录按规则使用中文。
+
 ## 2026-05-18
 
 ### 当前对话收口 / 交接：V1 页面复查、Checkout 与询盘边界确认

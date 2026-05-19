@@ -43,10 +43,16 @@ export function InquiryForm({ type }: InquiryFormProps) {
       }
 
       form.reset();
+      const contactEmail = data?.contactEmail ?? "info@jiestartoys.com";
+      const delivered = data?.deliveryConfigured === true;
       setSuccessMessage(
-        isWholesale
-          ? `Thank you. Your wholesale catalog request has been received for review. For urgent pricing discussions, email ${data?.contactEmail ?? "info@jiestartoys.com"} directly.`
-          : `Inquiry received. Our team can follow up by email or WhatsApp. For urgent requests, email ${data?.contactEmail ?? "info@jiestartoys.com"} directly.`,
+        delivered
+          ? isWholesale
+            ? "Thank you. Your wholesale catalog request has been sent to the JIESTAR team for review."
+            : "Inquiry sent. The JIESTAR team can follow up by email or WhatsApp."
+          : isWholesale
+            ? `Thank you. Your wholesale catalog request has been received for review. For urgent pricing discussions, email ${contactEmail} directly.`
+            : `Inquiry received. For urgent requests, email ${contactEmail} directly.`,
       );
       setStatus("success");
     } catch (error) {

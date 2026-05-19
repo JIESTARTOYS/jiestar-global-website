@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { siteConfig } from "@/lib/data";
+import { deliverInquiry } from "@/lib/inquiry-delivery";
 import { createRateLimiter, getRequestIp } from "@/lib/rate-limit";
 import { normalizeInquiryPayload } from "@/lib/request-validation";
 
@@ -36,11 +36,18 @@ export async function POST(request: Request) {
   }
 
   console.info("JIESTAR inquiry received", normalized.payload);
+  const delivery = await deliverInquiry(normalized.payload);
+
+  if (!delivery.ok) {
+    return NextResponse.json(
+      { error: delivery.error, deliveryConfigured: delivery.deliveryConfigured, contactEmail: delivery.contactEmail },
+      { status: 502 },
+    );
+  }
 
   return NextResponse.json({
     ok: true,
-    deliveryConfigured: false,
-    contactEmail:
-      normalized.payload.type === "replacement-parts" ? siteConfig.supportEmail : siteConfig.businessEmail,
+    deliveryConfigured: delivery.deliveryConfigured,
+    contactEmail: delivery.contactEmail,
   });
 }

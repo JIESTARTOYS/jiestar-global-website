@@ -8,11 +8,13 @@ const fieldClass =
 export function ReplacementPartsForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("loading");
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -33,12 +35,22 @@ export function ReplacementPartsForm() {
         body: JSON.stringify({ type: "replacement-parts", ...payload, message }),
       });
 
+      const data = (await response.json().catch(() => null)) as {
+        contactEmail?: string;
+        deliveryConfigured?: boolean;
+        error?: string;
+      } | null;
+
       if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { error?: string } | null;
         throw new Error(data?.error ?? "Submission failed. Please check the required fields and try again.");
       }
 
       form.reset();
+      setSuccessMessage(
+        data?.deliveryConfigured === true
+          ? "Request sent. JIESTAR support will follow up by email or WhatsApp to confirm the missing part details."
+          : `Request received. For urgent support, email ${data?.contactEmail ?? "support@jiestartoys.com"} directly.`,
+      );
       setStatus("success");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Submission failed. Please email support@jiestartoys.com directly.");
@@ -110,7 +122,7 @@ export function ReplacementPartsForm() {
 
           {status === "success" ? (
             <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
-              Request received. JIESTAR support will follow up by email or WhatsApp to confirm the missing part details.
+              {successMessage}
             </p>
           ) : null}
 

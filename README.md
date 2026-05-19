@@ -69,6 +69,8 @@ SHOPIFY_API_VERSION=
 SHOPIFY_CUSTOMER_ACCOUNT_URL=
 CONTACT_EMAIL=
 SUPPORT_EMAIL=
+RESEND_API_KEY=
+INQUIRY_FROM_EMAIL=
 ```
 
 Do not commit real tokens, API keys, customer data, or private credentials.
@@ -77,9 +79,11 @@ Do not commit real tokens, API keys, customer data, or private credentials.
 
 ## Inquiry Forms
 
-The first version includes a basic `/api/inquiry` endpoint and reusable inquiry form component for wholesale, custom solutions, and contact pages.
+The first version includes a `/api/inquiry` endpoint and reusable inquiry form component for wholesale, custom solutions, contact, and replacement parts pages.
 
-The current endpoint validates the submission shape and returns a success response. Email delivery, CRM integration, or form platform integration can be added later when the preferred business workflow is confirmed.
+The endpoint validates the submission shape, applies basic rate limiting, and can send internal notification emails through Resend without adding an npm dependency. Business inquiries are sent to `CONTACT_EMAIL`; replacement parts requests are sent to `SUPPORT_EMAIL`.
+
+`RESEND_API_KEY` enables email delivery. `INQUIRY_FROM_EMAIL` should use a Resend-verified sender before production launch. If `RESEND_API_KEY` is not configured, the endpoint accepts valid submissions and returns `deliveryConfigured:false` so the frontend can show a direct email fallback.
 
 ## Content and Assets
 
