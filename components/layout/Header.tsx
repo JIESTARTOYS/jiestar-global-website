@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { navigation, type Product } from "@/lib/data";
-import { MenuIcon, UserIcon } from "@/components/ui/Icons";
+import { UserIcon } from "@/components/ui/Icons";
 import { SiteLogo } from "@/components/layout/SiteLogo";
 import { CartHeaderButton } from "@/components/cart/CartHeaderButton";
 import { HeaderMobileSearch, HeaderSearch } from "@/components/layout/HeaderSearch";
+import { HeaderMobileNav } from "@/components/layout/HeaderMobileNav";
 
 type HeaderProps = {
   searchProducts?: Product[];
@@ -43,24 +44,7 @@ export function Header({ searchProducts = [] }: HeaderProps) {
           <CartHeaderButton compact />
         </div>
 
-        <details className="group lg:hidden">
-          <summary className="cursor-pointer list-none rounded-md border border-slate-200 bg-white p-2 text-slate-900 shadow-sm">
-            <MenuIcon className="h-5 w-5" />
-          </summary>
-          <div className="absolute left-0 top-full w-full border-b border-slate-200 bg-white px-5 py-5 shadow-lg shadow-slate-950/5">
-            <nav className="mx-auto grid max-w-7xl gap-2" aria-label="Mobile navigation">
-              {navigation.map((item) => (
-                <Link key={item.href} href={item.href} className="rounded-md px-3 py-3 text-base font-bold text-slate-800 hover:bg-slate-50">
-                  {item.label}
-                </Link>
-              ))}
-              <Link href="/account" className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-bold text-slate-800 hover:bg-slate-50">
-                <UserIcon className="h-5 w-5 text-red-600" />
-                Account
-              </Link>
-            </nav>
-          </div>
-        </details>
+        <HeaderMobileNav navigation={navigation} />
       </div>
     </header>
   );

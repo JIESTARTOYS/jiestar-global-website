@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Collection, Product } from "@/lib/data";
 import { CatalogProductCard } from "@/components/product/CatalogProductCard";
 import { CategoryCarousel } from "@/components/product/CategoryCarousel";
@@ -590,10 +590,28 @@ function MobileControls({
   onFilterChange: FilterAction;
   onClearFilters: () => void;
 }) {
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const closeFilters = useCallback(() => {
+    if (detailsRef.current) {
+      detailsRef.current.open = false;
+    }
+  }, []);
+  const handleMobileFilterChange = useCallback<FilterAction>(
+    (key, value) => {
+      onFilterChange(key, value);
+      closeFilters();
+    },
+    [closeFilters, onFilterChange],
+  );
+  const handleMobileClearFilters = useCallback(() => {
+    onClearFilters();
+    closeFilters();
+  }, [closeFilters, onClearFilters]);
+
   return (
     <div className="grid gap-3 lg:hidden">
       <div className="flex items-center justify-between gap-3">
-        <details className="group relative">
+        <details ref={detailsRef} className="group relative">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-black text-slate-950 shadow-sm">
             <SlidersIcon className="h-4 w-4 text-red-600" />
             Filter
@@ -603,8 +621,8 @@ function MobileControls({
               allProducts={allProducts}
               collections={collections}
               selectedFilters={selectedFilters}
-              onFilterChange={onFilterChange}
-              onClearFilters={onClearFilters}
+              onFilterChange={handleMobileFilterChange}
+              onClearFilters={handleMobileClearFilters}
             />
           </div>
         </details>
@@ -658,6 +676,7 @@ function TrustStrip() {
 
 export function ProductCatalog(props: ProductCatalogProps) {
   const { allProducts } = props;
+  const productGridRef = useRef<HTMLDivElement>(null);
   const [selectedFilters, setSelectedFilters] = useState<ProductFilters>(props.selectedFilters);
   const [currentPage, setCurrentPage] = useState(() => normalizePage(props.selectedPage));
   const products = useMemo(() => filterProducts(allProducts, selectedFilters), [allProducts, selectedFilters]);
@@ -691,14 +710,33 @@ export function ProductCatalog(props: ProductCatalogProps) {
     setCurrentPage(1);
     window.history.pushState(null, "", "/products");
   }, []);
+  const scrollToProductGrid = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      const target = productGridRef.current;
+
+      if (!target) {
+        return;
+      }
+
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const stickyHeaderOffset = 112;
+      const top = target.getBoundingClientRect().top + window.scrollY - stickyHeaderOffset;
+
+      window.scrollTo({
+        top: Math.max(0, top),
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+      });
+    });
+  }, []);
   const handlePageChange = useCallback(
     (page: number) => {
       const nextPage = Math.min(Math.max(1, page), totalPages);
 
       setCurrentPage(nextPage);
       window.history.pushState(null, "", buildProductsHref(selectedFilters, nextPage));
+      scrollToProductGrid();
     },
-    [selectedFilters, totalPages],
+    [scrollToProductGrid, selectedFilters, totalPages],
   );
 
   useEffect(() => {
@@ -796,7 +834,7 @@ export function ProductCatalog(props: ProductCatalogProps) {
 
               {products.length ? (
                 <>
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                  <div ref={productGridRef} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3">
                     {paginatedProducts.map((product) => (
                       <CatalogProductCard key={product.id} product={product} />
                     ))}
