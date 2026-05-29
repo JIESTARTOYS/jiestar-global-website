@@ -138,9 +138,9 @@ export default function CustomSolutionsPage() {
       <section id="sub-brand-examples" className="scroll-mt-24 bg-white px-5 py-16 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <SectionHeader
-            eyebrow="Sub-brand cooperation"
-            title="Sub-brand cooperation examples"
-            description="JIESTAR has supported sub-brand cooperation directions that give partners a clearer product identity, market position, and long-term product development path."
+            eyebrow="Brand portfolio"
+            title="JIESTAR flagship and sub-brand directions"
+            description="Explore the JIESTAR main brand alongside focused sub-brands built for different product categories, market positions, and partner cooperation paths."
           />
           <div className="mt-8">
             <SubBrandCarousel brands={subBrands} />

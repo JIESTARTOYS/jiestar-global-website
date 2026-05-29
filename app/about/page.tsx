@@ -378,12 +378,12 @@ export default function AboutPage() {
       <section className="bg-slate-50 px-5 py-16 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
-            <p className="text-sm font-bold uppercase tracking-normal text-red-600">Sub-brand cooperation</p>
+            <p className="text-sm font-bold uppercase tracking-normal text-red-600">Brand portfolio</p>
             <h2 className="mt-3 text-3xl font-bold tracking-normal text-slate-950 sm:text-4xl">
-              Examples of differentiated brand directions
+              JIESTAR flagship and differentiated brand directions
             </h2>
             <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
-              JIESTAR can discuss long-term cooperation where product planning, product development, packaging, and brand presentation are considered together.
+              Explore the JIESTAR main brand alongside focused sub-brands built for different product categories, market positions, and partner cooperation paths.
             </p>
           </div>
           <div className="mt-8">

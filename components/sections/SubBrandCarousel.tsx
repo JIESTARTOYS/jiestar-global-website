@@ -13,14 +13,23 @@ export type SubBrand = {
 
 type SubBrandCarouselProps = {
   brands: SubBrand[];
+  fadeBackground?: "white" | "page";
 };
 
-export function SubBrandCarousel({ brands }: SubBrandCarouselProps) {
+export function SubBrandCarousel({ brands, fadeBackground = "white" }: SubBrandCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ startX: 0, scrollLeft: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const repeatedBrands = [...brands, ...brands, ...brands];
+  const leftFadeClassName =
+    fadeBackground === "page"
+      ? "bg-gradient-to-r from-[#f6f7f9] via-[#f6f7f9]/85 to-transparent"
+      : "bg-gradient-to-r from-white via-white/85 to-transparent";
+  const rightFadeClassName =
+    fadeBackground === "page"
+      ? "bg-gradient-to-l from-[#f6f7f9] via-[#f6f7f9]/85 to-transparent"
+      : "bg-gradient-to-l from-white via-white/85 to-transparent";
 
   const getSegmentWidth = useCallback((viewport: HTMLDivElement) => {
     return viewport.scrollWidth / 3;
@@ -115,8 +124,8 @@ export function SubBrandCarousel({ brands }: SubBrandCarouselProps) {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white via-white/85 to-transparent sm:w-24" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white via-white/85 to-transparent sm:w-24" />
+      <div className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-16 sm:w-24 ${leftFadeClassName}`} />
+      <div className={`pointer-events-none absolute inset-y-0 right-0 z-10 w-16 sm:w-24 ${rightFadeClassName}`} />
 
       <div
         ref={scrollRef}
@@ -146,7 +155,7 @@ export function SubBrandCarousel({ brands }: SubBrandCarouselProps) {
                   width={brand.width}
                   height={brand.height}
                   draggable={false}
-                  className="h-28 w-auto max-w-[210px] object-contain"
+                  className="h-32 w-auto max-w-[240px] object-contain"
                 />
               </div>
               <h2 className="mt-5 text-base font-semibold text-slate-950">{brand.name}</h2>

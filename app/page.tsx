@@ -5,6 +5,7 @@ import { BrandStrength } from "@/components/sections/BrandStrength";
 import { CustomSolutions } from "@/components/sections/CustomSolutions";
 import { FeaturedProducts } from "@/components/sections/FeaturedProducts";
 import { FinalCTA } from "@/components/sections/FinalCTA";
+import { HomeBrandPortfolio } from "@/components/sections/HomeBrandPortfolio";
 import { HomeHero } from "@/components/sections/HomeHero";
 import { ProductCategories } from "@/components/sections/ProductCategories";
 import { QualitySafety } from "@/components/sections/QualitySafety";
@@ -27,6 +28,7 @@ export default async function Home() {
       <HomeHero />
       <ProductCategories collections={collections} products={products} />
       <FeaturedProducts products={products} />
+      <HomeBrandPortfolio />
       <B2BCooperation />
       <CustomSolutions />
       <QualitySafety />
