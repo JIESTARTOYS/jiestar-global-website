@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import type { MouseEvent, PointerEvent } from "react";
 import type { Collection, Product } from "@/lib/data";
+import { getCollectionProductCount, getCollectionsWithProducts } from "@/lib/collection-utils";
 import { shouldBypassNextImageOptimization } from "@/lib/images";
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
 
@@ -15,13 +16,8 @@ type ProductCategoriesProps = {
   products: Product[];
 };
 
-function productCount(collection: Collection, products: Product[]) {
-  return products.filter(
-    (product) => product.collectionHandle === collection.handle || product.category === collection.title,
-  ).length;
-}
-
 export function ProductCategories({ collections, products }: ProductCategoriesProps) {
+  const visibleCollections = getCollectionsWithProducts(collections, products);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef({
     pointerId: -1,
@@ -164,8 +160,8 @@ export function ProductCategories({ collections, products }: ProductCategoriesPr
                 : "scrollbar-none -mx-5 flex cursor-grab gap-3 overflow-x-auto scroll-smooth px-5 pb-2 sm:mx-0 sm:px-1"
             }
           >
-            {collections.map((collection) => {
-              const count = productCount(collection, products);
+            {visibleCollections.map((collection) => {
+              const count = getCollectionProductCount(collection, products);
 
               return (
                 <Link

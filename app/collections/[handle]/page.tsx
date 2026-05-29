@@ -126,10 +126,15 @@ export default async function CollectionPage({ params }: PageProps) {
                 <ArrowRightIcon className="ml-2 h-4 w-4" />
               </LinkButton>
             </div>
-            <div className="mt-5 flex items-start gap-3 rounded-md bg-slate-50 p-3">
-              <TruckIcon className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
-              <p className="text-xs leading-5 text-slate-500">
-                Shipping, inventory, and payment rules will be handled through Shopify checkout.
+            <div className="mt-5 rounded-md border border-slate-200 bg-slate-50/70 p-3">
+              <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-red-100 bg-white text-red-600">
+                  <TruckIcon className="h-4 w-4" />
+                </span>
+                <p className="text-xs font-black text-slate-950">Checkout details</p>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                Shipping, inventory, and payment options are confirmed during secure Shopify checkout.
               </p>
             </div>
           </aside>

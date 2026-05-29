@@ -61,6 +61,24 @@ const PRODUCT_TYPE_COLLECTION_HANDLES = new Set([
   "fairy-tale",
 ]);
 
+const MAIN_CATEGORY_COLLECTION_HANDLES = new Set([
+  "vehicles",
+  "engineering-technic",
+  "military-police",
+  "buildings-street-scenes",
+  "ships-boats",
+  "aircraft",
+  "trains",
+  "space",
+  "flowers-botanical",
+  "animals-creatures",
+  "mecha-robots",
+  "amusement-games",
+  "ocean-underwater",
+  "decor-collectibles",
+  "props-blasters",
+]);
+
 type ShopifyMoney = {
   amount: string;
   currencyCode: string;
@@ -79,10 +97,7 @@ type ShopifyProductNode = {
   } | null;
   collections: {
     edges: Array<{
-      node: {
-        handle: string;
-        title: string;
-      };
+      node: ShopifyProductCollectionNode;
     }>;
   };
   images: {
@@ -109,6 +124,14 @@ type ShopifyProductNode = {
       };
     }>;
   };
+};
+
+type ShopifyProductCollectionNode = {
+  handle: string;
+  title: string;
+  websiteCollectionType?: {
+    value: string;
+  } | null;
 };
 
 type ShopifyProductsResponse = {
@@ -421,10 +444,16 @@ function formatPieceCount(value?: string) {
 
 function pickPrimaryCollection(node: ShopifyProductNode) {
   const shopifyCollections = node.collections.edges.map(({ node: collection }) => collection);
+  const mainCategoryCollection = shopifyCollections.find(
+    (collection) =>
+      getWebsiteCollectionType(collection) === "main_category" ||
+      MAIN_CATEGORY_COLLECTION_HANDLES.has(collection.handle),
+  );
   const productTypeCollection = shopifyCollections.find((collection) =>
     PRODUCT_TYPE_COLLECTION_HANDLES.has(collection.handle),
   );
   const configuredCollection =
+    mainCategoryCollection ??
     productTypeCollection ??
     shopifyCollections.find((collection) =>
       collections.some((localCollection) => localCollection.handle === collection.handle),
@@ -496,13 +525,19 @@ function mapShopifyCollection(node: ShopifyCollectionNode): Collection {
   };
 }
 
-function isProductTypeCollection(node: ShopifyCollectionNode) {
-  const websiteCollectionType = node.websiteCollectionType?.value.trim().toLowerCase();
+function getWebsiteCollectionType(
+  node: Pick<ShopifyCollectionNode, "websiteCollectionType"> | Pick<ShopifyProductCollectionNode, "websiteCollectionType">,
+) {
+  return node.websiteCollectionType?.value.trim().toLowerCase();
+}
 
-  if (websiteCollectionType) {
-    return websiteCollectionType === "product_type";
-  }
+function isMainCategoryCollection(node: ShopifyCollectionNode) {
+  const websiteCollectionType = getWebsiteCollectionType(node);
 
+  return websiteCollectionType === "main_category" || MAIN_CATEGORY_COLLECTION_HANDLES.has(node.handle);
+}
+
+function isLegacyProductTypeCollection(node: ShopifyCollectionNode) {
   return PRODUCT_TYPE_COLLECTION_HANDLES.has(node.handle);
 }
 
@@ -552,11 +587,14 @@ const productFragment = `
       url
       altText
     }
-    collections(first: 5) {
+    collections(first: 20) {
       edges {
         node {
           handle
           title
+          websiteCollectionType: metafield(namespace: "custom", key: "website_collection_type") {
+            value
+          }
         }
       }
     }
@@ -821,14 +859,16 @@ export async function getShopifyCollections(): Promise<Collection[]> {
       cursor = data.collections.pageInfo.endCursor ?? undefined;
     }
 
-    const shopifyCollections = collectionNodes
-      .filter((node) => isProductTypeCollection(node))
-      .map((node) => mapShopifyCollection(node));
+    const mainCollectionNodes = collectionNodes.filter((node) => isMainCategoryCollection(node));
+    const filteredCollectionNodes = mainCollectionNodes.length
+      ? mainCollectionNodes
+      : collectionNodes.filter((node) => isLegacyProductTypeCollection(node));
+    const shopifyCollections = filteredCollectionNodes.map((node) => mapShopifyCollection(node));
     cachedShopifyCollections = shopifyCollections;
     logShopifyDataSource("getShopifyCollections", "shopify", {
       count: shopifyCollections.length,
       totalCount: collectionNodes.length,
-      filter: "product_type",
+      filter: mainCollectionNodes.length ? "main_category" : "legacy_product_type",
     });
 
     return shopifyCollections;

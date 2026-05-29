@@ -3,10 +3,14 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Collection, Product } from "@/lib/data";
+import { getCollectionsWithProducts } from "@/lib/collection-utils";
+import { getCompactPaginationItems, type CompactPaginationItem } from "@/lib/product-pagination";
 import { CatalogProductCard } from "@/components/product/CatalogProductCard";
 import { CategoryCarousel } from "@/components/product/CategoryCarousel";
 import {
   ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   HomeIcon,
   RotateIcon,
   ShieldIcon,
@@ -263,16 +267,46 @@ function Pagination({
     return null;
   }
 
-  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+  const desktopPages = getCompactPaginationItems(currentPage, totalPages);
+  const mobilePages = getCompactPaginationItems(currentPage, totalPages, 0);
   const linkClass =
-    "flex min-h-10 min-w-10 items-center justify-center rounded-md border px-3 text-sm font-black transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600";
+    "inline-flex h-9 min-w-9 shrink-0 items-center justify-center rounded-md border px-2 text-xs font-black transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:h-10 sm:min-w-10 sm:px-3 sm:text-sm";
+  const arrowClass = `${linkClass} gap-1.5 sm:min-w-[5.75rem]`;
   const disabledClass = "pointer-events-none border-slate-200 bg-slate-50 text-slate-300";
   const inactiveClass = "border-slate-200 bg-white text-slate-700 hover:border-red-200 hover:text-red-600";
   const activeClass = "border-red-600 bg-red-600 text-white shadow-sm shadow-red-600/20";
+  const ellipsisClass =
+    "inline-flex h-9 min-w-5 shrink-0 items-center justify-center text-xs font-black text-slate-400 sm:h-10 sm:min-w-8 sm:text-sm";
+  const renderPageItems = (items: CompactPaginationItem[]) =>
+    items.map((item, index) => {
+      if (item === "ellipsis") {
+        return (
+          <span key={`ellipsis-${index}`} className={ellipsisClass} aria-hidden="true">
+            ...
+          </span>
+        );
+      }
+
+      return (
+        <a
+          key={item}
+          href={buildProductsHref(selectedFilters, item)}
+          onClick={(event) => {
+            event.preventDefault();
+            onPageChange(item);
+          }}
+          aria-current={currentPage === item ? "page" : undefined}
+          aria-label={`Go to page ${item}`}
+          className={`${linkClass} ${currentPage === item ? activeClass : inactiveClass}`}
+        >
+          {item}
+        </a>
+      );
+    });
 
   return (
     <nav
-      className="flex flex-wrap items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-3 shadow-sm shadow-slate-950/[0.03] sm:justify-between sm:px-4"
+      className="flex items-center justify-between gap-2 overflow-hidden rounded-lg border border-slate-200 bg-white px-2 py-3 shadow-sm shadow-slate-950/[0.03] sm:px-4"
       aria-label="Product pagination"
     >
       <a
@@ -284,26 +318,16 @@ function Pagination({
           }
         }}
         aria-disabled={currentPage === 1 ? "true" : undefined}
-        className={`${linkClass} ${currentPage === 1 ? disabledClass : inactiveClass}`}
+        aria-label="Previous page"
+        className={`${arrowClass} ${currentPage === 1 ? disabledClass : inactiveClass}`}
       >
-        Previous
+        <ChevronLeftIcon className="h-4 w-4" />
+        <span className="hidden sm:inline">Previous</span>
       </a>
 
-      <div className="flex flex-wrap justify-center gap-2">
-        {pages.map((page) => (
-          <a
-            key={page}
-            href={buildProductsHref(selectedFilters, page)}
-            onClick={(event) => {
-              event.preventDefault();
-              onPageChange(page);
-            }}
-            aria-current={currentPage === page ? "page" : undefined}
-            className={`${linkClass} ${currentPage === page ? activeClass : inactiveClass}`}
-          >
-            {page}
-          </a>
-        ))}
+      <div className="flex min-w-0 flex-1 justify-center">
+        <div className="flex items-center justify-center gap-1.5 sm:hidden">{renderPageItems(mobilePages)}</div>
+        <div className="hidden items-center justify-center gap-2 sm:flex">{renderPageItems(desktopPages)}</div>
       </div>
 
       <a
@@ -315,9 +339,11 @@ function Pagination({
           }
         }}
         aria-disabled={currentPage === totalPages ? "true" : undefined}
-        className={`${linkClass} ${currentPage === totalPages ? disabledClass : inactiveClass}`}
+        aria-label="Next page"
+        className={`${arrowClass} ${currentPage === totalPages ? disabledClass : inactiveClass}`}
       >
-        Next
+        <span className="hidden sm:inline">Next</span>
+        <ChevronRightIcon className="h-4 w-4" />
       </a>
     </nav>
   );
@@ -400,6 +426,7 @@ function FilterPanel({
   onClearFilters: () => void;
 }) {
   const prices = allProducts.map((product) => priceNumber(product.price)).filter(Boolean);
+  const visibleCollections = getCollectionsWithProducts(collections, allProducts);
   const minPrice = prices.length ? Math.min(...prices) : 0;
   const maxPrice = prices.length ? Math.max(...prices) : 0;
   const priceOptions = [
@@ -474,7 +501,7 @@ function FilterPanel({
 
         <FilterSection title="Category" scrollable>
           <div className="grid gap-2">
-            {collections.map((collection) => (
+            {visibleCollections.map((collection) => (
               <FilterLink
                 key={collection.handle}
                 label={collection.title}
@@ -679,6 +706,10 @@ export function ProductCatalog(props: ProductCatalogProps) {
   const productGridRef = useRef<HTMLDivElement>(null);
   const [selectedFilters, setSelectedFilters] = useState<ProductFilters>(props.selectedFilters);
   const [currentPage, setCurrentPage] = useState(() => normalizePage(props.selectedPage));
+  const visibleCollections = useMemo(
+    () => getCollectionsWithProducts(props.collections, allProducts),
+    [props.collections, allProducts],
+  );
   const products = useMemo(() => filterProducts(allProducts, selectedFilters), [allProducts, selectedFilters]);
   const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -783,11 +814,11 @@ export function ProductCatalog(props: ProductCatalogProps) {
             </div>
           </div>
 
-          <CategoryCarousel collections={props.collections} products={allProducts} />
+          <CategoryCarousel collections={visibleCollections} products={allProducts} />
 
           <MobileControls
             allProducts={allProducts}
-            collections={props.collections}
+            collections={visibleCollections}
             selectedFilters={selectedFilters}
             onFilterChange={handleFilterChange}
             onClearFilters={clearFilters}
@@ -797,7 +828,7 @@ export function ProductCatalog(props: ProductCatalogProps) {
             <div className="hidden lg:block">
               <FilterPanel
                 allProducts={allProducts}
-                collections={props.collections}
+                collections={visibleCollections}
                 selectedFilters={selectedFilters}
                 onFilterChange={handleFilterChange}
                 onClearFilters={clearFilters}
