@@ -30,7 +30,93 @@
 
 ---
 
+## 2026-05-29
+
+### 结束当前对话 / 交接：Shopify 目录治理、产品页分页与 Collection 页面收口
+
+- 当前状态：
+  - 当前分支为 `codex-homepage-ui-v1`。
+  - 近期代码已提交：`4be5cca feat: refine Shopify catalog tooling and pagination`。
+  - 本轮没有提交业务授权书、拍摄清单等 `.docx` / `.pdf` 文件；这些仍作为本地业务文档待决定是否纳入 Git。
+- 本次目标：
+  - 补上近期未写入交接日志的 Shopify 商品 / 分类治理工作。
+  - 收口前台产品目录体验：产品页分页、collection 分类展示、collection 左侧提示卡。
+  - 按“结束当前对话”规则更新本文件并提交代码。
+- 本次完成：
+  - 新增 `docs/12-shopify-product-upload-runbook.md`，记录中文详情产品批量上传、token 刷新、Brick4 / 整理表校验、标题 / 元字段审计、异常续跑等固定流程。
+  - 将近期 Shopify 脚本纳入 Git：中文详情准备 / 导入、品牌审计、标题清理、元字段审计、collection 审计 / 层级、重复审计、ACTIVE 商品健康检查与修复等脚本已集中在 `scripts/`。
+  - `lib/shopify.ts` 已改为优先识别 `main_category` 主分类，并保留 legacy product type fallback；产品 collection 查询扩展到 `first: 20`，减少主分类丢失。
+  - 新增 `lib/collection-utils.ts`，Home / Products / Collection 相关分类轮播和筛选只显示有商品的 collection。
+  - `/products` 分页已改为紧凑单行显示：首尾页、当前页附近页码和省略号，不再渲染 45 个页码换成多行。
+  - `/collections/[handle]` 左侧 checkout 提示已从红框式说明优化为轻量 trust note，降低视觉噪音。
+- 验证结果：
+  - 已通过：`git diff --check`。
+  - 已通过：`pnpm test`，19 个测试全部通过。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`，生成 580 个路由；本地构建读取到 Shopify `539` 个产品和 `15` 个主分类。
+  - 已在 in-app browser 验证 `/products`：桌面第 1 页显示 `Previous 1 2 3 4 ... 45 Next`，第 20 页显示 `Previous 1 ... 19 20 21 ... 45 Next`；移动宽度无横向溢出。
+  - 已在 in-app browser 验证 `/collections/flowers-botanical`：左侧 checkout note 桌面和 390px 移动宽度无横向溢出。
+- 未完成事项：
+  - 仍需决定是否将本地生成的授权书、平台销售授权证书模板、拍摄清单等 `.docx` / `.pdf` 文件纳入 Git；本轮未提交这些文件。
+  - Shopify storefront password / 正式开店状态、营业地址、checkout 子域名仍需后续单独处理。
+  - 后续如继续 Shopify 商品治理，优先从 `docs/12-shopify-product-upload-runbook.md` 和 `scripts/` 中的审计脚本恢复上下文，不要重新发明流程。
+- 发现的问题：
+  - 近期 Shopify 商品数已明显增多，产品页分页和 collection 展示必须按大目录规模处理，不能再沿用少量商品时的全部页码 / 全部分类展示。
+  - Build 日志会输出大量 Shopify data-source 信息，属当前数据拉取与静态生成过程，不代表构建失败。
+- 下一次对话建议目标：
+  - 优先检查 `git status --short --branch`，确认本轮代码提交和日志提交是否需要 push。
+  - 如果继续前台体验，建议复查 Products / Collections / Product Detail 在 539 商品规模下的性能、分页、筛选和移动端体验。
+  - 如果继续业务上线，建议回到 Shopify password / 营业地址 / checkout 子域名闭环。
+- 备注：
+  - 本次代码提交：`4be5cca feat: refine Shopify catalog tooling and pagination`。
+  - 本条交接日志单独提交，便于记录准确的代码提交 hash。
+
 ## 2026-05-19
+
+### 今日工作收尾 / 交接：Shopify Checkout 阻塞定位、香港主体方案与授权书文档
+
+- 当前状态：
+  - 当前分支为 `codex-homepage-ui-v1`，本地与远端同步。
+  - 工作区当前有 2 个未跟踪文件：`docs/JIESTAR-brand-overseas-authorization-letter-v1.docx` 与 `docs/JIESTAR-brand-overseas-authorization-letter-v1.pdf`。
+  - 生产站购物车前端链路可用，但 Shopify 仍处于 password / opening soon 阻塞状态。
+  - Shopify 后台 `在线商店 -> 偏好设置` 的密码保护开关当前不可直接关闭，页面提示需要先添加营业地址。
+- 本次目标：
+  - 执行 Shopify checkout 生产闭环复测。
+  - 尝试在 Shopify 后台关闭 storefront password，DNS 配置后续再做。
+  - 梳理香港公司作为独立站收款主体、JIESTAR 工厂作为品牌 / 生产授权方的可执行路径。
+  - 将 JIESTAR 品牌出海授权书整理成正式文档格式。
+- 本次完成：
+  - 完成生产 checkout QA：产品详情页 `Add to Cart`、cart drawer、数量加减、`Continue to Shopify Checkout`、`Buy Now` 均已实测。
+  - 确认 `Continue to Shopify Checkout` 仍落到 `https://jiestartoys.myshopify.com/password`；`Buy Now` 能生成 Shopify `/checkouts/...` URL，但页面仍显示 `Opening soon / Enter using password`。
+  - 确认 `checkout.jiestartoys.com` 当前 DNS 未解析，按计划暂不配置 DNS。
+  - 使用 Chrome 登录态进入 Shopify 后台，定位到 `Online Store / Preferences`；尝试关闭密码保护时发现开关不可用，需要先补营业地址。
+  - 向项目 owner 解释当前主体结构建议：前台品牌以 JIESTAR 名义出海，香港公司作为独立站运营和收款主体，JIESTAR 工厂 / 母公司提供品牌、渠道、产品和生产授权。
+  - 起草并生成正式授权书文档：`docs/JIESTAR-brand-overseas-authorization-letter-v1.docx`；同时生成了一个 5 页 PDF 版本。
+- 验证结果：
+  - 已通过：`pnpm test`，15 个测试全部通过。
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`，构建生成 93 个路由，并确认本地生产构建读取到 Shopify 数据：21 个产品、46 个分类。
+  - 已在生产站桌面与 390px 移动视口检查 Home、Products、Product Detail、Contact、Wholesale、Custom Solutions、Replacement Parts，未发现水平溢出，关键 H1 / 表单入口存在。
+  - 已复测生产 `/api/inquiry` 四条路径：Contact、Wholesale、Custom Solutions 返回 `deliveryConfigured:true` 并投递到 `info@jiestartoys.com`；Replacement Parts 投递到 `support@jiestartoys.com`。
+  - 授权书 DOCX 已通过结构检查和 `a11y_audit.py`，无高 / 中 / 低级问题。
+  - DOCX 渲染 PNG 视觉 QA 未完成：本机没有可调用的 LibreOffice / `soffice`；但渲染尝试过程中生成了 PDF 文件。
+- 未完成事项：
+  - 等香港公司正式资料出来后，再回 Shopify 后台填写营业地址；不要用未成立或无法验证的主体资料硬填。
+  - 填完 Shopify 营业地址后，返回 `在线商店 -> 偏好设置` 再关闭 password protection，并重新做生产 checkout 到付款页的验证。
+  - 后续再单独配置 `checkout.jiestartoys.com` DNS 与 Shopify checkout 域名。
+  - 授权书还需要补齐授权方、被授权方、BRN、注册地址、授权期限、代表人、签署日期等真实信息；正式签署前建议让香港公司秘书 / 会计 / 律师复核。
+  - 需要决定是否将授权书 `.docx` 和 `.pdf` 纳入 Git，或只作为本地业务文档保存。
+- 发现的问题：
+  - Shopify password 不是前端问题；当前阻塞点是 Shopify 后台要求先补营业地址，密码保护开关才可继续处理。
+  - 香港公司如果只是为了独立站收款，也应尽量保证 Shopify、PayPal、Airwallex / 空中云汇、银行 / 虚拟银行、公司注册资料的名称和地址一致，否则后续 KYC / 提现可能受影响。
+  - JIESTAR 工厂营业执照不能直接使用时，应通过正式授权书证明香港公司有权以 JIESTAR 名义做独立站、海外内容渠道、广告、销售和收款。
+- 下一次对话建议目标：
+  - 优先等项目 owner 提供香港公司正式资料或决定是否先暂停 Shopify 正式开店。
+  - 如果资料已准备好，下一次直接继续 Shopify 后台营业地址填写、关闭 password protection、生产 checkout 复测。
+  - 如果资料未准备好，建议先完善授权书内容、支付账户开户资料清单、以及 JIESTAR 授权 / 供货 / 售后责任边界。
+- 备注：
+  - 本轮没有修改 `.env.local`，没有新增 npm 依赖，没有提交代码。
+  - Shopify / DNS / 支付账户配置均未做不可逆变更；DNS 按用户要求留到后续。
 
 ### 当前对话收尾 / 交接：Production Resend 环境变量补齐与表单投递复测
 
