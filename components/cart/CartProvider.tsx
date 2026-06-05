@@ -33,6 +33,27 @@ function isExpiredResponse(status: number, data: { expired?: boolean }) {
   return status === 404 || data.expired === true;
 }
 
+function getSelectedSkuLabel(line: Cart["lines"][number]) {
+  const sku = line.sku?.trim();
+
+  if (!sku) {
+    return "";
+  }
+
+  const variantTitle = line.merchandiseTitle.trim();
+  const normalizedVariantTitle = variantTitle.toLowerCase();
+  const normalizedSku = sku.toLowerCase();
+
+  if (!variantTitle || normalizedVariantTitle === "default title" || normalizedVariantTitle === normalizedSku) {
+    return `SKU ${sku}`;
+  }
+
+  const skuPrefixPattern = new RegExp(`^${sku.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*[-:|/]*\\s*`, "i");
+  const variantLabel = variantTitle.replace(skuPrefixPattern, "").trim();
+
+  return variantLabel ? `SKU ${sku} - ${variantLabel}` : `SKU ${sku}`;
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Cart | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -304,72 +325,79 @@ function CartDrawer() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {cart.lines.map((line) => (
-                <article key={line.id} className="grid grid-cols-[88px_1fr] gap-3 rounded-lg border border-slate-200 p-3">
-                  <Link href={`/products/${line.productHandle}`} onClick={closeCart} className="block">
-                    <div className="relative aspect-square overflow-hidden rounded-md bg-slate-100">
-                      {line.image ? (
-                        <Image
-                          src={line.image}
-                          alt={line.imageAlt ?? line.productTitle}
-                          fill
-                          sizes="88px"
-                          className="object-cover"
-                          unoptimized={shouldBypassNextImageOptimization(line.image)}
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-bold text-slate-400">
-                          No image
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                  <div className="min-w-0">
-                    <div className="flex items-start gap-2">
-                      <Link href={`/products/${line.productHandle}`} onClick={closeCart} className="min-w-0 flex-1">
-                        <h3 className="line-clamp-2 text-sm font-black leading-5 text-slate-950 hover:text-red-600">
-                          {line.productTitle}
-                        </h3>
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => void removeLine(line.id, line.merchandiseId)}
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-45"
-                        aria-label={`Remove ${line.productTitle} from cart`}
-                        aria-busy={removingLineId === line.id}
-                        disabled={isLoading}
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <p className="mt-1 text-xs font-semibold text-slate-500">{line.price}</p>
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <div className="flex h-9 items-center rounded-md border border-slate-200 bg-white">
+              {cart.lines.map((line) => {
+                const selectedSkuLabel = getSelectedSkuLabel(line);
+
+                return (
+                  <article key={line.id} className="grid grid-cols-[88px_1fr] gap-3 rounded-lg border border-slate-200 p-3">
+                    <Link href={`/products/${line.productHandle}`} onClick={closeCart} className="block">
+                      <div className="relative aspect-square overflow-hidden rounded-md bg-slate-100">
+                        {line.image ? (
+                          <Image
+                            src={line.image}
+                            alt={line.imageAlt ?? line.productTitle}
+                            fill
+                            sizes="88px"
+                            className="object-cover"
+                            unoptimized={shouldBypassNextImageOptimization(line.image)}
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-bold text-slate-400">
+                            No image
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                    <div className="min-w-0">
+                      <div className="flex items-start gap-2">
+                        <Link href={`/products/${line.productHandle}`} onClick={closeCart} className="min-w-0 flex-1">
+                          <h3 className="line-clamp-2 text-sm font-black leading-5 text-slate-950 hover:text-red-600">
+                            {line.productTitle}
+                          </h3>
+                        </Link>
                         <button
                           type="button"
-                          onClick={() => void updateLine(line.id, line.merchandiseId, Math.max(1, line.quantity - 1))}
-                          className="flex h-9 w-9 items-center justify-center text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:text-slate-300"
-                          aria-label={`Decrease ${line.productTitle} quantity`}
-                          disabled={isLoading || line.quantity <= 1}
-                        >
-                          <MinusIcon className="h-4 w-4" />
-                        </button>
-                        <span className="min-w-8 text-center text-sm font-black text-slate-950">{line.quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => void updateLine(line.id, line.merchandiseId, line.quantity + 1)}
-                          className="flex h-9 w-9 items-center justify-center text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:text-slate-300"
-                          aria-label={`Increase ${line.productTitle} quantity`}
+                          onClick={() => void removeLine(line.id, line.merchandiseId)}
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-45"
+                          aria-label={`Remove ${line.productTitle} from cart`}
+                          aria-busy={removingLineId === line.id}
                           disabled={isLoading}
                         >
-                          <PlusIcon className="h-4 w-4" />
+                          <TrashIcon className="h-4 w-4" />
                         </button>
                       </div>
-                      <p className="text-sm font-black text-slate-950">{line.lineTotal}</p>
+                      {selectedSkuLabel ? (
+                        <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{selectedSkuLabel}</p>
+                      ) : null}
+                      <p className="mt-1 text-xs font-semibold text-slate-500">{line.price}</p>
+                      <div className="mt-3 flex items-center justify-between gap-3">
+                        <div className="flex h-9 items-center rounded-md border border-slate-200 bg-white">
+                          <button
+                            type="button"
+                            onClick={() => void updateLine(line.id, line.merchandiseId, Math.max(1, line.quantity - 1))}
+                            className="flex h-9 w-9 items-center justify-center text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:text-slate-300"
+                            aria-label={`Decrease ${line.productTitle} quantity`}
+                            disabled={isLoading || line.quantity <= 1}
+                          >
+                            <MinusIcon className="h-4 w-4" />
+                          </button>
+                          <span className="min-w-8 text-center text-sm font-black text-slate-950">{line.quantity}</span>
+                          <button
+                            type="button"
+                            onClick={() => void updateLine(line.id, line.merchandiseId, line.quantity + 1)}
+                            className="flex h-9 w-9 items-center justify-center text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:text-slate-300"
+                            aria-label={`Increase ${line.productTitle} quantity`}
+                            disabled={isLoading}
+                          >
+                            <PlusIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <p className="text-sm font-black text-slate-950">{line.lineTotal}</p>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </div>

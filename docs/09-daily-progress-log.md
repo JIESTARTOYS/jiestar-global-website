@@ -30,6 +30,37 @@
 
 ---
 
+## 2026-06-05
+
+### 结束当前对话 / 交接：侧边购物车显示所选 variant SKU
+
+- 当前状态：
+  - 当前分支为 `codex/product-multisku-heart-removal`。
+  - 侧边购物车产品卡已能显示实际加入购物车的所选 variant SKU。
+  - 本轮只改动购物车展示和 Shopify cart line 数据映射，没有改 checkout、数量、价格、产品页选择逻辑或 Shopify mutation。
+- 本次目标：
+  - 在多 SKU 产品加入购物车后，侧边购物车产品卡显示当前选择的 SKU 产品，而不是只显示组合商品标题或列出全部 SKU。
+- 本次完成：
+  - `lib/shopify.ts` 的 cart fragment 新增请求 `ProductVariant.sku`。
+  - `CartLine` 类型新增可选 `sku` 字段，并在 cart mapper 中写入所选 variant SKU。
+  - `components/cart/CartProvider.tsx` 新增所选 SKU 文案格式化：有 variant 标题时显示类似 `SKU 51017 - roller`，只有 SKU 时显示 `SKU 51017`，无 SKU 时隐藏该行。
+- 验证结果：
+  - 已通过：`pnpm lint`。
+  - 已通过：`pnpm build`，生成 704 个路由。
+  - 已通过：`pnpm test`，19 个测试全部通过。
+  - 已用本地 `/api/cart` 验证 `gid://shopify/ProductVariant/48449034649849` 返回 cart line 包含 `sku: "51017"` 和 `merchandiseTitle: "51017 - roller"`。
+  - 已在 in-app browser 验证 `/products/51014-51017-jiestar-engineering-building-block-set-4-pack`：选择 `51017 - roller` 加购后，侧边购物车显示 `SKU 51017 - roller`，没有显示其它未选择 SKU；移动端 390px 视口无明显重叠。
+- 未完成事项：
+  - 本轮未处理 Shopify 正式开店 / password / checkout 子域名等业务上线问题。
+  - 本轮未处理工作区已有未跟踪业务文档、Zoin / Xbert 脚本和测试目录归档问题。
+- 发现的问题：
+  - 当前工作区仍有多项未跟踪文件，主要是业务文档、Zoin / Xbert 脚本和 `tests/`，本轮提交应继续只包含本小项相关文件。
+- 下一次对话建议目标：
+  - 如果继续购物车体验，建议复查 cart drawer 在其它多 SKU 商品、默认单 SKU 商品和无 SKU 商品上的显示。
+  - 如果继续上线闭环，回到 Shopify password / 营业地址 / checkout 子域名验证。
+- 备注：
+  - 本条记录按“结束当前对话”规则追加，准备与本轮代码一起提交。
+
 ## 2026-05-29
 
 ### 结束当前对话 / 交接：Shopify 目录治理、产品页分页与 Collection 页面收口

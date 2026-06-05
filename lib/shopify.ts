@@ -248,6 +248,7 @@ type ShopifyCartNode = {
         };
         merchandise: {
           id: string;
+          sku?: string | null;
           title: string;
           product: {
             handle: string;
@@ -273,6 +274,7 @@ export type CartLine = {
   quantity: number;
   merchandiseId: string;
   merchandiseTitle: string;
+  sku?: string;
   productHandle: string;
   productTitle: string;
   image?: string;
@@ -732,6 +734,7 @@ const cartFragment = `
           merchandise {
             ... on ProductVariant {
               id
+              sku
               title
               price {
                 amount
@@ -780,6 +783,7 @@ function mapShopifyCart(cart: ShopifyCartNode): Cart {
         quantity: node.quantity,
         merchandiseId: node.merchandise.id,
         merchandiseTitle: node.merchandise.title,
+        sku: node.merchandise.sku?.trim() || undefined,
         productHandle: node.merchandise.product.handle,
         productTitle: node.merchandise.product.title,
         image: image?.url,
