@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Product } from "@/lib/data";
-import { ArrowRightIcon, HeartIcon } from "@/components/ui/Icons";
+import { ArrowRightIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 
 export function CatalogProductCard({ product }: { product: Product }) {
@@ -14,13 +14,6 @@ export function CatalogProductCard({ product }: { product: Product }) {
             className="aspect-square rounded-t-lg"
             imageClassName=""
           />
-        </Link>
-        <Link
-          href={`/products/${product.handle}`}
-          aria-label={`Open ${product.title} details`}
-          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-900 shadow-sm transition hover:border-red-200 hover:text-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:right-3 sm:top-3"
-        >
-          <HeartIcon className="h-4 w-4" />
         </Link>
       </div>
 

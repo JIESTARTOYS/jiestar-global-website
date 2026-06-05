@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ProductActions } from "@/components/product/ProductActions";
-import { ProductGallery } from "@/components/product/ProductGallery";
+import { ProductDetailTop } from "@/components/product/ProductDetailTop";
 import { ProductGrid } from "@/components/product/ProductGrid";
-import { ArrowRightIcon, PackageIcon, ShieldIcon, TruckIcon } from "@/components/ui/Icons";
-import { LinkButton } from "@/components/ui/LinkButton";
+import { ArrowRightIcon } from "@/components/ui/Icons";
 import type { Product } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
 import { sanitizeShopifyHtml } from "@/lib/sanitize-html";
@@ -83,8 +81,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
   }
 
   const related = await getRelatedProducts(product);
+  const productVariants = product.variants ?? [];
+  const productVariantSkus = productVariants.map((variant) => variant.sku).filter(Boolean);
+  const hasMultipleVariants = productVariants.length > 1;
   const specs = [
-    ["SKU", product.sku],
+    [hasMultipleVariants ? "Available SKUs" : "SKU", hasMultipleVariants ? productVariantSkus.join(", ") : product.sku],
     ["Difficulty Level", product.difficulty],
     ["Piece Count", product.pieceCount],
     ["Recommended Age", product.recommendedAge],
@@ -110,57 +111,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
           <span className="text-slate-700">{product.title}</span>
         </nav>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(24rem,0.98fr)] lg:items-start">
-          <ProductGallery product={product} />
-
-          <div className="lg:sticky lg:top-24">
-            <p className="text-sm font-black uppercase text-red-600">{product.category}</p>
-            <h1 className="mt-3 text-3xl font-black leading-tight tracking-normal text-slate-950 sm:text-4xl">{product.title}</h1>
-            <p className="mt-4 text-2xl font-semibold text-slate-950">{product.price}</p>
-            <p className="mt-4 text-base leading-8 text-slate-600">{product.description}</p>
-
-            <div className="mt-6">
-              <ProductActions productTitle={product.title} variantId={product.variantId} />
-            </div>
-
-            <div className="mt-6 grid gap-3 text-sm text-slate-700 sm:grid-cols-3">
-              {[
-                { title: "Display build", text: "Designed for shelf presence.", icon: PackageIcon },
-                {
-                  title: "Secure checkout",
-                  text: product.variantId ? "Checkout is handled by Shopify." : "Checkout preview until Shopify variants are connected.",
-                  icon: ShieldIcon,
-                },
-                { title: "Support", text: "Missing piece support available.", icon: TruckIcon },
-              ].map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <div key={item.title} className="rounded-lg border border-slate-200 bg-white p-3">
-                    <Icon className="h-5 w-5 text-red-600" />
-                    <p className="mt-2 font-black text-slate-950">{item.title}</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">{item.text}</p>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-6 rounded-lg border border-red-100 bg-red-50 p-5">
-              <p className="text-xs font-black uppercase text-red-600">B2B cooperation</p>
-              <h2 className="mt-2 text-lg font-black text-slate-950">Wholesale or custom version?</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Interested in wholesale supply, exclusive SKUs, packaging customization, or a custom product line based on this direction?
-              </p>
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                <LinkButton href="/contact" className="px-4">Contact JIESTAR</LinkButton>
-                <LinkButton href="/custom-solutions" variant="secondary" className="px-4">
-                  Custom Solutions
-                  <ArrowRightIcon className="ml-2 h-4 w-4" />
-                </LinkButton>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProductDetailTop product={product} />
 
         <section className="mt-16">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

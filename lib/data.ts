@@ -1,3 +1,19 @@
+export type ProductVariant = {
+  id: string;
+  sku: string;
+  title: string;
+  price: string;
+  availableForSale: boolean;
+  selectedOptions: Array<{
+    name: string;
+    value: string;
+  }>;
+  image?: {
+    src: string;
+    alt: string;
+  };
+};
+
 export type Product = {
   id: string;
   handle: string;
@@ -23,6 +39,7 @@ export type Product = {
   material: string;
   shipping: string;
   variantId?: string;
+  variants?: ProductVariant[];
   series?: string;
   releaseDate?: string;
   createdAt?: string;
