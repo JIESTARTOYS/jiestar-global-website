@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Product } from "@/lib/data";
-import { HeartIcon, StarIcon } from "@/components/ui/Icons";
+import { StarIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 
 export function ProductCard({ product }: { product: Product }) {
@@ -10,9 +10,6 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="relative">
           <span className="absolute left-3 top-3 z-10 rounded-md bg-slate-950 px-2 py-1 text-[11px] font-black text-white">
             New
-          </span>
-          <span className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm">
-            <HeartIcon className="h-4 w-4" />
           </span>
           <ProductImageSwap
             product={product}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRightIcon, CartIcon, HeartIcon } from "@/components/ui/Icons";
+import { ArrowRightIcon, CartIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 import type { Product } from "@/lib/data";
 
@@ -51,13 +51,6 @@ function HomeProductCard({ product }: { product: Product }) {
               imageClassName=""
             />
           </div>
-        </Link>
-        <Link
-          href={`/products/${product.handle}`}
-          aria-label={`Save ${product.title}`}
-          className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-600 shadow-sm transition hover:border-red-200 hover:text-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:right-3 sm:top-3 sm:h-8 sm:w-8"
-        >
-          <HeartIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Link>
       </div>
       <div className="p-3 sm:p-4">

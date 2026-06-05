@@ -1,4 +1,4 @@
-import { collections, products, type Collection, type Product } from "./data";
+import { collections, products, type Collection, type Product, type ProductVariant } from "./data";
 import { getLocalProductSpecifications } from "./product-specifications";
 import { readShopifyConnectionPages } from "./shopify-pagination";
 
@@ -121,6 +121,17 @@ type ShopifyProductNode = {
       node: {
         id: string;
         sku?: string | null;
+        title: string;
+        availableForSale: boolean;
+        selectedOptions: Array<{
+          name: string;
+          value: string;
+        }>;
+        price: ShopifyMoney;
+        image?: {
+          url: string;
+          altText?: string | null;
+        } | null;
       };
     }>;
   };
@@ -463,7 +474,21 @@ function pickPrimaryCollection(node: ShopifyProductNode) {
 }
 
 function mapShopifyProduct(node: ShopifyProductNode): Product {
-  const variant = node.variants.edges[0]?.node;
+  const variants: ProductVariant[] = node.variants.edges.map(({ node: variant }) => ({
+    id: variant.id,
+    sku: variant.sku ?? "",
+    title: variant.title,
+    price: formatPrice(variant.price),
+    availableForSale: variant.availableForSale,
+    selectedOptions: variant.selectedOptions,
+    image: variant.image
+      ? {
+          src: variant.image.url,
+          alt: variant.image.altText ?? `${node.title} ${variant.title} product image`,
+        }
+      : undefined,
+  }));
+  const variant = variants.find((item) => item.availableForSale) ?? variants[0];
   const localSpecs = getLocalProductSpecifications({
     sku: variant?.sku,
     handle: node.handle,
@@ -502,6 +527,7 @@ function mapShopifyProduct(node: ShopifyProductNode): Product {
     sellingPoint: node.description.slice(0, 120) || "A JIESTAR building block set for global builders.",
     sku: variant?.sku ?? "Contact for SKU",
     variantId: variant?.id,
+    variants,
     pieceCount: formatPieceCount(pieceCount),
     recommendedAge: recommendedAge ?? "See product package",
     difficulty: difficultyLevel ?? "See product package",
@@ -623,11 +649,25 @@ const productFragment = `
       key
       value
     }
-    variants(first: 1) {
+    variants(first: 100) {
       edges {
         node {
           id
           sku
+          title
+          availableForSale
+          selectedOptions {
+            name
+            value
+          }
+          price {
+            amount
+            currencyCode
+          }
+          image {
+            url
+            altText
+          }
         }
       }
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { ChevronLeftIcon, ChevronRightIcon, XIcon, ZoomInIcon } from "@/components/ui/Icons";
 import type { Product } from "@/lib/data";
@@ -9,11 +9,33 @@ import { shouldBypassNextImageOptimization } from "@/lib/images";
 const galleryControlClass =
   "flex h-12 w-12 items-center justify-center rounded-full bg-stone-100/95 text-slate-950 shadow-md shadow-slate-950/15 transition hover:bg-red-600 hover:text-white hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600";
 
-export function ProductGallery({ product }: { product: Product }) {
-  const images = product.images?.length
-    ? product.images
-    : [{ src: product.image, alt: product.imageAlt }];
-  const [activeIndex, setActiveIndex] = useState(0);
+type ProductGalleryImage = {
+  src: string;
+  alt: string;
+};
+
+export function ProductGallery({
+  product,
+  preferredImage,
+}: {
+  product: Product;
+  preferredImage?: ProductGalleryImage;
+}) {
+  const images = useMemo(() => {
+    const productImages = product.images?.length
+      ? product.images
+      : [{ src: product.image, alt: product.imageAlt }];
+
+    if (!preferredImage || productImages.some((image) => image.src === preferredImage.src)) {
+      return productImages;
+    }
+
+    return [preferredImage, ...productImages];
+  }, [preferredImage, product.image, product.imageAlt, product.images]);
+  const preferredImageIndex = preferredImage
+    ? images.findIndex((image) => image.src === preferredImage.src)
+    : -1;
+  const [activeIndex, setActiveIndex] = useState(preferredImageIndex >= 0 ? preferredImageIndex : 0);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const activeImage = images[activeIndex] ?? images[0];
