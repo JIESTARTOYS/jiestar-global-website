@@ -270,6 +270,61 @@ scripts/shopify_cn_pending_import.py
 /Users/chensen/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/shopify_cn_pending_import.py --dry-run
 ```
 
+### 临时批次安全上架规则
+
+如果新品图包不在默认 `/Volumes/ORICO/jiestar电商图/待上架中文详情文件夹` 中，或者默认待上架目录里还有其它未处理 SKU，不要直接跑默认上传命令。先建立独立临时批次目录，只放本批允许上架的 SKU，并用 `--source-root` 明确指定该目录。
+
+推荐目录：
+
+```text
+/private/tmp/jiestar-shopify-批次名-import/source
+/private/tmp/jiestar-shopify-批次名-import/metadata.json
+```
+
+临时批次目录仍使用脚本规范命名：
+
+```text
+SKU/SKU-白底.jpg
+SKU/SKU-1.jpg
+SKU/SKU-2.jpg
+SKU/SKU-sku.jpg
+SKU/SKU-详情.jpg
+```
+
+当整理表没有 SKU 行，但已经通过 Brick4 精确 JIESTAR 品牌记录、本地 SKU 图、或项目 owner 明确确认补足资料时，用 `--metadata-json` 注入本批标题和元字段。metadata 只用于本批，不写入 `.env.local`，不放入 Git，避免把一次性资料误用于其它产品。
+
+metadata 示例：
+
+```json
+{
+  "57026": {
+    "title": "JIESTAR Clock Tower Modular Building Block Set",
+    "product_type": "Architecture & Street View",
+    "variant_option_name": "57026 - Clock Tower",
+    "source_note": "Local SKU image plus owner confirmation; Brick4 exact SKU not available.",
+    "metafields": {
+      "specs.piece_count": "3023",
+      "specs.recommended_age": "14+",
+      "specs.finished_model_size": "32x31.9x46.9 cm",
+      "specs.package_size": "58x13x47 cm",
+      "specs.difficulty_level": "See product package",
+      "custom.series": "Architecture & Street View"
+    }
+  }
+}
+```
+
+临时批次必须先 dry-run：
+
+```bash
+/Users/chensen/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/shopify_cn_pending_import.py \
+  --dry-run \
+  --source-root /private/tmp/jiestar-shopify-批次名-import/source \
+  --metadata-json /private/tmp/jiestar-shopify-批次名-import/metadata.json
+```
+
+确认 `source_products` 等于本批 SKU 数、`todo_products` 符合预期、`skipped` 没有异常、`missing_detail` 和 `missing_workbook_rows` 可解释后，才执行 `--create-batch` 或 `--auto`。上传后必须用同一组 `--source-root` / `--metadata-json` 再跑 dry-run，确认 `todo_products: 0`。
+
 上传前建议顺序：
 
 1. 先跑 `scripts/shopify_cn_brand_audit.py`，确认没有明显非 JIESTAR 产品。

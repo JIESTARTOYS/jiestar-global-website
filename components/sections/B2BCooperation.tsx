@@ -56,8 +56,8 @@ export function B2BCooperation() {
         </div>
         <div className="relative min-h-64 overflow-hidden rounded-lg bg-slate-100">
           <Image
-            src="/images/categories/category-brick-alliance.png"
-            alt="Custom building block product direction for wholesale and product cooperation"
+            src="/images/site-visuals/b2b-catalog-meeting.png"
+            alt="Representative wholesale catalog and building block product cooperation scene"
             fill
             sizes="(min-width: 1024px) 32vw, 100vw"
             className="object-cover"

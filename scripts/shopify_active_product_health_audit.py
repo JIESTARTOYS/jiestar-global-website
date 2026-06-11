@@ -17,8 +17,33 @@ from typing import Any
 OUT_DIR = Path("/private/tmp/jiestar-shopify-active-health")
 API_VERSION_FALLBACK = "2026-01"
 EXPECTED_VENDOR = "JieStar"
+ALLOWED_VENDORS = {"JieStar", "Xbert", "Zoin"}
 EXPECTED_PRICE = "999.00"
 INTERLOCKING_BLOCKS_ID = "gid://shopify/TaxonomyCategory/tg-5-7-12"
+REQUIRED_SPECS_METAFIELDS = [
+    "piece_count",
+    "recommended_age",
+    "finished_model_size",
+    "package_size",
+]
+KNOWN_UNKNOWN_PIECE_COUNT_VENDORS = {"Zoin"}
+KNOWN_UNKNOWN_PIECE_COUNT_SKUS = {"61022", "61024", "87010", "92307"}
+CONTENT_AUDIT_FIELDNAMES = [
+    "handle",
+    "title",
+    "product_id",
+    "online_store_url",
+    "vendor",
+    "skus",
+    "variant_count",
+    "media_count",
+    "has_featured_media",
+    "detail_image_count",
+    "missing_required_metafields",
+    "critical_issues",
+    "warning_issues",
+    "recommended_action",
+]
 
 SENSITIVE_TITLE_TERMS = [
     "hogwarts",
@@ -109,6 +134,10 @@ def has_chinese(value: str) -> bool:
     return bool(re.search(r"[\u4e00-\u9fff]", value or ""))
 
 
+def count_description_images(description_html: str) -> int:
+    return len(re.findall(r"<img\b", description_html or "", flags=re.I))
+
+
 def core_metafields(node: dict[str, Any]) -> dict[str, str]:
     fields: dict[str, str] = {}
     for item in node.get("metafields", {}).get("nodes", []):
@@ -117,6 +146,15 @@ def core_metafields(node: dict[str, Any]) -> dict[str, str]:
         if namespace == "specs":
             fields[key] = item.get("value") or ""
     return fields
+
+
+def required_specs_metafields_for(product: dict[str, Any]) -> list[str]:
+    required = list(REQUIRED_SPECS_METAFIELDS)
+    variants = product.get("variants", {}).get("nodes", [])
+    skus = {(variant.get("sku") or "").strip().upper() for variant in variants}
+    if product.get("vendor") in KNOWN_UNKNOWN_PIECE_COUNT_VENDORS or skus & KNOWN_UNKNOWN_PIECE_COUNT_SKUS:
+        required.remove("piece_count")
+    return required
 
 
 def fetch_active_products(admin: ShopifyAdmin) -> list[dict[str, Any]]:
@@ -229,6 +267,20 @@ def add_issue(
     )
 
 
+def should_check_similar_title(title: str, variants: list[dict[str, Any]]) -> bool:
+    if len(variants) != 1:
+        return False
+
+    lowered = title.lower()
+    if "bundle set" in lowered:
+        return False
+    if re.search(r"\b\d+\s*-\s*pack\b", lowered):
+        return False
+    if "series" in lowered and "styles" in lowered:
+        return False
+    return True
+
+
 def audit_products(products: list[dict[str, Any]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
     issues: list[dict[str, str]] = []
     sku_to_products: dict[str, list[dict[str, str]]] = defaultdict(list)
@@ -247,7 +299,7 @@ def audit_products(products: list[dict[str, Any]]) -> tuple[list[dict[str, str]]
         publications = product.get("resourcePublications", {}).get("nodes", [])
         published_names = [p.get("publication", {}).get("name", "") for p in publications if p.get("isPublished")]
 
-        if product.get("vendor") != EXPECTED_VENDOR:
+        if product.get("vendor") not in ALLOWED_VENDORS:
             add_issue(issues, product, "warning", "vendor_not_jiestar", product.get("vendor") or "")
 
         if has_chinese(title):
@@ -258,7 +310,7 @@ def audit_products(products: list[dict[str, Any]]) -> tuple[list[dict[str, str]]
         if hits:
             add_issue(issues, product, "critical", "title_sensitive_term", ", ".join(hits))
 
-        if "building block set" in lowered_title:
+        if product.get("vendor") == EXPECTED_VENDOR and "building block set" in lowered_title:
             add_issue(issues, product, "warning", "title_still_mechanical", "contains Building Block Set")
 
         if not image_media:
@@ -280,10 +332,12 @@ def audit_products(products: list[dict[str, Any]]) -> tuple[list[dict[str, str]]
         if description_text:
             add_issue(issues, product, "warning", "description_has_non_image_text", description_text[:260])
 
+        required_metafields = required_specs_metafields_for(product)
         for key in ["piece_count", "recommended_age", "finished_model_size", "package_size"]:
             value = metafields.get(key, "")
             if not value:
-                add_issue(issues, product, "warning", f"missing_metafield_{key}", "")
+                if key in required_metafields:
+                    add_issue(issues, product, "warning", f"missing_metafield_{key}", "")
             elif has_chinese(value):
                 add_issue(issues, product, "critical", f"metafield_{key}_contains_chinese", value)
 
@@ -300,6 +354,8 @@ def audit_products(products: list[dict[str, Any]]) -> tuple[list[dict[str, str]]
             if not sku:
                 add_issue(issues, product, "critical", "variant_missing_sku", variant.get("title") or "")
             else:
+                if has_chinese(sku):
+                    add_issue(issues, product, "critical", "variant_sku_contains_chinese", sku)
                 sku_to_products[sku.upper()].append({"handle": handle, "title": title})
 
             if str(variant.get("price") or "") != EXPECTED_PRICE:
@@ -312,11 +368,12 @@ def audit_products(products: list[dict[str, Any]]) -> tuple[list[dict[str, str]]
             if len(variants) > 1 and not variant.get("image"):
                 add_issue(issues, product, "warning", "multi_variant_missing_variant_image", sku or variant.get("title") or "")
 
-        normalized_title = re.sub(r"[^a-z0-9]+", " ", lowered_title)
-        normalized_title = re.sub(r"\b(jie ?star|jiestar|building|block|set|kit|model|toy|pack)\b", " ", normalized_title)
-        normalized_title = re.sub(r"\s+", " ", normalized_title).strip()
-        if normalized_title:
-            title_norm_to_products[normalized_title].append({"handle": handle, "title": title})
+        if should_check_similar_title(title, variants):
+            normalized_title = re.sub(r"[^a-z0-9]+", " ", lowered_title)
+            normalized_title = re.sub(r"\b(jie ?star|jiestar|building|block|set|kit|model|toy|pack)\b", " ", normalized_title)
+            normalized_title = re.sub(r"\s+", " ", normalized_title).strip()
+            if normalized_title:
+                title_norm_to_products[normalized_title].append({"handle": handle, "title": title})
 
     for sku, rows in sku_to_products.items():
         handles = sorted({row["handle"] for row in rows})
@@ -342,6 +399,13 @@ def audit_products(products: list[dict[str, Any]]) -> tuple[list[dict[str, str]]
                 normalized + ": " + " | ".join(handles[:8]),
             )
 
+    for product in products:
+        variants = product.get("variants", {}).get("nodes", [])
+        skus = [(variant.get("sku") or "").strip().upper() for variant in variants if (variant.get("sku") or "").strip()]
+        duplicate_skus = [sku for sku, count in Counter(skus).items() if count > 1]
+        for sku in duplicate_skus:
+            add_issue(issues, product, "warning", "duplicate_variant_sku_in_product", sku)
+
     counts = Counter(issue["issue"] for issue in issues)
     severity_counts = Counter(issue["severity"] for issue in issues)
     summary = {
@@ -351,6 +415,67 @@ def audit_products(products: list[dict[str, Any]]) -> tuple[list[dict[str, str]]
         "issue_counts": dict(sorted(counts.items())),
     }
     return issues, summary
+
+
+def missing_required_metafields(product: dict[str, Any]) -> list[str]:
+    metafields = core_metafields(product)
+    return [f"specs.{key}" for key in required_specs_metafields_for(product) if not metafields.get(key)]
+
+
+def issues_by_product(issues: list[dict[str, str]]) -> dict[tuple[str, str], list[dict[str, str]]]:
+    output: dict[tuple[str, str], list[dict[str, str]]] = defaultdict(list)
+    for issue in issues:
+        output[(issue.get("product_id") or "", issue.get("handle") or "")].append(issue)
+    return output
+
+
+def recommended_action_for(critical: list[str], warning: list[str]) -> str:
+    if critical:
+        return "fix_critical_issues"
+    if "description_missing_detail_image" in warning:
+        return "add_detail_images"
+    if any(issue.startswith("missing_metafield_") for issue in warning):
+        return "fill_metafields"
+    if warning:
+        return "review_warnings"
+    return "ok"
+
+
+def build_content_audit_rows(products: list[dict[str, Any]], issues: list[dict[str, str]]) -> list[dict[str, str]]:
+    issue_map = issues_by_product(issues)
+    rows: list[dict[str, str]] = []
+
+    for product in products:
+        key = (product.get("id") or "", product.get("handle") or "")
+        handle_only_key = ("", product.get("handle") or "")
+        product_issues = issue_map.get(key, []) + issue_map.get(handle_only_key, [])
+        critical = sorted({issue["issue"] for issue in product_issues if issue.get("severity") == "critical"})
+        warning = sorted({issue["issue"] for issue in product_issues if issue.get("severity") == "warning"})
+        variants = product.get("variants", {}).get("nodes", [])
+        media = product.get("media", {}).get("nodes", [])
+        image_media = [item for item in media if item.get("mediaContentType") == "IMAGE"]
+        skus = [(variant.get("sku") or "").strip() for variant in variants if (variant.get("sku") or "").strip()]
+
+        rows.append(
+            {
+                "handle": product.get("handle") or "",
+                "title": product.get("title") or "",
+                "product_id": product.get("id") or "",
+                "online_store_url": product.get("onlineStoreUrl") or "",
+                "vendor": product.get("vendor") or "",
+                "skus": "|".join(skus),
+                "variant_count": str(len(variants)),
+                "media_count": str(len(image_media)),
+                "has_featured_media": "yes" if product.get("featuredMedia") else "no",
+                "detail_image_count": str(count_description_images(product.get("descriptionHtml") or "")),
+                "missing_required_metafields": "|".join(missing_required_metafields(product)),
+                "critical_issues": "|".join(critical),
+                "warning_issues": "|".join(warning),
+                "recommended_action": recommended_action_for(critical, warning),
+            }
+        )
+
+    return rows
 
 
 def main() -> int:
@@ -368,11 +493,19 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(issues)
 
+    content_audit_path = OUT_DIR / "active-product-content-audit.csv"
+    with content_audit_path.open("w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=CONTENT_AUDIT_FIELDNAMES)
+        writer.writeheader()
+        writer.writerows(build_content_audit_rows(products, issues))
+
     summary_path = OUT_DIR / "active-health-summary.json"
+    summary["content_audit_csv"] = str(content_audit_path)
     summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     print(f"issues_csv={issue_path}")
+    print(f"content_audit_csv={content_audit_path}")
     print(f"summary_json={summary_path}")
     return 0
 

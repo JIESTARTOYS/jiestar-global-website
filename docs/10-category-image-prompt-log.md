@@ -103,3 +103,39 @@ Generated additional files:
 | Fairy Tale | `fairy-tale` | `/images/categories/category-fairy-tale.png` |
 
 All images in `public/images/categories` were normalized to `1448 x 1086`.
+
+## 2026-06-11 Core Static Page Temporary Visual Set
+
+Scope:
+
+- Replaced obvious placeholder / reused visuals on Home, About, Wholesale, Custom Solutions, Quality & Safety, and Blog.
+- Shopify product media, Shopify collection media, and product / collection `Image pending` states were not changed.
+- One generated draft with visible faces was rejected and not copied into the workspace.
+
+Master style:
+
+```text
+Photorealistic, clean, premium business imagery for an international building block brand. Use modern product planning, showroom, warehouse, packaging, quality inspection, and B2B catalog scenes with neutral white / light-gray environments, soft commercial lighting, organized work surfaces, and restrained red accents. Keep all visuals generic and representative until approved real factory photos are available.
+
+Avoid readable text, fake JIESTAR signage, logos, certification marks, third-party IP, LEGO branding, identifiable faces, watermarks, messy factory conditions, and cheap promotional graphics.
+```
+
+Generated files:
+
+| Use | Asset |
+| --- | --- |
+| Home hero product showcase | `/images/site-visuals/brand-product-showcase.png` |
+| Home brand story | `/images/site-visuals/brand-operations.png` |
+| B2B / wholesale cooperation | `/images/site-visuals/b2b-catalog-meeting.png` |
+| About factory overview | `/images/site-visuals/factory-overview.png` |
+| About showroom display | `/images/site-visuals/showroom-product-wall.png` |
+| Custom development / design review | `/images/site-visuals/design-review.png` |
+| About sample room | `/images/site-visuals/sample-room.png` |
+| About production line | `/images/site-visuals/production-line.png` |
+| Packaging workflow | `/images/site-visuals/packaging-workflow.png` |
+| Warehouse / shipping | `/images/site-visuals/warehouse-shipping.png` |
+| Quality inspection | `/images/site-visuals/qc-inspection.png` |
+| Blog hero | `/images/site-visuals/blog-knowledge-hub.png` |
+| Blog buying guide cover | `/images/site-visuals/blog-buying-guide.png` |
+| Blog wholesale guide cover | `/images/site-visuals/blog-wholesale-guide.png` |
+| Blog custom development cover | `/images/site-visuals/blog-custom-guide.png` |

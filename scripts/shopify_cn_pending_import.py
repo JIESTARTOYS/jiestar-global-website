@@ -209,6 +209,93 @@ def variant_option_name(sku: str, row: base_import.WorkbookRow | None) -> str:
     return f"{sku} - {name}"
 
 
+def load_metadata(path: str | Path | None) -> dict[str, dict[str, Any]]:
+    if not path:
+        return {}
+
+    metadata_path = Path(path)
+    data = json.loads(metadata_path.read_text(encoding="utf-8"))
+
+    if isinstance(data, list):
+        rows = data
+    elif isinstance(data, dict) and isinstance(data.get("products"), list):
+        rows = data["products"]
+    elif isinstance(data, dict):
+        return {str(key).strip().upper(): value for key, value in data.items() if isinstance(value, dict)}
+    else:
+        raise RuntimeError(f"Unsupported metadata JSON shape: {metadata_path}")
+
+    output = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+
+        key = str(row.get("base") or row.get("sku") or row.get("folder") or "").strip().upper()
+        if key:
+            output[key] = row
+
+    return output
+
+
+def metadata_for_item(metadata: dict[str, dict[str, Any]], base: str, skus: list[str]) -> dict[str, Any]:
+    keys = [base, base.upper(), *skus, *(sku.upper() for sku in skus)]
+
+    for key in keys:
+        override = metadata.get(key) or metadata.get(key.upper())
+        if override:
+            return override
+
+    return {}
+
+
+def apply_metadata_overrides(item: dict[str, Any], override: dict[str, Any]) -> None:
+    if not override:
+        return
+
+    title = safe_english(str(override.get("title") or ""))
+    if title and not contains_cjk(title):
+        item["title"] = title
+        item["handle"] = base_import.slugify(f"{item['base']}-{title}")
+
+    product_type = safe_english(str(override.get("product_type") or ""))
+    if product_type and not contains_cjk(product_type):
+        item["product_type"] = product_type
+
+    variant_option_names = override.get("variant_option_names")
+    if isinstance(variant_option_names, dict):
+        for variant in item["variants"]:
+            option_name = safe_english(str(variant_option_names.get(variant["sku"]) or ""))
+            if option_name and not contains_cjk(option_name):
+                variant["option_name"] = option_name
+    elif len(item["variants"]) == 1:
+        option_name = safe_english(str(override.get("variant_option_name") or ""))
+        if option_name and not contains_cjk(option_name):
+            item["variants"][0]["option_name"] = option_name
+
+    variant_overrides = override.get("variants")
+    if isinstance(variant_overrides, dict):
+        for variant in item["variants"]:
+            values = variant_overrides.get(variant["sku"])
+            if not isinstance(values, dict):
+                continue
+
+            for field in ["title_source", "series", "age", "piece_count", "package_size", "finished_size"]:
+                if values.get(field):
+                    variant[field] = str(values[field])
+
+    metafields = override.get("metafields")
+    if isinstance(metafields, dict):
+        for key, value in metafields.items():
+            if value:
+                item["metafields"][str(key)] = str(value)
+
+    if override.get("source_note"):
+        item["metadata_source_note"] = str(override["source_note"])
+
+    if item["metafields"].get("custom.series") and item["product_type"] == "Building Block Sets":
+        item["product_type"] = item["metafields"]["custom.series"]
+
+
 def image_sort_key(path: Path) -> tuple[int, str]:
     match = re.search(r"-(\d+)(?:\.\w+)$", path.name)
     return (int(match.group(1)) if match else 9999, path.name)
@@ -243,12 +330,16 @@ def images_for_folder(folder: Path, base: str) -> dict[str, list[Path]]:
     }
 
 
-def build_manifest() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def build_manifest(
+    source_root: Path = ROOT,
+    metadata: dict[str, dict[str, Any]] | None = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rows_by_sku = base_import.load_workbook_rows()
+    metadata = metadata or {}
     manifest: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
 
-    for folder in sorted(path for path in ROOT.iterdir() if path.is_dir() and not path.name.startswith(".")):
+    for folder in sorted(path for path in source_root.iterdir() if path.is_dir() and not path.name.startswith(".")):
         base = folder.name
         skus = extract_skus(base)
 
@@ -274,50 +365,53 @@ def build_manifest() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         finished_sizes = [row.finished_size for row in workbook_rows if row.finished_size]
         package_sizes = sorted({row.package_size for row in workbook_rows if row.package_size})
 
-        manifest.append(
-            {
-                "folder": base,
-                "folder_path": str(folder),
-                "base": base,
-                "handle": handle,
-                "title": title,
-                "vendor": "JieStar",
-                "status": "ACTIVE",
-                "product_type": (primary.series_en if primary else "") or "Building Block Sets",
-                "price": PRICE,
-                "variants": [
-                    {
-                        "sku": sku,
-                        "option_name": variant_option_name(sku, row),
-                        "title_source": row.name_en if row else "",
-                        "series": row.series_en if row else "",
-                        "age": row.age if row else "",
-                        "piece_count": base_import.parse_piece_count(row.notes) if row else "",
-                        "package_size": row.package_size if row else "",
-                        "finished_size": row.finished_size if row else "",
-                    }
-                    for sku, row in zip(skus, rows)
-                ],
-                "metafields": {
-                    "specs.piece_count": piece_count_total,
-                    "specs.recommended_age": ", ".join(ages),
-                    "specs.finished_model_size": " / ".join(finished_sizes),
-                    "specs.package_size": ", ".join(package_sizes),
-                    "specs.difficulty_level": "See product package",
-                    "custom.series": primary.series_en if primary else "",
-                },
-                "main_media": [str(path) for path in main_media],
-                "sku_images": [str(path) for path in images["sku"]],
-                "detail_images": [str(path) for path in images["detail"]],
-                "transparent_images": [str(path) for path in images["transparent"]],
-                "missing": {
-                    "white": not bool(images["white"]),
-                    "detail": not bool(images["detail"]),
-                    "sku_images": len(images["sku"]) < len(skus),
-                    "workbook_rows": len(workbook_rows) < len(skus),
-                },
-            }
-        )
+        item = {
+            "folder": base,
+            "folder_path": str(folder),
+            "base": base,
+            "handle": handle,
+            "title": title,
+            "vendor": "JieStar",
+            "status": "ACTIVE",
+            "product_type": (primary.series_en if primary else "") or "Building Block Sets",
+            "price": PRICE,
+            "variants": [
+                {
+                    "sku": sku,
+                    "option_name": variant_option_name(sku, row),
+                    "title_source": row.name_en if row else "",
+                    "series": row.series_en if row else "",
+                    "age": row.age if row else "",
+                    "piece_count": base_import.parse_piece_count(row.notes) if row else "",
+                    "package_size": row.package_size if row else "",
+                    "finished_size": row.finished_size if row else "",
+                }
+                for sku, row in zip(skus, rows)
+            ],
+            "metafields": {
+                "specs.piece_count": piece_count_total,
+                "specs.recommended_age": ", ".join(ages),
+                "specs.finished_model_size": " / ".join(finished_sizes),
+                "specs.package_size": ", ".join(package_sizes),
+                "specs.difficulty_level": "See product package",
+                "custom.series": primary.series_en if primary else "",
+            },
+            "main_media": [str(path) for path in main_media],
+            "sku_images": [str(path) for path in images["sku"]],
+            "detail_images": [str(path) for path in images["detail"]],
+            "transparent_images": [str(path) for path in images["transparent"]],
+            "missing": {
+                "white": not bool(images["white"]),
+                "detail": not bool(images["detail"]),
+                "sku_images": len(images["sku"]) < len(skus),
+                "workbook_rows": len(workbook_rows) < len(skus),
+            },
+        }
+        override = metadata_for_item(metadata, base, skus)
+        apply_metadata_overrides(item, override)
+        if override:
+            item["missing"]["workbook_rows"] = False
+        manifest.append(item)
 
     return manifest, skipped
 
@@ -471,13 +565,13 @@ def recover_partial_product(
         return None
 
 
-def run_auto(batch_size: int) -> dict[str, Any]:
+def run_auto(batch_size: int, source_root: Path, metadata: dict[str, dict[str, Any]]) -> dict[str, Any]:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     runs = []
     started_at = time.strftime("%Y%m%d-%H%M%S")
 
     while True:
-        manifest, local_skipped = build_manifest()
+        manifest, local_skipped = build_manifest(source_root=source_root, metadata=metadata)
         admin = ShopifyAdmin()
         todo, existing_skipped = filter_existing(admin, manifest)
         write_manifest(todo, local_skipped + existing_skipped)
@@ -519,7 +613,7 @@ def run_auto(batch_size: int) -> dict[str, Any]:
             print("All products in this batch failed; stopping to avoid a tight retry loop.", flush=True)
             break
 
-    summary = {"started_at": started_at, "runs": runs}
+    summary = {"started_at": started_at, "source_root": str(source_root), "runs": runs}
     (OUT_DIR / f"auto-{started_at}-summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     return summary
 
@@ -531,19 +625,24 @@ def main() -> int:
     parser.add_argument("--auto", action="store_true", help="Create repeated batches until no pending products remain.")
     parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--batch-size", type=int, default=10)
+    parser.add_argument("--source-root", default=str(ROOT), help="Read normalized pending folders from this directory.")
+    parser.add_argument("--metadata-json", default="", help="Optional per-folder or per-SKU metadata override JSON.")
     args = parser.parse_args()
 
     if not (args.dry_run or args.create_batch or args.auto):
         parser.error("Choose --dry-run, --create-batch, or --auto")
 
+    source_root = Path(args.source_root)
+    metadata = load_metadata(args.metadata_json)
+
     if args.auto:
         if args.batch_size < 1 or args.batch_size > 25:
             parser.error("--batch-size must be between 1 and 25")
 
-        print(json.dumps(run_auto(args.batch_size), ensure_ascii=False, indent=2))
+        print(json.dumps(run_auto(args.batch_size, source_root, metadata), ensure_ascii=False, indent=2))
         return 0
 
-    manifest, local_skipped = build_manifest()
+    manifest, local_skipped = build_manifest(source_root=source_root, metadata=metadata)
     admin = ShopifyAdmin()
     todo, existing_skipped = filter_existing(admin, manifest)
     write_manifest(todo, local_skipped + existing_skipped)
@@ -551,6 +650,8 @@ def main() -> int:
     summary = {
         "manifest_json": str(OUT_DIR / "cn-pending-manifest.json"),
         "skipped_json": str(OUT_DIR / "cn-pending-skipped.json"),
+        "source_root": str(source_root),
+        "metadata_json": str(args.metadata_json) if args.metadata_json else "",
         "source_products": len(manifest),
         "todo_products": len(todo),
         "skipped": len(local_skipped) + len(existing_skipped),

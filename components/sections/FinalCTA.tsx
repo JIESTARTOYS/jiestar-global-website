@@ -74,8 +74,8 @@ export function FinalCTA() {
           </div>
           <div className="relative min-h-72 bg-slate-100 lg:min-h-full">
             <Image
-              src="https://cdn.shopify.com/s/files/1/0804/0824/8569/files/main_0_b9420112-d71a-4363-9e68-8a06ab12bfa1.webp?v=1778226575"
-              alt="JIESTAR building block display model"
+              src="/images/site-visuals/b2b-catalog-meeting.png"
+              alt="Representative B2B catalog review and building block cooperation scene"
               fill
               sizes="(min-width: 1024px) 34vw, 100vw"
               className="object-cover object-center"

@@ -42,12 +42,18 @@ const confidencePaths: Array<{
   },
 ];
 
-const trustMetrics = [
-  { value: "21", label: "live Shopify products", icon: PackageIcon },
-  { value: "3", label: "buyer paths", icon: ShieldIcon },
-];
+type TrustMetric = {
+  value: string;
+  label: string;
+  icon: IconComponent;
+};
 
-export function BrandStrength() {
+export function BrandStrength({ productCount }: { productCount: number }) {
+  const trustMetrics: TrustMetric[] = [
+    { value: productCount.toLocaleString("en-US"), label: "live Shopify products", icon: PackageIcon },
+    { value: "3", label: "buyer paths", icon: ShieldIcon },
+  ];
+
   return (
     <section className="bg-[#f6f7f9] px-5 pb-6 pt-10 lg:px-8 lg:pt-14">
       <div className="mx-auto max-w-7xl">

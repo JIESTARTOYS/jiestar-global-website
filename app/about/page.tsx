@@ -124,44 +124,44 @@ const audiencePaths = [
 const tourShots: FactoryVisual[] = [
   {
     label: "Factory exterior",
-    note: "Onsite shoot target: main entrance, factory signage, and a wide exterior angle.",
-    image: "/images/home/jiestar-home-hero-user-composite-wechat-v2-web.png",
+    note: "Representative AI visual for a future factory overview, to be replaced by approved onsite photography.",
+    image: "/images/site-visuals/factory-overview.png",
     className: "lg:col-span-2 lg:row-span-2",
   },
   {
     label: "Showroom display",
-    note: "Onsite shoot target: finished JIESTAR product displays and brand presentation.",
-    image: "/images/categories/category-modular-buildings.png",
+    note: "Representative AI visual for finished building block displays and brand presentation.",
+    image: "/images/site-visuals/showroom-product-wall.png",
   },
   {
     label: "Design discussion",
-    note: "Onsite shoot target: product planning, design review, or model development work.",
-    image: "/images/categories/category-technic.png",
+    note: "Representative AI visual for product planning, design review, and model development work.",
+    image: "/images/site-visuals/design-review.png",
   },
   {
     label: "Sample room",
-    note: "Onsite shoot target: prototypes, sample shelves, or product testing tables.",
-    image: "/images/categories/category-brick-alliance.png",
+    note: "Representative AI visual for prototypes, sample shelves, and product testing tables.",
+    image: "/images/site-visuals/sample-room.png",
   },
   {
     label: "Production line",
-    note: "Onsite shoot target: clean production or assembly area without sensitive details.",
-    image: "/images/categories/category-engineering.png",
+    note: "Representative AI visual for a clean production or assembly area without sensitive details.",
+    image: "/images/site-visuals/production-line.png",
   },
   {
     label: "Packaging area",
-    note: "Onsite shoot target: box preparation, packed products, or packaging workflow.",
-    image: "/images/categories/category-storage-box.png",
+    note: "Representative AI visual for box preparation, packed products, and packaging workflow.",
+    image: "/images/site-visuals/packaging-workflow.png",
   },
   {
     label: "Warehouse",
-    note: "Onsite shoot target: organized product storage, cartons, or shipping preparation.",
-    image: "/images/categories/category-city.png",
+    note: "Representative AI visual for organized product storage, cartons, and shipping preparation.",
+    image: "/images/site-visuals/warehouse-shipping.png",
   },
   {
     label: "QC checking table",
-    note: "Onsite shoot target: product inspection, part checking, or documentation review.",
-    image: "/images/categories/category-scene.png",
+    note: "Representative AI visual for product inspection, part checking, and documentation review.",
+    image: "/images/site-visuals/qc-inspection.png",
   },
 ];
 
@@ -184,7 +184,7 @@ function FactoryVisualCard({ label, note, image, priority = false, className = "
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/10" />
       <div className="relative mt-auto text-white">
-        <p className="text-xs font-bold uppercase tracking-normal text-red-200">Factory image direction</p>
+        <p className="text-xs font-bold uppercase tracking-normal text-red-200">Representative visual</p>
         <h3 className="mt-2 text-xl font-bold tracking-normal">{label}</h3>
         <p className="mt-2 max-w-md text-sm leading-6 text-slate-200">{note}</p>
       </div>
@@ -233,16 +233,16 @@ export default function AboutPage() {
           <div className="grid gap-4 sm:grid-cols-[1fr_0.78fr]">
             <FactoryVisualCard
               label="Factory-backed brand hub"
-              note="Use this hero area for the final factory exterior, showroom, or premium product display image when the onsite shoot is complete."
-              image="/images/home/jiestar-home-hero-user-composite-wechat-v2-web.png"
+              note="Representative AI visual for factory capability and brand presentation until approved onsite photography is available."
+              image="/images/site-visuals/factory-overview.png"
               priority
               className="min-h-[360px] sm:min-h-[500px]"
             />
             <div className="grid gap-4">
               <FactoryVisualCard
                 label="Showroom product wall"
-                note="Use this slot for final product walls, finished models, or brand display areas."
-                image="/images/categories/category-modular-buildings.png"
+                note="Representative AI visual for finished models, sample shelves, and brand display areas."
+                image="/images/site-visuals/showroom-product-wall.png"
                 priority
                 className="min-h-56 sm:min-h-[240px]"
               />
@@ -251,7 +251,7 @@ export default function AboutPage() {
                   <FactoryIcon className="size-5" />
                 </div>
                 <p className="mt-5 text-sm font-bold uppercase tracking-normal text-red-300">Factory tour page</p>
-                <p className="mt-2 text-2xl font-bold tracking-normal">Structured for real factory, showroom, production, packaging, and QC photography.</p>
+                <p className="mt-2 text-2xl font-bold tracking-normal">Prepared for real factory, showroom, production, packaging, and QC photography.</p>
               </div>
             </div>
           </div>
@@ -357,13 +357,13 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
             <div>
-              <p className="text-sm font-bold uppercase tracking-normal text-red-600">Factory image brief</p>
+              <p className="text-sm font-bold uppercase tracking-normal text-red-600">Temporary visual system</p>
               <h2 className="mt-3 text-3xl font-bold tracking-normal text-slate-950 sm:text-4xl">
-                Image directions for the real JIESTAR factory shoot
+                Representative visuals until the real factory shoot is ready
               </h2>
             </div>
             <p className="text-sm leading-7 text-slate-600 sm:text-base">
-              These directions keep the onsite shoot tied to actual page needs. Replace the temporary local visuals with approved photos after the exterior, showroom, sample room, production, packaging, warehouse, and QC areas are photographed.
+              These AI-generated visuals keep the public site polished while factory photos are still being prepared. Replace them with approved onsite photos after the exterior, showroom, sample room, production, packaging, warehouse, and QC areas are photographed.
             </p>
           </div>
 

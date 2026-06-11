@@ -96,8 +96,8 @@ export default function QualitySafetyPage() {
     <div className="bg-[#f7f8fa]">
       <section className="relative overflow-hidden bg-slate-950 px-4 py-10 text-white sm:px-5 lg:px-8 lg:py-14">
         <Image
-          src="/images/categories/category-scene.png"
-          alt="Quality workflow visual for building block product inspection"
+          src="/images/site-visuals/qc-inspection.png"
+          alt="Representative quality workflow visual for building block product inspection"
           fill
           sizes="100vw"
           className="object-cover opacity-28"
@@ -160,7 +160,7 @@ export default function QualitySafetyPage() {
             {processSteps.map(([number, title, text]) => (
               <article key={number} className="relative overflow-hidden rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.03]">
                 <Image
-                  src="/images/categories/category-brick-alliance.png"
+                  src="/images/site-visuals/qc-inspection.png"
                   alt=""
                   fill
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"

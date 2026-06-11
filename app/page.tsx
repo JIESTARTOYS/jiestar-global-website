@@ -33,7 +33,7 @@ export default async function Home() {
       <CustomSolutions />
       <QualitySafety />
       <BrandStory />
-      <BrandStrength />
+      <BrandStrength productCount={products.length} />
       <FinalCTA />
       <BlogPreview />
     </>
