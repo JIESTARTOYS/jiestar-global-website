@@ -9,6 +9,7 @@ import { HomeBrandPortfolio } from "@/components/sections/HomeBrandPortfolio";
 import { HomeHero } from "@/components/sections/HomeHero";
 import { ProductCategories } from "@/components/sections/ProductCategories";
 import { QualitySafety } from "@/components/sections/QualitySafety";
+import { toCatalogProducts } from "@/lib/catalog-products";
 import { createMetadata } from "@/lib/seo";
 import { getShopifyCollections, getShopifyProducts } from "@/lib/shopify";
 
@@ -20,7 +21,7 @@ export const metadata = createMetadata({
 });
 
 export default async function Home() {
-  const products = await getShopifyProducts();
+  const products = toCatalogProducts(await getShopifyProducts());
   const collections = await getShopifyCollections();
 
   return (

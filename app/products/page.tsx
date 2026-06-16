@@ -1,4 +1,5 @@
 import { ProductCatalog } from "@/components/product/ProductCatalog";
+import { toCatalogProducts } from "@/lib/catalog-products";
 import { DEFAULT_PRODUCT_SORT } from "@/lib/product-sorting";
 import { createMetadata } from "@/lib/seo";
 import { getShopifyCollections, getShopifyProducts } from "@/lib/shopify";
@@ -29,7 +30,7 @@ function getParamValue(value?: string | string[]) {
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const params = await searchParams;
-  const products = await getShopifyProducts();
+  const products = toCatalogProducts(await getShopifyProducts());
   const collections = await getShopifyCollections();
   const selectedQuery = getParamValue(params.q);
   const selectedCategory = getParamValue(params.category);

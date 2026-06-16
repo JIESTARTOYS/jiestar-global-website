@@ -2,11 +2,11 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Product } from "@/lib/data";
+import type { HeaderSearchProduct } from "@/lib/header-search-products";
 import { SearchIcon } from "@/components/ui/Icons";
 
 type HeaderSearchProps = {
-  products: Product[];
+  products: HeaderSearchProduct[];
   className?: string;
   autoFocusSignal?: number;
 };
@@ -15,7 +15,7 @@ function normalizeSearchText(value: string) {
   return value.trim().toLowerCase();
 }
 
-function productSearchText(product: Product) {
+function productSearchText(product: HeaderSearchProduct) {
   return [
     product.title,
     product.sku,
@@ -75,7 +75,7 @@ export function HeaderSearch({ products, className = "h-11 w-64", autoFocusSigna
     inputRef.current?.focus();
   }, [autoFocusSignal]);
 
-  function goToProduct(product: Product) {
+  function goToProduct(product: HeaderSearchProduct) {
     setQuery("");
     setIsOpen(false);
     setActiveIndex(-1);

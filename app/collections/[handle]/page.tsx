@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CollectionProductListing } from "@/components/product/CollectionProductListing";
 import { ArrowRightIcon, HomeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
+import { toCatalogProducts } from "@/lib/catalog-products";
 import { getCollection, getProductsByCollection } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
 import { getShopifyCollection, getShopifyCollections } from "@/lib/shopify";
@@ -50,7 +51,7 @@ export default async function CollectionPage({ params, searchParams }: PageProps
     notFound();
   }
 
-  const products = shopifyCollection?.products ?? getProductsByCollection(handle);
+  const products = toCatalogProducts(shopifyCollection?.products ?? getProductsByCollection(handle));
   const selectedPage = getParamValue(query?.page);
 
   return (

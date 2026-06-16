@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { navigation, type Product } from "@/lib/data";
+import { navigation } from "@/lib/data";
+import type { HeaderSearchProduct } from "@/lib/header-search-products";
 import { UserIcon } from "@/components/ui/Icons";
 import { SiteLogo } from "@/components/layout/SiteLogo";
 import { CartHeaderButton } from "@/components/cart/CartHeaderButton";
@@ -7,7 +8,7 @@ import { HeaderMobileSearch, HeaderSearch } from "@/components/layout/HeaderSear
 import { HeaderMobileNav } from "@/components/layout/HeaderMobileNav";
 
 type HeaderProps = {
-  searchProducts?: Product[];
+  searchProducts?: HeaderSearchProduct[];
 };
 
 export function Header({ searchProducts = [] }: HeaderProps) {

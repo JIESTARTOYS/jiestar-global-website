@@ -3,6 +3,7 @@ import { CartProvider } from "@/components/cart/CartProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { siteConfig } from "@/lib/data";
+import { toHeaderSearchProducts } from "@/lib/header-search-products";
 import { getShopifyProducts } from "@/lib/shopify";
 import "./globals.css";
 
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
 
 async function getHeaderSearchProducts() {
   try {
-    return await getShopifyProducts();
+    return toHeaderSearchProducts(await getShopifyProducts());
   } catch (error) {
     console.warn("[header-search:products]", {
       message: error instanceof Error ? error.message : "Product suggestions lookup failed.",
