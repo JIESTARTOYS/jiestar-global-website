@@ -4,19 +4,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import type { MouseEvent, PointerEvent } from "react";
-import type { Collection, Product } from "@/lib/data";
-import { getCollectionProductCount, getCollectionsWithProducts } from "@/lib/collection-utils";
+import type { Collection } from "@/lib/data";
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
 
 const DRAG_THRESHOLD = 8;
 
 type ProductCategoriesProps = {
-  collections: Collection[];
-  products: Product[];
+  collections: Array<Collection & { productCount: number }>;
 };
 
-export function ProductCategories({ collections, products }: ProductCategoriesProps) {
-  const visibleCollections = getCollectionsWithProducts(collections, products);
+export function ProductCategories({ collections }: ProductCategoriesProps) {
+  const visibleCollections = collections.filter((collection) => collection.productCount > 0);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef({
     pointerId: -1,
@@ -160,8 +158,6 @@ export function ProductCategories({ collections, products }: ProductCategoriesPr
             }
           >
             {visibleCollections.map((collection) => {
-              const count = getCollectionProductCount(collection, products);
-
               return (
                 <Link
                   key={collection.handle}
@@ -188,7 +184,7 @@ export function ProductCategories({ collections, products }: ProductCategoriesPr
                   <div className="flex min-h-16 items-end justify-between gap-2 p-2.5 sm:min-h-[76px] sm:gap-3 sm:p-3">
                     <div className="min-w-0">
                       <h3 className="line-clamp-2 text-xs font-black leading-4 text-slate-950 transition group-hover:text-red-600 sm:text-sm sm:leading-5">{collection.title}</h3>
-                      <p className="mt-1 text-[11px] font-semibold leading-3.5 text-slate-500 sm:text-xs sm:leading-4">{count} products</p>
+                      <p className="mt-1 text-[11px] font-semibold leading-3.5 text-slate-500 sm:text-xs sm:leading-4">{collection.productCount} products</p>
                     </div>
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition group-hover:border-red-600 group-hover:bg-red-600 group-hover:text-white sm:h-7 sm:w-7">
                       <ArrowRightIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
