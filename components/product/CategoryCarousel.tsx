@@ -6,7 +6,6 @@ import { useRef, useState } from "react";
 import type { MouseEvent, PointerEvent } from "react";
 import type { Collection, Product } from "@/lib/data";
 import { getCollectionProductCount, getCollectionsWithProducts } from "@/lib/collection-utils";
-import { shouldBypassNextImageOptimization } from "@/lib/images";
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
 
 const DRAG_THRESHOLD = 8;
@@ -180,7 +179,6 @@ export function CategoryCarousel({ collections, products }: CategoryCarouselProp
                       fill
                       sizes="13rem"
                       draggable={false}
-                      unoptimized={shouldBypassNextImageOptimization(collection.image)}
                       priority={index < 6}
                       className="object-cover transition duration-300 group-hover:scale-105"
                     />

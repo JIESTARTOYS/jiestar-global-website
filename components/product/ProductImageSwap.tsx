@@ -1,6 +1,5 @@
 import Image from "next/image";
 import type { Product } from "@/lib/data";
-import { shouldBypassNextImageOptimization } from "@/lib/images";
 
 type ProductImageSwapProps = {
   product: Product;
@@ -34,7 +33,6 @@ export function ProductImageSwap({
         fill
         sizes={sizes}
         priority={priority}
-        unoptimized={shouldBypassNextImageOptimization(primaryImage.src)}
         className={`${fitClassName} transition duration-300 group-hover:scale-[1.03] group-focus-within:scale-[1.03] motion-reduce:transition-none ${
           secondaryImage ? "group-hover:opacity-0 group-focus-within:opacity-0" : ""
         } ${imageClassName}`}
@@ -45,7 +43,6 @@ export function ProductImageSwap({
           alt={secondaryImage.alt}
           fill
           sizes={sizes}
-          unoptimized={shouldBypassNextImageOptimization(secondaryImage.src)}
           className={`${fitClassName} opacity-0 transition duration-300 group-hover:scale-[1.03] group-hover:opacity-100 group-focus-within:scale-[1.03] group-focus-within:opacity-100 motion-reduce:transition-none ${imageClassName}`}
         />
       ) : null}

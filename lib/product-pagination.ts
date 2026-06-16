@@ -1,7 +1,28 @@
 export type CompactPaginationItem = number | "ellipsis";
 
+export const PRODUCT_PAGE_SIZE = 12;
+
 function range(start: number, end: number) {
   return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+}
+
+export function normalizeProductPage(value?: string | number | null) {
+  const page = typeof value === "number" ? value : Number.parseInt(value ?? "", 10);
+
+  return Number.isFinite(page) && page > 1 ? Math.floor(page) : 1;
+}
+
+export function clampProductPage(page: number, totalPages: number) {
+  const safeTotalPages = Math.max(1, Math.floor(totalPages));
+  const safePage = Number.isFinite(page) ? Math.floor(page) : 1;
+
+  return Math.min(Math.max(1, safePage), safeTotalPages);
+}
+
+export function buildPaginationHref(basePath: string, page: number) {
+  const safePage = normalizeProductPage(page);
+
+  return safePage > 1 ? `${basePath}?page=${safePage}` : basePath;
 }
 
 export function getCompactPaginationItems(

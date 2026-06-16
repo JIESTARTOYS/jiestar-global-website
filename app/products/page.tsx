@@ -1,4 +1,5 @@
 import { ProductCatalog } from "@/components/product/ProductCatalog";
+import { DEFAULT_PRODUCT_SORT } from "@/lib/product-sorting";
 import { createMetadata } from "@/lib/seo";
 import { getShopifyCollections, getShopifyProducts } from "@/lib/shopify";
 
@@ -34,7 +35,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const selectedCategory = getParamValue(params.category);
   const selectedPieces = getParamValue(params.pieces);
   const selectedPrice = getParamValue(params.price);
-  const selectedSort = getParamValue(params.sort) ?? "popular";
+  const selectedSort = getParamValue(params.sort) ?? DEFAULT_PRODUCT_SORT;
   const selectedPage = getParamValue(params.page);
 
   return (

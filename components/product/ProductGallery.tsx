@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { ChevronLeftIcon, ChevronRightIcon, XIcon, ZoomInIcon } from "@/components/ui/Icons";
 import type { Product } from "@/lib/data";
-import { shouldBypassNextImageOptimization } from "@/lib/images";
 
 const galleryControlClass =
   "flex h-12 w-12 items-center justify-center rounded-full bg-stone-100/95 text-slate-950 shadow-md shadow-slate-950/15 transition hover:bg-red-600 hover:text-white hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600";
@@ -96,7 +95,6 @@ export function ProductGallery({
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-contain"
               priority
-              unoptimized={shouldBypassNextImageOptimization(activeImage.src)}
               onError={() => markImageFailed(activeImage.src)}
             />
           )}
@@ -162,7 +160,6 @@ export function ProductGallery({
                       sizes="96px"
                       className="pointer-events-none object-contain p-1.5"
                       loading="lazy"
-                      unoptimized={shouldBypassNextImageOptimization(image.src)}
                       onError={() => markImageFailed(image.src)}
                     />
                   )}
@@ -232,7 +229,6 @@ export function ProductGallery({
                 fill
                 sizes="100vw"
                 className="object-contain"
-                unoptimized={shouldBypassNextImageOptimization(activeImage.src)}
                 onError={() => markImageFailed(activeImage.src)}
               />
             )}

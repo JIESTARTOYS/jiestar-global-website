@@ -1,16 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CatalogProductCard } from "@/components/product/CatalogProductCard";
+import { CollectionProductListing } from "@/components/product/CollectionProductListing";
 import { ArrowRightIcon, HomeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { getCollection, getProductsByCollection } from "@/lib/data";
-import { shouldBypassNextImageOptimization } from "@/lib/images";
 import { createMetadata } from "@/lib/seo";
 import { getShopifyCollection, getShopifyCollections } from "@/lib/shopify";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
+  searchParams?: Promise<{ page?: string | string[] }>;
 };
 
 export const dynamicParams = true;
@@ -36,8 +36,13 @@ export async function generateMetadata({ params }: PageProps) {
   });
 }
 
-export default async function CollectionPage({ params }: PageProps) {
+function getParamValue(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function CollectionPage({ params, searchParams }: PageProps) {
   const { handle } = await params;
+  const query = await searchParams;
   const shopifyCollection = await getShopifyCollection(handle);
   const collection = shopifyCollection?.collection ?? getCollection(handle);
 
@@ -46,6 +51,7 @@ export default async function CollectionPage({ params }: PageProps) {
   }
 
   const products = shopifyCollection?.products ?? getProductsByCollection(handle);
+  const selectedPage = getParamValue(query?.page);
 
   return (
     <div className="bg-[#f7f8fa] px-4 py-8 sm:px-5 lg:px-8 lg:py-12">
@@ -97,7 +103,6 @@ export default async function CollectionPage({ params }: PageProps) {
                     sizes="(min-width: 1024px) 45vw, 100vw"
                     className="object-cover"
                     priority
-                    unoptimized={shouldBypassNextImageOptimization(collection.image)}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent" />
                 </>
@@ -146,24 +151,11 @@ export default async function CollectionPage({ params }: PageProps) {
                 Open with catalog filters
               </Link>
             </div>
-            {products.length ? (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3">
-                {products.map((product) => (
-                  <CatalogProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
-                <h2 className="text-xl font-black text-slate-950">Products are being prepared</h2>
-                <p className="mt-3 text-slate-600">
-                  Add products to this Shopify collection to display them here, or browse the full catalog while this category is being prepared.
-                </p>
-                <LinkButton href="/products" className="mt-6">
-                  Browse All Products
-                  <ArrowRightIcon className="ml-2 h-4 w-4" />
-                </LinkButton>
-              </div>
-            )}
+            <CollectionProductListing
+              products={products}
+              collectionHandle={collection.handle}
+              selectedPage={selectedPage}
+            />
           </div>
         </section>
       </div>

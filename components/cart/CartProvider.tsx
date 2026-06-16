@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ChevronLeftIcon, MinusIcon, PlusIcon, TrashIcon, XIcon } from "@/components/ui/Icons";
-import { shouldBypassNextImageOptimization } from "@/lib/images";
 import type { Cart } from "@/lib/shopify";
 
 type CartContextValue = {
@@ -339,7 +338,6 @@ function CartDrawer() {
                             fill
                             sizes="88px"
                             className="object-cover"
-                            unoptimized={shouldBypassNextImageOptimization(line.image)}
                           />
                         ) : (
                           <div className="flex h-full items-center justify-center px-2 text-center text-[11px] font-bold text-slate-400">

@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Collection, Product } from "@/lib/data";
 import { getCollectionsWithProducts } from "@/lib/collection-utils";
-import { getCompactPaginationItems, type CompactPaginationItem } from "@/lib/product-pagination";
+import { clampProductPage, normalizeProductPage, PRODUCT_PAGE_SIZE } from "@/lib/product-pagination";
+import { DEFAULT_PRODUCT_SORT, priceNumber, sortProductsForCatalog } from "@/lib/product-sorting";
 import { CatalogProductCard } from "@/components/product/CatalogProductCard";
 import { CategoryCarousel } from "@/components/product/CategoryCarousel";
+import { ProductPagination } from "@/components/product/ProductPagination";
 import {
   ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   HomeIcon,
   RotateIcon,
   ShieldIcon,
@@ -35,12 +35,6 @@ type ProductCatalogProps = {
 type FilterKey = "query" | "category" | "pieces" | "price" | "sort";
 type ProductFilters = ProductCatalogProps["selectedFilters"];
 type FilterAction = (key: FilterKey, value?: string) => void;
-
-const PAGE_SIZE = 12;
-
-function priceNumber(price: string) {
-  return Number(price.replace(/[^0-9.]/g, "")) || 0;
-}
 
 function pieceCountNumber(pieceCount: string) {
   return Number(pieceCount.replace(/[^0-9]/g, "")) || 0;
@@ -98,29 +92,6 @@ function filterByPrice(product: Product, range?: string) {
   return true;
 }
 
-function sortProducts(products: Product[], sort?: string) {
-  const sortedProducts = [...products];
-
-  if (sort === "price-asc") {
-    return sortedProducts.sort((a, b) => priceNumber(a.price) - priceNumber(b.price));
-  }
-
-  if (sort === "price-desc") {
-    return sortedProducts.sort((a, b) => priceNumber(b.price) - priceNumber(a.price));
-  }
-
-  if (sort === "newest") {
-    return sortedProducts.sort((a, b) => {
-      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-
-      return bTime - aTime;
-    });
-  }
-
-  return sortedProducts;
-}
-
 function normalizeSearchText(value?: string) {
   return value?.trim().toLowerCase() ?? "";
 }
@@ -150,7 +121,7 @@ function productMatchesQuery(product: Product, query?: string) {
 }
 
 function filterProducts(products: Product[], selectedFilters: ProductFilters) {
-  return sortProducts(
+  return sortProductsForCatalog(
     products.filter((product) => {
       const selectedCategory = selectedFilters.category;
       const matchesCategory =
@@ -169,18 +140,12 @@ function filterProducts(products: Product[], selectedFilters: ProductFilters) {
   );
 }
 
-function normalizePage(value?: string | number) {
-  const page = typeof value === "number" ? value : Number.parseInt(value ?? "", 10);
-
-  return Number.isFinite(page) && page > 1 ? page : 1;
-}
-
 function pageFromUrl(defaultPage?: string) {
   if (typeof window === "undefined") {
-    return normalizePage(defaultPage);
+    return normalizeProductPage(defaultPage);
   }
 
-  return normalizePage(new URLSearchParams(window.location.search).get("page") ?? defaultPage);
+  return normalizeProductPage(new URLSearchParams(window.location.search).get("page") ?? defaultPage);
 }
 
 function filtersFromUrl(defaultFilters: ProductFilters): ProductFilters {
@@ -195,7 +160,7 @@ function filtersFromUrl(defaultFilters: ProductFilters): ProductFilters {
     category: params.get("category") ?? undefined,
     pieces: params.get("pieces") ?? undefined,
     price: params.get("price") ?? undefined,
-    sort: params.get("sort") ?? "popular",
+    sort: params.get("sort") ?? DEFAULT_PRODUCT_SORT,
   };
 }
 
@@ -203,7 +168,7 @@ function buildProductsHref(selectedFilters: ProductFilters, page = 1) {
   const params = new URLSearchParams();
 
   for (const [filterKey, filterValue] of Object.entries(selectedFilters)) {
-    if (!filterValue || filterKey === "sort" && filterValue === "popular") {
+    if (!filterValue || filterKey === "sort" && filterValue === DEFAULT_PRODUCT_SORT) {
       continue;
     }
 
@@ -246,107 +211,10 @@ function buildFilters(selectedFilters: ProductFilters, key: FilterKey, value?: s
   }
 
   if (!nextFilters.sort) {
-    nextFilters.sort = "popular";
+    nextFilters.sort = DEFAULT_PRODUCT_SORT;
   }
 
   return nextFilters;
-}
-
-function Pagination({
-  currentPage,
-  totalPages,
-  selectedFilters,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  selectedFilters: ProductFilters;
-  onPageChange: (page: number) => void;
-}) {
-  if (totalPages <= 1) {
-    return null;
-  }
-
-  const desktopPages = getCompactPaginationItems(currentPage, totalPages);
-  const mobilePages = getCompactPaginationItems(currentPage, totalPages, 0);
-  const linkClass =
-    "inline-flex h-9 min-w-9 shrink-0 items-center justify-center rounded-md border px-2 text-xs font-black transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:h-10 sm:min-w-10 sm:px-3 sm:text-sm";
-  const arrowClass = `${linkClass} gap-1.5 sm:min-w-[5.75rem]`;
-  const disabledClass = "pointer-events-none border-slate-200 bg-slate-50 text-slate-300";
-  const inactiveClass = "border-slate-200 bg-white text-slate-700 hover:border-red-200 hover:text-red-600";
-  const activeClass = "border-red-600 bg-red-600 text-white shadow-sm shadow-red-600/20";
-  const ellipsisClass =
-    "inline-flex h-9 min-w-5 shrink-0 items-center justify-center text-xs font-black text-slate-400 sm:h-10 sm:min-w-8 sm:text-sm";
-  const renderPageItems = (items: CompactPaginationItem[]) =>
-    items.map((item, index) => {
-      if (item === "ellipsis") {
-        return (
-          <span key={`ellipsis-${index}`} className={ellipsisClass} aria-hidden="true">
-            ...
-          </span>
-        );
-      }
-
-      return (
-        <a
-          key={item}
-          href={buildProductsHref(selectedFilters, item)}
-          onClick={(event) => {
-            event.preventDefault();
-            onPageChange(item);
-          }}
-          aria-current={currentPage === item ? "page" : undefined}
-          aria-label={`Go to page ${item}`}
-          className={`${linkClass} ${currentPage === item ? activeClass : inactiveClass}`}
-        >
-          {item}
-        </a>
-      );
-    });
-
-  return (
-    <nav
-      className="flex items-center justify-between gap-2 overflow-hidden rounded-lg border border-slate-200 bg-white px-2 py-3 shadow-sm shadow-slate-950/[0.03] sm:px-4"
-      aria-label="Product pagination"
-    >
-      <a
-        href={buildProductsHref(selectedFilters, currentPage - 1)}
-        onClick={(event) => {
-          event.preventDefault();
-          if (currentPage > 1) {
-            onPageChange(currentPage - 1);
-          }
-        }}
-        aria-disabled={currentPage === 1 ? "true" : undefined}
-        aria-label="Previous page"
-        className={`${arrowClass} ${currentPage === 1 ? disabledClass : inactiveClass}`}
-      >
-        <ChevronLeftIcon className="h-4 w-4" />
-        <span className="hidden sm:inline">Previous</span>
-      </a>
-
-      <div className="flex min-w-0 flex-1 justify-center">
-        <div className="flex items-center justify-center gap-1.5 sm:hidden">{renderPageItems(mobilePages)}</div>
-        <div className="hidden items-center justify-center gap-2 sm:flex">{renderPageItems(desktopPages)}</div>
-      </div>
-
-      <a
-        href={buildProductsHref(selectedFilters, currentPage + 1)}
-        onClick={(event) => {
-          event.preventDefault();
-          if (currentPage < totalPages) {
-            onPageChange(currentPage + 1);
-          }
-        }}
-        aria-disabled={currentPage === totalPages ? "true" : undefined}
-        aria-label="Next page"
-        className={`${arrowClass} ${currentPage === totalPages ? disabledClass : inactiveClass}`}
-      >
-        <span className="hidden sm:inline">Next</span>
-        <ChevronRightIcon className="h-4 w-4" />
-      </a>
-    </nav>
-  );
 }
 
 function FilterSection({
@@ -549,10 +417,10 @@ function FilterPanel({
 }
 
 const sortLabels: Record<string, string> = {
+  newest: "Newest",
   popular: "Popular",
   "price-asc": "Price low to high",
   "price-desc": "Price high to low",
-  newest: "Newest",
 };
 
 function CatalogToolbar({
@@ -565,10 +433,10 @@ function CatalogToolbar({
   onFilterChange: FilterAction;
 }) {
   const sortOptions = [
+    ["newest", "Newest"],
     ["popular", "Popular"],
     ["price-asc", "Price low to high"],
     ["price-desc", "Price high to low"],
-    ["newest", "Newest"],
   ];
 
   return (
@@ -578,7 +446,9 @@ function CatalogToolbar({
         <details className="group relative">
           <summary className="flex cursor-pointer list-none items-center gap-2 text-sm text-slate-700 transition hover:text-slate-950">
             <span>Sort by:</span>
-            <span className="font-black text-slate-950">{sortLabels[selectedFilters.sort] ?? "Popular"}</span>
+            <span className="font-black text-slate-950">
+              {sortLabels[selectedFilters.sort] ?? sortLabels[DEFAULT_PRODUCT_SORT]}
+            </span>
             <ChevronDownIcon className="h-4 w-4" />
           </summary>
           <div className="absolute right-0 top-9 z-20 grid w-48 gap-1 rounded-lg border border-slate-200 bg-white p-2 shadow-lg shadow-slate-950/[0.08]">
@@ -655,14 +525,18 @@ function MobileControls({
         </details>
 
         <a
-          href={buildFilterHref(selectedFilters, "sort", selectedFilters.sort === "price-asc" ? "popular" : "price-asc")}
+          href={buildFilterHref(
+            selectedFilters,
+            "sort",
+            selectedFilters.sort === "price-asc" ? DEFAULT_PRODUCT_SORT : "price-asc",
+          )}
           onClick={(event) => {
             event.preventDefault();
-            onFilterChange("sort", selectedFilters.sort === "price-asc" ? "popular" : "price-asc");
+            onFilterChange("sort", selectedFilters.sort === "price-asc" ? DEFAULT_PRODUCT_SORT : "price-asc");
           }}
           className="flex min-h-11 items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-950 shadow-sm"
         >
-          Sort: {sortLabels[selectedFilters.sort] ?? "Popular"}
+          Sort: {sortLabels[selectedFilters.sort] ?? sortLabels[DEFAULT_PRODUCT_SORT]}
           <ChevronDownIcon className="h-4 w-4" />
         </a>
       </div>
@@ -705,15 +579,18 @@ export function ProductCatalog(props: ProductCatalogProps) {
   const { allProducts } = props;
   const productGridRef = useRef<HTMLDivElement>(null);
   const [selectedFilters, setSelectedFilters] = useState<ProductFilters>(props.selectedFilters);
-  const [currentPage, setCurrentPage] = useState(() => normalizePage(props.selectedPage));
+  const [currentPage, setCurrentPage] = useState(() => normalizeProductPage(props.selectedPage));
   const visibleCollections = useMemo(
     () => getCollectionsWithProducts(props.collections, allProducts),
     [props.collections, allProducts],
   );
   const products = useMemo(() => filterProducts(allProducts, selectedFilters), [allProducts, selectedFilters]);
-  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-  const paginatedProducts = products.slice((safeCurrentPage - 1) * PAGE_SIZE, safeCurrentPage * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(products.length / PRODUCT_PAGE_SIZE));
+  const safeCurrentPage = clampProductPage(currentPage, totalPages);
+  const paginatedProducts = products.slice(
+    (safeCurrentPage - 1) * PRODUCT_PAGE_SIZE,
+    safeCurrentPage * PRODUCT_PAGE_SIZE,
+  );
   const activeFilterCount = [
     selectedFilters.query,
     selectedFilters.category,
@@ -737,7 +614,7 @@ export function ProductCatalog(props: ProductCatalogProps) {
     [selectedFilters, updateFilters],
   );
   const clearFilters = useCallback(() => {
-    setSelectedFilters({ sort: "popular" });
+    setSelectedFilters({ sort: DEFAULT_PRODUCT_SORT });
     setCurrentPage(1);
     window.history.pushState(null, "", "/products");
   }, []);
@@ -870,10 +747,10 @@ export function ProductCatalog(props: ProductCatalogProps) {
                       <CatalogProductCard key={product.id} product={product} />
                     ))}
                   </div>
-                  <Pagination
+                  <ProductPagination
                     currentPage={safeCurrentPage}
                     totalPages={totalPages}
-                    selectedFilters={selectedFilters}
+                    getPageHref={(page) => buildProductsHref(selectedFilters, page)}
                     onPageChange={handlePageChange}
                   />
                 </>
