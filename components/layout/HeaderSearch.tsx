@@ -6,6 +6,7 @@ import type { HeaderSearchProduct } from "@/lib/header-search-products";
 import { SearchIcon } from "@/components/ui/Icons";
 
 type HeaderSearchProps = {
+  products: HeaderSearchProduct[];
   className?: string;
   autoFocusSignal?: number;
 };
@@ -14,7 +15,20 @@ function normalizeSearchText(value: string) {
   return value.trim().toLowerCase();
 }
 
-export function HeaderSearch({ className = "h-11 w-64", autoFocusSignal }: HeaderSearchProps) {
+function productSearchText(product: HeaderSearchProduct) {
+  return [
+    product.title,
+    product.sku,
+    product.category,
+    product.collectionHandle,
+    product.series,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+export function HeaderSearch({ products, className = "h-11 w-64", autoFocusSignal }: HeaderSearchProps) {
   const router = useRouter();
   const searchId = useId();
   const listboxId = useId();
@@ -23,14 +37,18 @@ export function HeaderSearch({ className = "h-11 w-64", autoFocusSignal }: Heade
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const [suggestions, setSuggestions] = useState<HeaderSearchProduct[]>([]);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
-  const normalizedQuery = useMemo(() => {
+  const suggestions = useMemo(() => {
     const normalizedQuery = normalizeSearchText(query);
 
-    return normalizedQuery;
-  }, [query]);
+    if (normalizedQuery.length < 2) {
+      return [];
+    }
+
+    return products
+      .filter((product) => productSearchText(product).includes(normalizedQuery))
+      .slice(0, 5);
+  }, [products, query]);
 
   const showSuggestions = isOpen && suggestions.length > 0;
 
@@ -56,44 +74,6 @@ export function HeaderSearch({ className = "h-11 w-64", autoFocusSignal }: Heade
 
     inputRef.current?.focus();
   }, [autoFocusSignal]);
-
-  useEffect(() => {
-    if (normalizedQuery.length < 2) {
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeout = window.setTimeout(async () => {
-      setIsLoadingSuggestions(true);
-
-      try {
-        const response = await fetch(`/api/products/search?q=${encodeURIComponent(normalizedQuery)}`, {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          setSuggestions([]);
-          return;
-        }
-
-        const data = (await response.json()) as { products?: HeaderSearchProduct[] };
-        setSuggestions(data.products ?? []);
-      } catch {
-        if (!controller.signal.aborted) {
-          setSuggestions([]);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoadingSuggestions(false);
-        }
-      }
-    }, 200);
-
-    return () => {
-      window.clearTimeout(timeout);
-      controller.abort();
-    };
-  }, [normalizedQuery]);
 
   function goToProduct(product: HeaderSearchProduct) {
     setQuery("");
@@ -133,16 +113,9 @@ export function HeaderSearch({ className = "h-11 w-64", autoFocusSignal }: Heade
         aria-controls={listboxId}
         aria-activedescendant={showSuggestions && activeIndex >= 0 ? `${listboxId}-${activeIndex}` : undefined}
         onChange={(event) => {
-          const nextQuery = event.target.value;
-
-          setQuery(nextQuery);
+          setQuery(event.target.value);
           setIsOpen(true);
           setActiveIndex(-1);
-
-          if (normalizeSearchText(nextQuery).length < 2) {
-            setSuggestions([]);
-            setIsLoadingSuggestions(false);
-          }
         }}
         onFocus={() => {
           setIsOpen(true);
@@ -203,17 +176,11 @@ export function HeaderSearch({ className = "h-11 w-64", autoFocusSignal }: Heade
           </ul>
         </div>
       ) : null}
-
-      {isOpen && isLoadingSuggestions && normalizedQuery.length >= 2 && !suggestions.length ? (
-        <div className="absolute left-0 top-[calc(100%+0.75rem)] z-50 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-500 shadow-xl shadow-slate-950/15">
-          Searching...
-        </div>
-      ) : null}
     </form>
   );
 }
 
-export function HeaderMobileSearch() {
+export function HeaderMobileSearch({ products }: Pick<HeaderSearchProps, "products">) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [focusSignal, setFocusSignal] = useState(0);
@@ -269,7 +236,7 @@ export function HeaderMobileSearch() {
           className="fixed left-0 right-0 top-24 z-50 border-b border-slate-200 bg-white px-4 py-3 shadow-lg shadow-slate-950/10"
         >
           <div className="mx-auto max-w-7xl">
-            <HeaderSearch className="h-12 w-full" autoFocusSignal={focusSignal} />
+            <HeaderSearch products={products} className="h-12 w-full" autoFocusSignal={focusSignal} />
           </div>
         </div>
       ) : null}
