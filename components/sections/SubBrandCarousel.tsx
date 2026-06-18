@@ -142,26 +142,31 @@ export function SubBrandCarousel({ brands, fadeBackground = "white" }: SubBrandC
         className={`scrollbar-none overflow-x-auto ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
       >
         <div className="flex w-max gap-4 py-1">
-          {repeatedBrands.map((brand, index) => (
-            <article
-              key={`${brand.name}-${index}`}
-              aria-hidden={index < brands.length || index >= brands.length * 2}
-              className="w-64 shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-md sm:w-72 sm:p-5"
-            >
-              <div className="flex h-44 items-center justify-center rounded-md bg-white p-4">
-                <Image
-                  src={brand.image}
-                  alt={`${brand.name} sub-brand logo`}
-                  width={brand.width}
-                  height={brand.height}
-                  draggable={false}
-                  className="h-32 w-auto max-w-[240px] object-contain"
-                />
-              </div>
-              <h2 className="mt-5 text-base font-semibold text-slate-950">{brand.name}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{brand.description}</p>
-            </article>
-          ))}
+          {repeatedBrands.map((brand, index) => {
+            const isPrimarySegment = index >= brands.length && index < brands.length * 2;
+
+            return (
+              <article
+                key={`${brand.name}-${index}`}
+                aria-hidden={!isPrimarySegment}
+                className="w-64 shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-md sm:w-72 sm:p-5"
+              >
+                <div className="flex h-44 items-center justify-center rounded-md bg-white p-4">
+                  <Image
+                    src={brand.image}
+                    alt={`${brand.name} sub-brand logo`}
+                    width={brand.width}
+                    height={brand.height}
+                    loading={isPrimarySegment ? "eager" : "lazy"}
+                    draggable={false}
+                    className="h-32 w-auto max-w-[240px] object-contain"
+                  />
+                </div>
+                <h2 className="mt-5 text-base font-semibold text-slate-950">{brand.name}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{brand.description}</p>
+              </article>
+            );
+          })}
         </div>
       </div>
     </div>

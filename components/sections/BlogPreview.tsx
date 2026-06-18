@@ -4,9 +4,9 @@ import { getBlogPosts } from "@/lib/blog";
 import { ArrowRightIcon } from "@/components/ui/Icons";
 
 const images = [
-  "/images/site-visuals/blog-buying-guide.png",
-  "/images/site-visuals/blog-wholesale-guide.png",
-  "/images/site-visuals/blog-custom-guide.png",
+  "/images/site-visuals/blog-buying-guide.avif",
+  "/images/site-visuals/blog-wholesale-guide.avif",
+  "/images/site-visuals/blog-custom-guide.avif",
 ];
 
 export function BlogPreview() {

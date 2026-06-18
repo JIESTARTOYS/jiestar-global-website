@@ -15,7 +15,7 @@ export function BrandStory() {
         <div className="grid lg:min-h-[28rem] lg:grid-cols-[1fr_1fr]">
           <div className="relative min-h-80 overflow-hidden bg-slate-100 lg:min-h-full">
             <Image
-              src="/images/site-visuals/brand-operations.png"
+              src="/images/site-visuals/brand-operations.avif"
               alt="Representative product planning workspace for global building block brand operations"
               fill
               sizes="(min-width: 1024px) 48vw, 100vw"

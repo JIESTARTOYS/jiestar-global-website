@@ -68,7 +68,7 @@ export default function WholesalePage() {
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
         <div className="absolute inset-0 opacity-35">
           <Image
-            src="/images/site-visuals/b2b-catalog-meeting.png"
+            src="/images/site-visuals/b2b-catalog-meeting.avif"
             alt=""
             fill
             priority

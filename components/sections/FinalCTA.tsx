@@ -74,7 +74,7 @@ export function FinalCTA() {
           </div>
           <div className="relative min-h-72 bg-slate-100 lg:min-h-full">
             <Image
-              src="/images/site-visuals/b2b-catalog-meeting.png"
+              src="/images/site-visuals/b2b-catalog-meeting.avif"
               alt="Representative B2B catalog review and building block cooperation scene"
               fill
               sizes="(min-width: 1024px) 34vw, 100vw"

@@ -17,9 +17,9 @@ export default function BlogPage() {
   const [featuredPost, ...latestPosts] = posts;
   const categories = Array.from(new Set(posts.map((post) => post.category)));
   const articleImages = [
-    "/images/site-visuals/blog-buying-guide.png",
-    "/images/site-visuals/blog-wholesale-guide.png",
-    "/images/site-visuals/blog-custom-guide.png",
+    "/images/site-visuals/blog-buying-guide.avif",
+    "/images/site-visuals/blog-wholesale-guide.avif",
+    "/images/site-visuals/blog-custom-guide.avif",
   ];
 
   return (
@@ -27,7 +27,7 @@ export default function BlogPage() {
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
         <div className="absolute inset-0 opacity-35">
           <Image
-            src="/images/site-visuals/blog-knowledge-hub.png"
+            src="/images/site-visuals/blog-knowledge-hub.avif"
             alt=""
             fill
             priority

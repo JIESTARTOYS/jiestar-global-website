@@ -125,43 +125,43 @@ const tourShots: FactoryVisual[] = [
   {
     label: "Factory exterior",
     note: "Representative AI visual for a future factory overview, to be replaced by approved onsite photography.",
-    image: "/images/site-visuals/factory-overview.png",
+    image: "/images/site-visuals/factory-overview.avif",
     className: "lg:col-span-2 lg:row-span-2",
   },
   {
     label: "Showroom display",
     note: "Representative AI visual for finished building block displays and brand presentation.",
-    image: "/images/site-visuals/showroom-product-wall.png",
+    image: "/images/site-visuals/showroom-product-wall.avif",
   },
   {
     label: "Design discussion",
     note: "Representative AI visual for product planning, design review, and model development work.",
-    image: "/images/site-visuals/design-review.png",
+    image: "/images/site-visuals/design-review.avif",
   },
   {
     label: "Sample room",
     note: "Representative AI visual for prototypes, sample shelves, and product testing tables.",
-    image: "/images/site-visuals/sample-room.png",
+    image: "/images/site-visuals/sample-room.avif",
   },
   {
     label: "Production line",
     note: "Representative AI visual for a clean production or assembly area without sensitive details.",
-    image: "/images/site-visuals/production-line.png",
+    image: "/images/site-visuals/production-line.avif",
   },
   {
     label: "Packaging area",
     note: "Representative AI visual for box preparation, packed products, and packaging workflow.",
-    image: "/images/site-visuals/packaging-workflow.png",
+    image: "/images/site-visuals/packaging-workflow.avif",
   },
   {
     label: "Warehouse",
     note: "Representative AI visual for organized product storage, cartons, and shipping preparation.",
-    image: "/images/site-visuals/warehouse-shipping.png",
+    image: "/images/site-visuals/warehouse-shipping.avif",
   },
   {
     label: "QC checking table",
     note: "Representative AI visual for product inspection, part checking, and documentation review.",
-    image: "/images/site-visuals/qc-inspection.png",
+    image: "/images/site-visuals/qc-inspection.avif",
   },
 ];
 
@@ -234,7 +234,7 @@ export default function AboutPage() {
             <FactoryVisualCard
               label="Factory-backed brand hub"
               note="Representative AI visual for factory capability and brand presentation until approved onsite photography is available."
-              image="/images/site-visuals/factory-overview.png"
+              image="/images/site-visuals/factory-overview.avif"
               priority
               className="min-h-[360px] sm:min-h-[500px]"
             />
@@ -242,7 +242,7 @@ export default function AboutPage() {
               <FactoryVisualCard
                 label="Showroom product wall"
                 note="Representative AI visual for finished models, sample shelves, and brand display areas."
-                image="/images/site-visuals/showroom-product-wall.png"
+                image="/images/site-visuals/showroom-product-wall.avif"
                 priority
                 className="min-h-56 sm:min-h-[240px]"
               />

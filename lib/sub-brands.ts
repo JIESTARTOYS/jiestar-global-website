@@ -39,9 +39,9 @@ export const subBrands: SubBrand[] = [
   {
     name: "ZOIN",
     description: "Creative display sets across architecture, landmarks, art and playful themes.",
-    image: "/images/sub-brands/zoin-logo-yellow-web.png",
-    width: 900,
-    height: 884,
+    image: "/images/sub-brands/zoin-logo.png",
+    width: 512,
+    height: 512,
   },
   {
     name: "JIQI",
