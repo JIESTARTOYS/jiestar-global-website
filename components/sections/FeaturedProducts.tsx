@@ -2,23 +2,24 @@ import Link from "next/link";
 import { ArrowRightIcon, CartIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 import type { ProductSummary } from "@/lib/data";
+import { selectLatestHomeProducts } from "@/lib/home-products";
 
 export function FeaturedProducts({ products }: { products: ProductSummary[] }) {
-  const featuredProducts = products.slice(0, 4);
+  const latestProducts = selectLatestHomeProducts(products);
 
   return (
     <section className="bg-[#f6f7f9] px-5 pb-10 pt-7 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-4 flex items-end justify-between gap-4">
-          <h2 className="text-2xl font-black text-slate-950">Featured Products</h2>
+          <h2 className="text-2xl font-black text-slate-950">Latest Products</h2>
           <Link href="/products" className="hidden items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-red-600 sm:flex">
             View all products
             <ArrowRightIcon className="h-4 w-4" />
           </Link>
         </div>
-        {featuredProducts.length ? (
+        {latestProducts.length ? (
           <div className="scrollbar-none -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((product) => (
+            {latestProducts.map((product) => (
               <HomeProductCard key={product.id} product={product} />
             ))}
           </div>
