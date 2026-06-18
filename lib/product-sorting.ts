@@ -1,4 +1,4 @@
-import type { Product } from "@/lib/data";
+import type { ProductSummary } from "@/lib/data";
 
 export const DEFAULT_PRODUCT_SORT = "newest";
 
@@ -6,7 +6,7 @@ export function priceNumber(price: string) {
   return Number(price.replace(/[^0-9.]/g, "")) || 0;
 }
 
-export function sortProductsForCatalog(products: Product[], sort = DEFAULT_PRODUCT_SORT) {
+export function sortProductsForCatalog<T extends ProductSummary>(products: T[], sort = DEFAULT_PRODUCT_SORT) {
   const sortedProducts = [...products];
 
   if (sort === "price-asc") {

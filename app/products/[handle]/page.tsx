@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { ProductDetailTop } from "@/components/product/ProductDetailTop";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { ArrowRightIcon } from "@/components/ui/Icons";
-import type { Product } from "@/lib/data";
+import type { Product, ProductSummary } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
 import { sanitizeShopifyHtml } from "@/lib/sanitize-html";
-import { getShopifyCollection, getShopifyProduct, getShopifyProducts } from "@/lib/shopify";
+import { getShopifyCollectionSummary, getShopifyProduct, getShopifyProductSummaries } from "@/lib/shopify";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
@@ -28,16 +28,16 @@ function cleanDescriptionHtml(html: string) {
   return cleaned.replace(/^(?:\s|&nbsp;|&#160;|<br\s*\/?>)+/gi, "").trim();
 }
 
-async function getRelatedProducts(product: Product) {
+async function getRelatedProducts(product: Product): Promise<ProductSummary[]> {
   try {
-    const collectionProducts = (await getShopifyCollection(product.collectionHandle))?.products ?? [];
+    const collectionProducts = (await getShopifyCollectionSummary(product.collectionHandle))?.products ?? [];
     const relatedFromCollection = collectionProducts.filter((item) => item.handle !== product.handle);
 
     if (relatedFromCollection.length) {
       return relatedFromCollection.slice(0, 4);
     }
 
-    const catalogProducts = await getShopifyProducts();
+    const catalogProducts = await getShopifyProductSummaries();
 
     return catalogProducts.filter((item) => item.handle !== product.handle).slice(0, 4);
   } catch (error) {
@@ -52,7 +52,7 @@ async function getRelatedProducts(product: Product) {
 }
 
 export async function generateStaticParams() {
-  const shopifyProducts = await getShopifyProducts();
+  const shopifyProducts = await getShopifyProductSummaries();
 
   return shopifyProducts.map((product) => ({ handle: product.handle }));
 }

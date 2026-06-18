@@ -1,4 +1,4 @@
-import { collections, products, type Collection, type Product, type ProductVariant } from "./data";
+import { collections, products, type Collection, type Product, type ProductSummary, type ProductVariant } from "./data";
 import { getLocalProductSpecifications } from "./product-specifications";
 import { readShopifyConnectionPages } from "./shopify-pagination";
 
@@ -10,6 +10,7 @@ const SHOPIFY_FETCH_ATTEMPTS = 3;
 const SHOPIFY_RETRY_DELAY_MS = 500;
 
 let cachedShopifyProducts: Product[] | undefined;
+let cachedShopifyProductSummaries: ProductSummary[] | undefined;
 let cachedShopifyCollections: Collection[] | undefined;
 
 const PRODUCT_TYPE_COLLECTION_HANDLES = new Set([
@@ -137,6 +138,45 @@ type ShopifyProductNode = {
   };
 };
 
+type ShopifyProductSummaryNode = {
+  id: string;
+  handle: string;
+  title: string;
+  createdAt: string;
+  featuredImage?: {
+    url: string;
+    altText?: string | null;
+  } | null;
+  collections: {
+    edges: Array<{
+      node: ShopifyProductCollectionNode;
+    }>;
+  };
+  images: {
+    edges: Array<{
+      node: {
+        url: string;
+        altText?: string | null;
+      };
+    }>;
+  };
+  priceRange: {
+    minVariantPrice: ShopifyMoney;
+  };
+  metafields: Array<{
+    namespace: string;
+    key: string;
+    value: string;
+  } | null>;
+  variants: {
+    edges: Array<{
+      node: {
+        sku?: string | null;
+      };
+    }>;
+  };
+};
+
 type ShopifyProductCollectionNode = {
   handle: string;
   title: string;
@@ -154,6 +194,19 @@ type ShopifyProductsResponse = {
     edges: Array<{
       cursor: string;
       node: ShopifyProductNode;
+    }>;
+  };
+};
+
+type ShopifyProductSummariesResponse = {
+  products: {
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor?: string | null;
+    };
+    edges: Array<{
+      cursor: string;
+      node: ShopifyProductSummaryNode;
     }>;
   };
 };
@@ -194,8 +247,20 @@ type ShopifyCollectionNode = {
   };
 };
 
+type ShopifyCollectionSummaryNode = Omit<ShopifyCollectionNode, "products"> & {
+  products?: {
+    edges: Array<{
+      node: ShopifyProductSummaryNode;
+    }>;
+  };
+};
+
 type ShopifyCollectionResponse = {
   collection?: ShopifyCollectionNode | null;
+};
+
+type ShopifyCollectionSummaryResponse = {
+  collection?: ShopifyCollectionSummaryNode | null;
 };
 
 type ShopifyCartCreateResponse = {
@@ -455,7 +520,7 @@ function formatPieceCount(value?: string) {
   return value.toLowerCase().includes("pcs") ? value : `${value} pcs`;
 }
 
-function pickPrimaryCollection(node: ShopifyProductNode) {
+function pickPrimaryCollection(node: Pick<ShopifyProductSummaryNode, "collections">) {
   const shopifyCollections = node.collections.edges.map(({ node: collection }) => collection);
   const mainCategoryCollection = shopifyCollections.find(
     (collection) =>
@@ -473,6 +538,47 @@ function pickPrimaryCollection(node: ShopifyProductNode) {
     ) ?? shopifyCollections[0];
 
   return configuredCollection;
+}
+
+function mapShopifyProductSummary(node: ShopifyProductSummaryNode): ProductSummary {
+  const variant = node.variants.edges[0]?.node;
+  const localSpecs = getLocalProductSpecifications({
+    sku: variant?.sku,
+    handle: node.handle,
+    title: node.title,
+  });
+  const pieceCount = getMetafieldValue(node.metafields, "specs", "piece_count");
+  const recommendedAge = getMetafieldValue(node.metafields, "specs", "recommended_age");
+  const productImages = node.images.edges.slice(0, 2).map(({ node: image }) => ({
+    src: image.url,
+    alt: image.altText ?? `${node.title} product image`,
+  }));
+  const fallbackImage = {
+    src:
+      node.featuredImage?.url ??
+      "/images/categories/category-other.png",
+    alt: node.featuredImage?.altText ?? `${node.title} product image`,
+  };
+  const images = productImages.length ? productImages : [fallbackImage];
+  const primaryCollection = pickPrimaryCollection(node);
+
+  return {
+    id: node.id,
+    handle: node.handle,
+    title: node.title,
+    category: primaryCollection?.title ?? localSpecs?.series ?? "Building Block Sets",
+    collectionHandle: primaryCollection?.handle ?? "other",
+    price: formatPrice(node.priceRange.minVariantPrice),
+    image: images[0].src,
+    imageAlt: images[0].alt,
+    images,
+    sku: variant?.sku ?? "Contact for SKU",
+    pieceCount: formatPieceCount(pieceCount),
+    recommendedAge: recommendedAge ?? "See product package",
+    series: localSpecs?.series,
+    releaseDate: localSpecs?.releaseDate,
+    createdAt: node.createdAt,
+  };
 }
 
 function mapShopifyProduct(node: ShopifyProductNode): Product {
@@ -543,7 +649,9 @@ function mapShopifyProduct(node: ShopifyProductNode): Product {
   };
 }
 
-function mapShopifyCollection(node: ShopifyCollectionNode): Collection {
+function mapShopifyCollection(
+  node: Pick<ShopifyCollectionNode, "description" | "handle" | "image" | "title">,
+): Collection {
   return {
     handle: node.handle,
     title: node.title,
@@ -599,9 +707,79 @@ function getCachedCatalogCollection(handle: string) {
   };
 }
 
+function getCachedCatalogCollectionSummary(handle: string) {
+  if (!cachedShopifyCollections || !cachedShopifyProductSummaries) {
+    return undefined;
+  }
+
+  const collection = cachedShopifyCollections.find((item) => item.handle === handle);
+
+  if (!collection) {
+    return undefined;
+  }
+
+  return {
+    collection,
+    products: cachedShopifyProductSummaries.filter((product) => product.collectionHandle === handle),
+  };
+}
+
 function getCachedCatalogProduct(handle: string) {
   return cachedShopifyProducts?.find((product) => product.handle === handle);
 }
+
+const productSummaryFragment = `
+  fragment ProductSummaryFields on Product {
+    id
+    handle
+    title
+    createdAt
+    featuredImage {
+      url
+      altText
+    }
+    collections(first: 20) {
+      edges {
+        node {
+          handle
+          title
+          websiteCollectionType: metafield(namespace: "custom", key: "website_collection_type") {
+            value
+          }
+        }
+      }
+    }
+    images(first: 2) {
+      edges {
+        node {
+          url
+          altText
+        }
+      }
+    }
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    metafields(identifiers: [
+      { namespace: "specs", key: "piece_count" }
+      { namespace: "specs", key: "recommended_age" }
+    ]) {
+      namespace
+      key
+      value
+    }
+    variants(first: 1) {
+      edges {
+        node {
+          sku
+        }
+      }
+    }
+  }
+`;
 
 const productFragment = `
   fragment ProductFields on Product {
@@ -795,6 +973,71 @@ function mapShopifyCart(cart: ShopifyCartNode): Cart {
   };
 }
 
+export async function getShopifyProductSummaries(): Promise<ProductSummary[]> {
+  if (!hasShopifyConfig()) {
+    const error = getShopifyConfigError("getShopifyProductSummaries");
+
+    if (shouldUseLocalFallback()) {
+      return products;
+    }
+
+    throw error;
+  }
+
+  try {
+    const productNodes = await readShopifyConnectionPages(async (cursor) => {
+      const data = await shopifyFetch<ShopifyProductSummariesResponse>(
+        `
+          ${productSummaryFragment}
+          query ProductSummaries($cursor: String) {
+            products(first: 50, after: $cursor) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+              edges {
+                cursor
+                node {
+                  ...ProductSummaryFields
+                }
+              }
+            }
+          }
+        `,
+        { cursor },
+      );
+
+      return {
+        nodes: data.products.edges.map(({ node }) => node),
+        hasNextPage: data.products.pageInfo.hasNextPage,
+        endCursor: data.products.pageInfo.endCursor,
+      };
+    });
+
+    const shopifyProducts = productNodes.map((node) => mapShopifyProductSummary(node));
+    cachedShopifyProductSummaries = shopifyProducts;
+    logShopifyDataSource("getShopifyProductSummaries", "shopify", { count: shopifyProducts.length });
+
+    return shopifyProducts;
+  } catch (error) {
+    const shopifyError = getShopifyRequestError("getShopifyProductSummaries", error);
+
+    if (cachedShopifyProductSummaries?.length) {
+      logShopifyDataSource("getShopifyProductSummaries", "cache", {
+        count: cachedShopifyProductSummaries.length,
+        reason: "request_failed",
+      });
+      return cachedShopifyProductSummaries;
+    }
+
+    if (shouldUseLocalFallback()) {
+      return products;
+    }
+
+    throw shopifyError;
+  }
+}
+
 export async function getShopifyProducts(): Promise<Product[]> {
   if (!hasShopifyConfig()) {
     const error = getShopifyConfigError("getShopifyProducts");
@@ -959,22 +1202,6 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
   }
 
   try {
-    const catalogProduct = (await getShopifyProducts()).find((product) => product.handle === handle);
-
-    if (catalogProduct) {
-      logShopifyDataSource("getShopifyProduct", "cache", {
-        found: true,
-        handle,
-        reason: "catalog_lookup",
-      });
-
-      return catalogProduct;
-    }
-  } catch {
-    // Fall through to the direct product query below.
-  }
-
-  try {
     const data = await shopifyFetch<ShopifyProductResponse>(
       `
         ${productFragment}
@@ -1001,6 +1228,109 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
 
     if (shouldUseLocalFallback() && localProduct) {
       return localProduct;
+    }
+
+    throw shopifyError;
+  }
+}
+
+export async function getShopifyCollectionSummary(
+  handle: string,
+): Promise<{ collection: Collection; products: ProductSummary[] } | undefined> {
+  if (!hasShopifyConfig()) {
+    const error = getShopifyConfigError("getShopifyCollectionSummary");
+
+    if (shouldUseLocalFallback()) {
+      return getLocalCollectionProducts(handle);
+    }
+
+    throw error;
+  }
+
+  const cachedCatalogCollection = getCachedCatalogCollectionSummary(handle);
+
+  if (cachedCatalogCollection) {
+    logShopifyDataSource("getShopifyCollectionSummary", "cache", {
+      found: true,
+      handle,
+      productCount: cachedCatalogCollection.products.length,
+      reason: "memory_catalog",
+    });
+
+    return cachedCatalogCollection;
+  }
+
+  try {
+    const [shopifyCollections, shopifyProducts] = await Promise.all([
+      getShopifyCollections(),
+      getShopifyProductSummaries(),
+    ]);
+    const collection = shopifyCollections.find((item) => item.handle === handle);
+
+    if (collection) {
+      const collectionProducts = shopifyProducts.filter((product) => product.collectionHandle === handle);
+      logShopifyDataSource("getShopifyCollectionSummary", "cache", {
+        found: true,
+        handle,
+        productCount: collectionProducts.length,
+        reason: "summary_catalog_data",
+      });
+
+      return {
+        collection,
+        products: collectionProducts,
+      };
+    }
+  } catch {
+    // Fall through to the direct collection query below.
+  }
+
+  try {
+    const data = await shopifyFetch<ShopifyCollectionSummaryResponse>(
+      `
+        ${productSummaryFragment}
+        ${collectionSummaryFragment}
+        query CollectionSummary($handle: String!) {
+          collection(handle: $handle) {
+            ...CollectionSummaryFields
+            products(first: 100) {
+              edges {
+                node {
+                  ...ProductSummaryFields
+                }
+              }
+            }
+          }
+        }
+      `,
+      { handle },
+    );
+
+    if (!data.collection) {
+      logShopifyDataSource("getShopifyCollectionSummary", "shopify", { found: false, handle });
+      return shouldUseLocalFallback() ? getLocalCollectionProducts(handle) : undefined;
+    }
+
+    const collectionProducts = data.collection.products?.edges.map(({ node }) => mapShopifyProductSummary(node)) ?? [];
+    logShopifyDataSource("getShopifyCollectionSummary", "shopify", {
+      found: true,
+      handle,
+      productCount: collectionProducts.length,
+    });
+
+    return {
+      collection: mapShopifyCollection(data.collection),
+      products: collectionProducts,
+    };
+  } catch (error) {
+    const shopifyError = getShopifyRequestError("getShopifyCollectionSummary", error);
+
+    if (shouldUseLocalFallback()) {
+      const localCollectionProducts = getLocalCollectionProducts(handle);
+
+      if (localCollectionProducts) {
+        return localCollectionProducts;
+      }
     }
 
     throw shopifyError;

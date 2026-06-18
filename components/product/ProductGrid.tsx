@@ -1,7 +1,7 @@
-import type { Product } from "@/lib/data";
+import type { ProductSummary } from "@/lib/data";
 import { ProductCard } from "./ProductCard";
 
-export function ProductGrid({ products }: { products: Product[] }) {
+export function ProductGrid({ products }: { products: ProductSummary[] }) {
   if (!products.length) {
     return (
       <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">

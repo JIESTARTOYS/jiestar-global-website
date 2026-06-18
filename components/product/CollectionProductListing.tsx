@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Product } from "@/lib/data";
+import type { ProductSummary } from "@/lib/data";
 import {
   buildPaginationHref,
   clampProductPage,
@@ -14,7 +14,7 @@ import { CatalogProductCard } from "@/components/product/CatalogProductCard";
 import { ProductPagination } from "@/components/product/ProductPagination";
 
 type CollectionProductListingProps = {
-  products: Product[];
+  products: ProductSummary[];
   collectionHandle: string;
   selectedPage?: string;
 };
@@ -73,6 +73,7 @@ export function CollectionProductListing({
       setCurrentPage(normalizeProductPage(page));
     };
 
+    handlePopState();
     window.addEventListener("popstate", handlePopState);
 
     return () => window.removeEventListener("popstate", handlePopState);

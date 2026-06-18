@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import type { MouseEvent, PointerEvent } from "react";
-import type { Collection, Product } from "@/lib/data";
+import type { Collection, ProductSummary } from "@/lib/data";
 import { getCollectionProductCount, getCollectionsWithProducts } from "@/lib/collection-utils";
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
 
@@ -12,7 +12,7 @@ const DRAG_THRESHOLD = 8;
 
 type CategoryCarouselProps = {
   collections: Collection[];
-  products: Product[];
+  products: ProductSummary[];
 };
 
 export function CategoryCarousel({ collections, products }: CategoryCarouselProps) {
@@ -161,7 +161,7 @@ export function CategoryCarousel({ collections, products }: CategoryCarouselProp
               : "scrollbar-none flex cursor-grab gap-3 overflow-x-auto scroll-smooth px-1 pb-1"
           }
         >
-          {visibleCollections.map((collection, index) => {
+          {visibleCollections.map((collection) => {
             const count = getCollectionProductCount(collection, products);
 
             return (
@@ -179,7 +179,6 @@ export function CategoryCarousel({ collections, products }: CategoryCarouselProp
                       fill
                       sizes="13rem"
                       draggable={false}
-                      priority={index < 6}
                       className="object-cover transition duration-300 group-hover:scale-105"
                     />
                   ) : (

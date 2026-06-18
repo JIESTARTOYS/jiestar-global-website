@@ -13,7 +13,10 @@ test("sanitizeShopifyHtml removes unsafe tags and event handlers", () => {
   const sanitized = sanitizeShopifyHtml(html);
 
   assert.match(sanitized, /<p>Safe text<\/p>/);
-  assert.match(sanitized, /<img src="https:\/\/cdn\.shopify\.com\/image\.jpg" alt="Product">/);
+  assert.match(
+    sanitized,
+    /<img src="https:\/\/cdn\.shopify\.com\/image\.jpg\?width=960" alt="Product" loading="lazy" decoding="async">/,
+  );
   assert.match(sanitized, /<a>Bad link<\/a>/);
   assert.doesNotMatch(sanitized, /script/i);
   assert.doesNotMatch(sanitized, /onclick/i);
@@ -27,4 +30,15 @@ test("sanitizeShopifyHtml keeps only a conservative set of tags", () => {
   const sanitized = sanitizeShopifyHtml(html);
 
   assert.equal(sanitized, "<div><h2>Details</h2><ul><li>One</li></ul></div>");
+});
+
+test("sanitizeShopifyHtml slims Shopify detail images at render time", () => {
+  const html = `<p><img src="https://cdn.shopify.com/s/files/1/0804/0824/8569/files/detail.jpg?v=123" alt="Detail image"></p>`;
+
+  const sanitized = sanitizeShopifyHtml(html);
+
+  assert.equal(
+    sanitized,
+    '<p><img src="https://cdn.shopify.com/s/files/1/0804/0824/8569/files/detail.jpg?v=123&amp;width=960" alt="Detail image" loading="lazy" decoding="async"></p>',
+  );
 });

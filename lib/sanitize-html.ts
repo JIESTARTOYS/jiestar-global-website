@@ -1,4 +1,6 @@
 const BLOCKED_CONTENT_TAGS = ["script", "style", "iframe", "object", "embed", "form", "input", "button", "textarea"];
+const SHOPIFY_CDN_IMAGE_PREFIX = "https://cdn.shopify.com/";
+const SHOPIFY_DETAIL_IMAGE_WIDTH = 960;
 const ALLOWED_TAGS = new Set([
   "a",
   "b",
@@ -26,7 +28,7 @@ const ALLOWED_TAGS = new Set([
 const VOID_TAGS = new Set(["br", "img"]);
 const ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {
   a: new Set(["href", "title"]),
-  img: new Set(["alt", "height", "src", "title", "width"]),
+  img: new Set(["alt", "decoding", "height", "loading", "src", "title", "width"]),
   td: new Set(["colspan", "rowspan"]),
   th: new Set(["colspan", "rowspan"]),
 };
@@ -52,6 +54,21 @@ function isSafeUrl(value: string) {
   );
 }
 
+function getSlimShopifyImageUrl(value: string) {
+  if (!value.startsWith(SHOPIFY_CDN_IMAGE_PREFIX)) {
+    return value;
+  }
+
+  try {
+    const url = new URL(value);
+    url.searchParams.set("width", String(SHOPIFY_DETAIL_IMAGE_WIDTH));
+
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
+
 function sanitizeAttributes(tagName: string, attributeText: string) {
   const allowedAttributes = ALLOWED_ATTRIBUTES[tagName];
 
@@ -59,13 +76,13 @@ function sanitizeAttributes(tagName: string, attributeText: string) {
     return "";
   }
 
-  const attributes: string[] = [];
+  const attributes: Array<[string, string]> = [];
   const attributePattern = /([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
   let match: RegExpExecArray | null;
 
   while ((match = attributePattern.exec(attributeText))) {
     const name = match[1].toLowerCase();
-    const value = match[2] ?? match[3] ?? match[4] ?? "";
+    let value = match[2] ?? match[3] ?? match[4] ?? "";
 
     if (!allowedAttributes.has(name) || name.startsWith("on")) {
       continue;
@@ -75,10 +92,26 @@ function sanitizeAttributes(tagName: string, attributeText: string) {
       continue;
     }
 
-    attributes.push(`${name}="${escapeAttribute(value)}"`);
+    if (tagName === "img" && name === "src") {
+      value = getSlimShopifyImageUrl(value);
+    }
+
+    attributes.push([name, value]);
   }
 
-  return attributes.length ? ` ${attributes.join(" ")}` : "";
+  if (tagName === "img") {
+    if (!attributes.some(([name]) => name === "loading")) {
+      attributes.push(["loading", "lazy"]);
+    }
+
+    if (!attributes.some(([name]) => name === "decoding")) {
+      attributes.push(["decoding", "async"]);
+    }
+  }
+
+  return attributes.length
+    ? ` ${attributes.map(([name, value]) => `${name}="${escapeAttribute(value)}"`).join(" ")}`
+    : "";
 }
 
 export function sanitizeShopifyHtml(html: string) {

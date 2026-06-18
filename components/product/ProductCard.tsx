@@ -1,9 +1,9 @@
 import Link from "next/link";
-import type { Product } from "@/lib/data";
+import type { ProductSummary } from "@/lib/data";
 import { StarIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product }: { product: ProductSummary }) {
   return (
     <article className="group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
       <Link href={`/products/${product.handle}`} className="block">

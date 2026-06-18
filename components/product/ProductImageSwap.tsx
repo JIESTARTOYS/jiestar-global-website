@@ -1,8 +1,8 @@
 import Image from "next/image";
-import type { Product } from "@/lib/data";
+import type { ProductSummary } from "@/lib/data";
 
 type ProductImageSwapProps = {
-  product: Product;
+  product: ProductSummary;
   sizes: string;
   className?: string;
   imageClassName?: string;

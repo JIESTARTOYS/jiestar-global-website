@@ -6,13 +6,13 @@ import { ArrowRightIcon, HomeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon
 import { LinkButton } from "@/components/ui/LinkButton";
 import { getCollection, getProductsByCollection } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
-import { getShopifyCollection, getShopifyCollections } from "@/lib/shopify";
+import { getShopifyCollectionSummary, getShopifyCollections } from "@/lib/shopify";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
-  searchParams?: Promise<{ page?: string | string[] }>;
 };
 
+export const revalidate = 300;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
@@ -23,7 +23,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps) {
   const { handle } = await params;
-  const collection = (await getShopifyCollection(handle))?.collection ?? getCollection(handle);
+  const collection = (await getShopifyCollectionSummary(handle))?.collection ?? getCollection(handle);
 
   if (!collection) {
     return {};
@@ -36,14 +36,9 @@ export async function generateMetadata({ params }: PageProps) {
   });
 }
 
-function getParamValue(value?: string | string[]) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-export default async function CollectionPage({ params, searchParams }: PageProps) {
+export default async function CollectionPage({ params }: PageProps) {
   const { handle } = await params;
-  const query = await searchParams;
-  const shopifyCollection = await getShopifyCollection(handle);
+  const shopifyCollection = await getShopifyCollectionSummary(handle);
   const collection = shopifyCollection?.collection ?? getCollection(handle);
 
   if (!collection) {
@@ -51,7 +46,6 @@ export default async function CollectionPage({ params, searchParams }: PageProps
   }
 
   const products = shopifyCollection?.products ?? getProductsByCollection(handle);
-  const selectedPage = getParamValue(query?.page);
 
   return (
     <div className="bg-[#f7f8fa] px-4 py-8 sm:px-5 lg:px-8 lg:py-12">
@@ -154,7 +148,6 @@ export default async function CollectionPage({ params, searchParams }: PageProps
             <CollectionProductListing
               products={products}
               collectionHandle={collection.handle}
-              selectedPage={selectedPage}
             />
           </div>
         </section>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Collection, Product } from "@/lib/data";
+import type { Collection, ProductSummary } from "@/lib/data";
 import { getCollectionsWithProducts } from "@/lib/collection-utils";
 import { clampProductPage, normalizeProductPage, PRODUCT_PAGE_SIZE } from "@/lib/product-pagination";
 import { DEFAULT_PRODUCT_SORT, priceNumber, sortProductsForCatalog } from "@/lib/product-sorting";
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/Icons";
 
 type ProductCatalogProps = {
-  allProducts: Product[];
+  allProducts: ProductSummary[];
   collections: Collection[];
   selectedPage?: string;
   selectedFilters: {
@@ -40,7 +40,7 @@ function pieceCountNumber(pieceCount: string) {
   return Number(pieceCount.replace(/[^0-9]/g, "")) || 0;
 }
 
-function filterByPieceCount(product: Product, range?: string) {
+function filterByPieceCount(product: ProductSummary, range?: string) {
   const count = pieceCountNumber(product.pieceCount);
 
   if (!range || !count) {
@@ -66,7 +66,7 @@ function filterByPieceCount(product: Product, range?: string) {
   return true;
 }
 
-function filterByPrice(product: Product, range?: string) {
+function filterByPrice(product: ProductSummary, range?: string) {
   const price = priceNumber(product.price);
 
   if (!range || !price) {
@@ -96,7 +96,7 @@ function normalizeSearchText(value?: string) {
   return value?.trim().toLowerCase() ?? "";
 }
 
-function productMatchesQuery(product: Product, query?: string) {
+function productMatchesQuery(product: ProductSummary, query?: string) {
   const normalizedQuery = normalizeSearchText(query);
 
   if (!normalizedQuery) {
@@ -109,8 +109,6 @@ function productMatchesQuery(product: Product, query?: string) {
     product.category,
     product.collectionHandle,
     product.series,
-    product.description,
-    product.sellingPoint,
     product.pieceCount,
   ]
     .filter(Boolean)
@@ -120,7 +118,7 @@ function productMatchesQuery(product: Product, query?: string) {
   return searchableText.includes(normalizedQuery);
 }
 
-function filterProducts(products: Product[], selectedFilters: ProductFilters) {
+function filterProducts(products: ProductSummary[], selectedFilters: ProductFilters) {
   return sortProductsForCatalog(
     products.filter((product) => {
       const selectedCategory = selectedFilters.category;

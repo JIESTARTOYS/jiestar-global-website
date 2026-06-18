@@ -1,16 +1,12 @@
 import Link from "next/link";
-import { navigation, type Product } from "@/lib/data";
+import { navigation } from "@/lib/data";
 import { UserIcon } from "@/components/ui/Icons";
 import { SiteLogo } from "@/components/layout/SiteLogo";
 import { CartHeaderButton } from "@/components/cart/CartHeaderButton";
 import { HeaderMobileSearch, HeaderSearch } from "@/components/layout/HeaderSearch";
 import { HeaderMobileNav } from "@/components/layout/HeaderMobileNav";
 
-type HeaderProps = {
-  searchProducts?: Product[];
-};
-
-export function Header({ searchProducts = [] }: HeaderProps) {
+export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center gap-5 px-5 py-4 lg:px-8">
@@ -31,7 +27,7 @@ export function Header({ searchProducts = [] }: HeaderProps) {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <HeaderSearch products={searchProducts} />
+          <HeaderSearch />
           <Link href="/account" className="flex h-11 items-center gap-2 rounded-md px-2 text-sm font-bold text-slate-700 hover:text-red-600">
             <UserIcon className="h-5 w-5" />
             <span>Account</span>
@@ -40,7 +36,7 @@ export function Header({ searchProducts = [] }: HeaderProps) {
         </div>
 
         <div className="ml-auto flex items-center gap-2 lg:hidden">
-          <HeaderMobileSearch products={searchProducts} />
+          <HeaderMobileSearch />
           <CartHeaderButton compact />
         </div>
 

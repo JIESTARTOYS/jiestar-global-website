@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowRightIcon, CartIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
-import type { Product } from "@/lib/data";
+import type { ProductSummary } from "@/lib/data";
 
-export function FeaturedProducts({ products }: { products: Product[] }) {
+export function FeaturedProducts({ products }: { products: ProductSummary[] }) {
   const featuredProducts = products.slice(0, 4);
 
   return (
@@ -35,7 +35,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
   );
 }
 
-function HomeProductCard({ product }: { product: Product }) {
+function HomeProductCard({ product }: { product: ProductSummary }) {
   return (
     <article className="group w-[56vw] max-w-56 shrink-0 snap-start overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06] sm:w-auto sm:max-w-none">
       <div className="relative">

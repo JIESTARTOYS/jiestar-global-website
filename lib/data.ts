@@ -14,7 +14,12 @@ export type ProductVariant = {
   };
 };
 
-export type Product = {
+export type ProductImage = {
+  src: string;
+  alt: string;
+};
+
+export type ProductSummary = {
   id: string;
   handle: string;
   title: string;
@@ -23,16 +28,19 @@ export type Product = {
   price: string;
   image: string;
   imageAlt: string;
-  images?: Array<{
-    src: string;
-    alt: string;
-  }>;
-  description: string;
-  descriptionHtml?: string;
-  sellingPoint: string;
   sku: string;
   pieceCount: string;
   recommendedAge: string;
+  images?: ProductImage[];
+  series?: string;
+  releaseDate?: string;
+  createdAt?: string;
+};
+
+export type Product = ProductSummary & {
+  description: string;
+  descriptionHtml?: string;
+  sellingPoint: string;
   difficulty: string;
   finishedSize: string;
   packageSize: string;
@@ -40,9 +48,6 @@ export type Product = {
   shipping: string;
   variantId?: string;
   variants?: ProductVariant[];
-  series?: string;
-  releaseDate?: string;
-  createdAt?: string;
 };
 
 export type Collection = {

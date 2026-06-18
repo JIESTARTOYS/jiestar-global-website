@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import type { MouseEvent, PointerEvent } from "react";
-import type { Collection, Product } from "@/lib/data";
+import type { Collection, ProductSummary } from "@/lib/data";
 import { getCollectionProductCount, getCollectionsWithProducts } from "@/lib/collection-utils";
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
 
@@ -12,7 +12,7 @@ const DRAG_THRESHOLD = 8;
 
 type ProductCategoriesProps = {
   collections: Collection[];
-  products: Product[];
+  products: ProductSummary[];
 };
 
 export function ProductCategories({ collections, products }: ProductCategoriesProps) {
