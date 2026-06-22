@@ -244,9 +244,8 @@ export function ProductGallery({
                 </button>
                 <span
                   key={`${activeImage.src}-${activeImageNumber}`}
-                  className="notranslate min-w-10 text-center text-[12px] leading-none tabular-nums"
+                  className="min-w-10 text-center text-[12px] leading-none tabular-nums"
                   aria-live="polite"
-                  translate="no"
                 >
                   {activeImageNumber}/{images.length}
                 </span>
