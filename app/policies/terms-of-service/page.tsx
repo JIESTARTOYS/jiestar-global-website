@@ -50,7 +50,7 @@ export default function TermsPage() {
         {
           title: "Support and policy updates",
           items: [
-            "Shipping, replacement parts, returns, refunds, privacy, and other support policies may be updated as the global storefront develops.",
+            "Shipping, replacement parts, returns, refunds, privacy, and other support policies may be updated from time to time.",
             "The most current policy pages on this website should be reviewed before placing an order or submitting a business request.",
             "If a policy question affects an active order or project, contact JIESTAR for written clarification.",
           ],

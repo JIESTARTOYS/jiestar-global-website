@@ -30,7 +30,7 @@ export function ProductActions({
     }
 
     if (!variantId) {
-      setStatus("Preview mode: Shopify cart and checkout will be enabled after product variant IDs are connected.");
+      setStatus("Online checkout is not available for this item right now. Contact JIESTAR for availability or business support.");
       return;
     }
 
@@ -54,7 +54,7 @@ export function ProductActions({
     }
 
     if (!variantId) {
-      setStatus("Checkout is unavailable in preview mode because this product is not connected to a Shopify variant yet.");
+      setStatus("Online checkout is not available for this item right now. Contact JIESTAR for availability or business support.");
       return;
     }
 
@@ -91,14 +91,14 @@ export function ProductActions({
         </span>
         <div>
           <p className="text-xs font-black uppercase text-slate-500">
-            {isUnavailable ? "SKU currently unavailable" : variantId ? "Secure Shopify checkout" : "Shopify checkout preview"}
+            {isUnavailable ? "SKU currently unavailable" : variantId ? "Secure Shopify checkout" : "Online checkout unavailable"}
           </p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
             {isUnavailable
               ? "Choose an available SKU before adding this product to cart or opening checkout."
               : variantId
               ? "Buy Now opens Shopify checkout for payment, order processing, and customer notifications."
-              : "Product buttons are staged for the storefront UI. Real checkout will be enabled after Shopify variants are connected."}
+              : "Contact JIESTAR for availability, wholesale supply, or custom project support."}
           </p>
         </div>
       </div>
@@ -127,7 +127,7 @@ export function ProductActions({
             ? "This SKU is not available for checkout right now."
             : variantId
             ? "Add this product to your cart or continue directly through secure Shopify checkout."
-            : "Buttons are shown in preview mode. They will connect to Shopify checkout after Storefront API product data is live.")}
+            : "Online checkout is not available for this item right now. Contact JIESTAR for availability or business support.")}
       </p>
     </div>
   );

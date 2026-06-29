@@ -36,7 +36,7 @@ export function QualitySafety() {
               JIESTAR focuses on reliable materials, stable production, and detailed quality control to deliver safe, durable, and enjoyable building experiences.
             </p>
           </div>
-          <LinkButton href="/quality-safety" variant="secondary" className="w-full px-5 lg:mt-2 lg:w-auto lg:min-w-72">
+          <LinkButton href="/quality-safety" className="w-full px-5 lg:mt-2 lg:w-auto lg:min-w-72">
             Learn Our Quality Standard
           </LinkButton>
         </div>
@@ -45,9 +45,10 @@ export function QualitySafety() {
           <div className="lg:max-w-md">
             <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm">
               <Image
-                src="/images/site-visuals/qc-inspection.avif"
-                alt="Representative quality inspection setup for building block sets"
+                src="/images/site-visuals/factory/manual-sorting-review.webp"
+                alt="Manual sorting review station with packed building block parts and an inspection checklist"
                 fill
+                unoptimized
                 sizes="(min-width: 1024px) 30vw, 100vw"
                 className="object-cover"
               />

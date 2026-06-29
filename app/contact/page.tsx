@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { ArrowRightIcon, FactoryIcon, PackageIcon, ShieldIcon, StoreIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
@@ -60,6 +61,24 @@ export default function ContactPage() {
                 </Link>
               </div>
             </div>
+            <div className="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 text-white">
+              <div className="relative aspect-[4/3] bg-slate-100">
+                <Image
+                  src="/images/site-visuals/showroom/showroom-sample-consultation.webp"
+                  alt="JIESTAR showroom table with sample models, packaging, product catalogs, and cooperation discussion materials"
+                  fill
+                  unoptimized
+                  sizes="(min-width: 1024px) 32vw, 100vw"
+                  className="object-cover object-[center_48%]"
+                />
+              </div>
+              <div className="p-4">
+                <p className="text-xs font-black tracking-normal text-red-200">Sample Consultation &amp; Cooperation Discussion</p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-100">
+                  Submit product inquiries, wholesale requests, or custom cooperation briefs through one contact point.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="rounded-lg bg-slate-50 p-4 sm:p-5">
@@ -95,7 +114,7 @@ export default function ContactPage() {
             <div>
               <h2 className="text-lg font-black">Preparing a product inquiry?</h2>
               <p className="mt-1 text-sm leading-6 text-slate-300">
-                Include product category, estimated quantity, target market, timeline, and any packaging or customization needs.
+                Share product category, estimated quantity, target market, timeline, and any packaging or customization needs for faster review.
               </p>
             </div>
           </div>

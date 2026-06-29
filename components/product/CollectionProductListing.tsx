@@ -93,9 +93,9 @@ export function CollectionProductListing({
   if (!products.length) {
     return (
       <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
-        <h2 className="text-xl font-black text-slate-950">Products are being prepared</h2>
+        <h2 className="text-xl font-black text-slate-950">No products in this category yet</h2>
         <p className="mt-3 text-slate-600">
-          Add products to this Shopify collection to display them here, or browse the full catalog while this category is being prepared.
+          Browse all products or contact JIESTAR for catalog support.
         </p>
         <LinkButton href="/products" className="mt-6">
           Browse All Products

@@ -32,6 +32,30 @@ const capabilities: Array<[string, string, IconComponent]> = [
   ["Sub-Brand Partnership", "Support long-term cooperation where JIESTAR helps partners build distinct product brands.", ShieldIcon],
 ];
 
+const showroomDirections = [
+  {
+    title: "Large display models",
+    note: "Use larger builds to discuss display impact, product direction, and category positioning.",
+    image: "/images/site-visuals/showroom/showroom-feature-models.webp",
+    alt: "Large building block display models arranged in the JIESTAR showroom",
+    imageClassName: "object-[center_45%]",
+  },
+  {
+    title: "Gift and botanical lines",
+    note: "Review gift-oriented and botanical product directions for seasonal, lifestyle, or retail shelf planning.",
+    image: "/images/site-visuals/showroom/showroom-flower-wall.webp",
+    alt: "Flower building block products displayed on a JIESTAR showroom wall",
+    imageClassName: "object-[center_45%]",
+  },
+  {
+    title: "City and display builds",
+    note: "Compare architectural and city model directions for display value, scale, and audience fit.",
+    image: "/images/site-visuals/showroom/showroom-city-models.webp",
+    alt: "Vertical display of city and architecture building block models in the JIESTAR showroom",
+    imageClassName: "object-[center_40%]",
+  },
+];
+
 const process = [
   ["01", "Project brief", "Share cooperation type, target market, category direction, quantity range, and launch needs."],
   ["02", "Product direction", "Review product concept, customization depth, packaging direction, and business fit."],
@@ -49,8 +73,8 @@ const faqs = [
     "Yes. JIESTAR can discuss long-term cooperation where product planning, product development, packaging, and brand presentation are considered together.",
   ],
   [
-    "Do I need a complete product brief before contacting JIESTAR?",
-    "No. A clear market, product category, customization need, and target quantity are enough to start the first conversation.",
+    "What information helps JIESTAR review a custom project?",
+    "A target market, product category, customization need, and estimated quantity are enough for an initial discussion.",
   ],
   [
     "Can custom projects include packaging and logo customization?",
@@ -64,12 +88,13 @@ export default function CustomSolutionsPage() {
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
         <div className="absolute inset-0 opacity-35">
           <Image
-            src="/images/site-visuals/design-review.avif"
-            alt=""
+            src="/images/site-visuals/showroom/showroom-entrance-overview.webp"
+            alt="JIESTAR showroom entrance with product displays and brand wall"
             fill
             priority
+            unoptimized
             sizes="100vw"
-            className="object-cover"
+            className="object-cover object-[center_48%]"
           />
           <div className="absolute inset-0 bg-slate-950/75" />
         </div>
@@ -135,6 +160,36 @@ export default function CustomSolutionsPage() {
         </div>
       </section>
 
+      <section className="px-5 pb-16 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <SectionHeader
+            eyebrow="Showroom review"
+            title="Category review in the showroom"
+            description="Partners can review product directions, packaging presence, display impact, and category fit before a deeper custom project brief."
+          />
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {showroomDirections.map((item) => (
+              <article key={item.title} className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                <div className="relative aspect-[4/3] bg-slate-100">
+                  <Image
+                    src={item.image}
+                    alt={item.alt}
+                    fill
+                    unoptimized
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    className={`object-cover ${item.imageClassName}`}
+                  />
+                </div>
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-slate-950">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{item.note}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="sub-brand-examples" className="scroll-mt-24 bg-white px-5 py-16 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <SectionHeader
@@ -191,7 +246,7 @@ export default function CustomSolutionsPage() {
           <SectionHeader
             eyebrow="FAQ"
             title="Custom project questions"
-            description="These answers help partners choose the right path before submitting a project inquiry."
+            description="Common questions for OEM / ODM, exclusive SKU, and sub-brand cooperation."
           />
           <div className="grid gap-4">
             {faqs.map(([question, answer]) => (

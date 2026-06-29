@@ -38,6 +38,45 @@ REQUIRED_SCOPES = {"read_products", "write_products", "read_files", "write_files
 PUBLICATION_SCOPES = {"read_publications", "write_publications"}
 
 
+SKU_IMAGE_METADATA_OVERRIDES: dict[str, dict[str, str]] = {
+    "66058": {
+        "title": "Xbert Fantasy Battle Axe Model Kit",
+        "product_type": "Weapon",
+        "piece_count": "2371",
+        "package_size": "44x32x10 cm",
+        "finished_size": "83.5x8.8x31.6 cm",
+    },
+    "66080": {
+        "title": "Xbert Shipwreck Island Building Set",
+        "product_type": "Pirates",
+        "piece_count": "587",
+        "package_size": "30x22x7 cm",
+        "finished_size": "18.7x27.1x24.3 cm",
+    },
+    "66132": {
+        "title": "Xbert Hippogriff Building Set",
+        "product_type": "Movie & Game",
+        "piece_count": "1548",
+        "package_size": "34x27.5x10 cm",
+        "finished_size": "57.8x43.6x37.7 cm",
+    },
+    "66174": {
+        "title": "Xbert Wizard Common Room Building Set",
+        "product_type": "Movie & Game",
+        "piece_count": "2163",
+        "package_size": "45x30x11 cm",
+        "finished_size": "21.0x21.6x28.2 cm",
+    },
+    "66186": {
+        "title": "Xbert Clipper Sailing Ship Model Kit",
+        "product_type": "Ship Model",
+        "piece_count": "3046",
+        "package_size": "58x14.5x45.5 cm",
+        "finished_size": "27.4x121.2x63.8 cm",
+    },
+}
+
+
 SERIES_EN_BY_CN = {
     "昆虫": "Insect",
     "花": "Botanical",
@@ -49,6 +88,8 @@ SERIES_EN_BY_CN = {
     "皇家海盗系列": "Pirates",
     "海盗": "Pirates",
     "摆件系列": "Ornament",
+    "战锤系列": "Weapon",
+    "船系列": "Ship Model",
     "飞机": "Aircraft",
     "机械": "Mechanical",
     "恐龙": "Dinosaur",
@@ -214,6 +255,15 @@ def parse_piece_count(notes: str) -> str:
     return match.group(1) if match else ""
 
 
+def normalize_size(value: str) -> str:
+    value = clean_cell(value).replace("×", "x").replace("*", "x")
+    value = re.sub(r"\s*x\s*", "x", value)
+    value = re.sub(r"\s*cm$", " cm", value, flags=re.I)
+    if re.fullmatch(r"[0-9.]+x[0-9.]+x[0-9.]+", value):
+        value = f"{value} cm"
+    return value
+
+
 def safe_ascii_words(value: str) -> str:
     value = unicodedata.normalize("NFKC", value or "")
     value = re.sub(r"[/|].*$", "", value).strip()
@@ -268,6 +318,10 @@ def product_name_from_sources(row: XbertWorkbookRow | None, folder_name: str) ->
 
 
 def title_for_product(base: str, row: XbertWorkbookRow | None, folder_name: str) -> str:
+    override = SKU_IMAGE_METADATA_OVERRIDES.get(normalize_sku(base))
+    if override and override.get("title"):
+        return override["title"]
+
     raw_name = product_name_from_sources(row, folder_name)
     product_name = title_case(raw_name)
     title = f"{VENDOR} {product_name} {PRODUCT_TITLE_SUFFIX}"
@@ -287,6 +341,10 @@ def variant_option_name(sku: str, row: XbertWorkbookRow | None) -> str:
 def product_type_for_row(row: XbertWorkbookRow | None) -> str:
     if not row:
         return ""
+
+    override = SKU_IMAGE_METADATA_OVERRIDES.get(normalize_sku(row.sku))
+    if override and override.get("product_type"):
+        return override["product_type"]
 
     if row.series == "摆件系列" and re.search(r"\bvault\s*33\b|避难所", row.name, re.I):
         return "Movie & Game"
@@ -413,6 +471,30 @@ def product_image_dirs(root: Path = ROOT) -> dict[str, Path]:
     return dict(sorted(selected.items()))
 
 
+def sku_info_image(root: Path, sku: str) -> Path | None:
+    candidate = root.parent / f"{sku}.jpg"
+    return candidate if candidate.exists() else None
+
+
+def metadata_conflicts(row: XbertWorkbookRow | None, metadata: dict[str, str]) -> dict[str, dict[str, str]]:
+    if not row:
+        return {}
+
+    workbook_values = {
+        "piece_count": parse_piece_count(row.notes),
+        "package_size": normalize_size(row.package_size),
+        "finished_size": normalize_size(row.finished_size),
+    }
+    conflicts = {}
+
+    for key, workbook_value in workbook_values.items():
+        override_value = normalize_size(metadata.get(key, "")) if key.endswith("_size") else metadata.get(key, "")
+        if workbook_value and override_value and workbook_value != override_value:
+            conflicts[key] = {"workbook": workbook_value, "sku_image": override_value}
+
+    return conflicts
+
+
 def build_supplement_rows(workbook_rows: dict[str, XbertWorkbookRow], local_skus: set[str]) -> list[dict[str, str]]:
     rows = []
 
@@ -453,8 +535,15 @@ def build_manifest(
 
         title = title_for_product(base, row, folder.name)
         handle = base_import.slugify(f"xbert-{base}-{title}")
-        piece_count = parse_piece_count(row.notes) if row else ""
+        sku_metadata = SKU_IMAGE_METADATA_OVERRIDES.get(sku, {})
+        sku_image = sku_info_image(root, sku)
+        piece_count = sku_metadata.get("piece_count") or (parse_piece_count(row.notes) if row else "")
+        package_size = sku_metadata.get("package_size") or (row.package_size if row else "")
+        finished_size = sku_metadata.get("finished_size") or (row.finished_size if row else "")
         product_type = product_type_for_row(row)
+        sku_images = [str(sku_image)] if sku_image else [str(path) for path in images["sku"]]
+        conflicts = metadata_conflicts(row, sku_metadata)
+        metadata_source = "sku_image" if sku_metadata and sku_image else "workbook"
 
         manifest.append(
             {
@@ -475,26 +564,28 @@ def build_manifest(
                         "series": row.series if row else "",
                         "age": row.age if row else "",
                         "piece_count": piece_count,
-                        "package_size": row.package_size if row else "",
-                        "finished_size": row.finished_size if row else "",
+                        "package_size": package_size,
+                        "finished_size": finished_size,
                     }
                 ],
                 "metafields": {
                     "specs.piece_count": piece_count,
                     "specs.recommended_age": row.age if row else "",
-                    "specs.finished_model_size": row.finished_size if row else "",
-                    "specs.package_size": row.package_size if row else "",
+                    "specs.finished_model_size": finished_size,
+                    "specs.package_size": package_size,
                     "specs.difficulty_level": "See product package",
                     "custom.series": product_type or "",
                 },
                 "main_media": [str(path) for path in main_media],
-                "sku_images": [str(path) for path in images["sku"]],
+                "sku_images": sku_images,
                 "detail_images": [str(path) for path in images["detail"]],
                 "transparent_images": [str(path) for path in images["transparent"]],
+                "metadata_source": metadata_source,
+                "metadata_conflicts": conflicts,
                 "missing": {
                     "white": not bool(images["white"]),
                     "detail": not bool(images["detail"]),
-                    "sku_images": not bool(images["sku"]),
+                    "sku_images": not bool(sku_images),
                     "workbook_rows": row is None,
                     "needs_brick4_info": row is None,
                 },

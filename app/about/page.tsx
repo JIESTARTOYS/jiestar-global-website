@@ -9,8 +9,10 @@ import {
   ShieldIcon,
   SparkIcon,
   StoreIcon,
+  TruckIcon,
 } from "@/components/ui/Icons";
 import { SubBrandCarousel } from "@/components/sections/SubBrandCarousel";
+import { ShowroomHighlights } from "@/components/sections/ShowroomHighlights";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 import { createMetadata } from "@/lib/seo";
 import { subBrands } from "@/lib/sub-brands";
@@ -33,46 +35,51 @@ type Capability = {
 type FactoryVisual = {
   label: string;
   note: string;
-  image?: string;
+  image: string;
+  alt: string;
   priority?: boolean;
   className?: string;
+  imageClassName?: string;
+  sizes?: string;
 };
 
-const factorySignals = [
-  ["Founded", "1998"],
-  ["Factory role", "Integrated building block production partner"],
-  ["Customer paths", "B2B cooperation and DTC shopping"],
+const factorySignals: Array<{ label: string; icon: IconComponent }> = [
+  { label: "Founded in 1998", icon: StoreIcon },
+  { label: "Injection Molding", icon: FactoryIcon },
+  { label: "QC & Weighing Record", icon: ShieldIcon },
+  { label: "Warehouse Supply", icon: TruckIcon },
+  { label: "OEM / ODM Support", icon: GlobeIcon },
 ];
 
 const factoryCapabilities: Capability[] = [
   {
     title: "Factory overview",
     description:
-      "A clear company layer for partners who need to understand JIESTAR as a serious building block supplier, not only an online storefront.",
+      "A real factory base connects JIESTAR product development, production areas, quality review, packaging, and warehouse operations.",
     icon: FactoryIcon,
   },
   {
     title: "Product development",
     description:
-      "Product direction, model structure, play value, display value, and market fit can be discussed before a product enters production planning.",
+      "Product direction, model structure, build experience, display value, and market fit can be discussed before production planning.",
     icon: SparkIcon,
   },
   {
     title: "Production coordination",
     description:
-      "Existing product supply, OEM / ODM customization, sample follow-up, and product line cooperation are handled through practical factory communication.",
+      "Existing product supply, OEM / ODM customization, sample follow-up, and product line cooperation are handled through direct project communication.",
     icon: PackageIcon,
   },
   {
     title: "Packaging and market readiness",
     description:
-      "Packaging direction, logo presentation, retail display needs, and channel materials can be prepared around the partner's market.",
+      "Packaging direction, SKU details, logo presentation, retail display needs, and channel materials can be prepared around the partner's market.",
     icon: StoreIcon,
   },
   {
     title: "Quality review support",
     description:
-      "Product checking, documentation preparation, and project review can be aligned before official materials or market files are shared.",
+      "Part checks, random inspection, trial assembly, and project review help partners align expectations before larger order decisions.",
     icon: ShieldIcon,
   },
   {
@@ -84,12 +91,12 @@ const factoryCapabilities: Capability[] = [
 ];
 
 const customServiceSteps = [
-  ["01", "Concept direction", "Clarify category, target customer, price band, visual direction, and cooperation type."],
-  ["02", "Structure and sample work", "Discuss model structure, building experience, sample needs, and production-ready details."],
-  ["03", "Packaging and brand presentation", "Plan box direction, logo placement, product naming, and retail-facing materials."],
-  ["04", "Production planning", "Align quantity direction, lead time, product line rhythm, and order communication."],
-  ["05", "Quality review", "Check product details and prepare project documentation based on confirmed market needs."],
-  ["06", "Delivery and launch support", "Support wholesale supply, custom launches, replenishment planning, and long-term cooperation."],
+  ["01", "Project brief", "Clarify product category, target market, sales channel, price band, and cooperation type."],
+  ["02", "Structure and sample review", "Discuss model structure, build experience, sample needs, and production-ready details."],
+  ["03", "Part and function checks", "Review parts, fit, appearance, and functional details against the confirmed product direction."],
+  ["04", "Packaging and brand plan", "Align box direction, SKU details, logo placement, product naming, and retail-facing materials."],
+  ["05", "Production coordination", "Plan quantity direction, lead time, order rhythm, and project communication for the partner's market."],
+  ["06", "Launch and replenishment", "Support wholesale supply, custom launches, replenishment planning, and long-term cooperation."],
 ];
 
 const audiencePaths = [
@@ -123,68 +130,74 @@ const audiencePaths = [
 
 const tourShots: FactoryVisual[] = [
   {
-    label: "Factory exterior",
-    note: "Representative AI visual for a future factory overview, to be replaced by approved onsite photography.",
-    image: "/images/site-visuals/factory-overview.avif",
+    label: "Injection molding workshop",
+    note: "Organized injection molding equipment and floor lanes show the production base behind JIESTAR building block parts.",
+    image: "/images/site-visuals/factory/factory-injection-workshop.webp",
+    alt: "Injection molding machines arranged in a clean JIESTAR factory workshop",
     className: "lg:col-span-2 lg:row-span-2",
+    sizes: "(min-width: 1024px) 50vw, (min-width: 768px) 50vw, 100vw",
   },
   {
-    label: "Showroom display",
-    note: "Representative AI visual for finished building block displays and brand presentation.",
-    image: "/images/site-visuals/showroom-product-wall.avif",
+    label: "Automated sorting line",
+    note: "Sorting equipment helps coordinate part handling before manual review, packing, and project handoff.",
+    image: "/images/site-visuals/factory/factory-sorting-line.webp",
+    alt: "Automated building block part sorting line inside the JIESTAR factory",
   },
   {
-    label: "Design discussion",
-    note: "Representative AI visual for product planning, design review, and model development work.",
-    image: "/images/site-visuals/design-review.avif",
+    label: "Random inspection station",
+    note: "Sample bags, weighing, and inspection records give buyers a clear view of practical QC work.",
+    image: "/images/site-visuals/factory/qc-random-inspection.webp",
+    alt: "Random inspection station with building block parts, record sheet, and weighing scale",
   },
   {
-    label: "Sample room",
-    note: "Representative AI visual for prototypes, sample shelves, and product testing tables.",
-    image: "/images/site-visuals/sample-room.avif",
+    label: "Prototype build validation",
+    note: "Trial assembly checks structure stability, parts compatibility, building sequence, and appearance details.",
+    image: "/images/site-visuals/factory/prototype-build-validation.webp",
+    alt: "Prototype workbench with building block parts and instruction pages for structure validation",
   },
   {
-    label: "Production line",
-    note: "Representative AI visual for a clean production or assembly area without sensitive details.",
-    image: "/images/site-visuals/production-line.avif",
+    label: "Manual sorting review",
+    note: "Manual review after sorting supports quantity checks, appearance checks, parts matching, and defect marking.",
+    image: "/images/site-visuals/factory/manual-sorting-review.webp",
+    alt: "Manual sorting review table with packed building block parts and inspection checklist",
   },
   {
-    label: "Packaging area",
-    note: "Representative AI visual for box preparation, packed products, and packaging workflow.",
-    image: "/images/site-visuals/packaging-workflow.avif",
+    label: "Packaging materials storage",
+    note: "Organized packaging materials support box preparation, SKU handling, and market-ready product handoff.",
+    image: "/images/site-visuals/factory/packaging-materials-storage.webp",
+    alt: "Packaging materials stored on organized warehouse racks in the JIESTAR factory",
   },
   {
-    label: "Warehouse",
-    note: "Representative AI visual for organized product storage, cartons, and shipping preparation.",
-    image: "/images/site-visuals/warehouse-shipping.avif",
+    label: "Warehouse ready stock",
+    note: "Labeled cartons and clear aisles help support wholesale supply, replenishment, and shipment preparation.",
+    image: "/images/site-visuals/factory/warehouse-ready-stock.webp",
+    alt: "Labeled cartons arranged in a clean JIESTAR warehouse aisle",
   },
   {
-    label: "QC checking table",
-    note: "Representative AI visual for product inspection, part checking, and documentation review.",
-    image: "/images/site-visuals/qc-inspection.avif",
+    label: "Factory gate sign",
+    note: "The factory entrance connects the public JIESTAR brand with its operating company and onsite production base.",
+    image: "/images/site-visuals/factory/factory-gate-sign.webp",
+    alt: "JIESTAR factory gate sign for Jie Xing Toys Industrial Co., Ltd",
   },
 ];
 
-function FactoryVisualCard({ label, note, image, priority = false, className = "" }: FactoryVisual) {
+function FactoryVisualCard({ label, note, image, alt, priority = false, className = "", imageClassName = "", sizes = "(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw" }: FactoryVisual) {
   return (
     <div
-      className={`group relative flex min-h-56 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 p-5 shadow-sm shadow-slate-950/[0.04] transition hover:border-red-200 ${className}`}
+      className={`group relative flex min-h-56 min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 p-5 shadow-sm shadow-slate-950/[0.04] transition hover:border-red-200 ${className}`}
     >
-      {image ? (
-        <Image
-          src={image}
-          alt=""
-          fill
-          priority={priority}
-          sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
-          className="object-cover opacity-75 transition duration-500 group-hover:scale-[1.03]"
-        />
-      ) : (
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,#0f172a_0%,#1e293b_55%,#7f1d1d_100%)]" />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-slate-950/10" />
+      <Image
+        src={image}
+        alt={alt}
+        fill
+        preload={priority}
+        loading={priority ? "eager" : undefined}
+        unoptimized
+        sizes={sizes}
+        className={`object-cover opacity-95 transition duration-500 group-hover:scale-[1.03] ${imageClassName}`}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/35 to-slate-950/5" />
       <div className="relative mt-auto text-white">
-        <p className="text-xs font-bold uppercase tracking-normal text-red-200">Representative visual</p>
         <h3 className="mt-2 text-xl font-bold tracking-normal">{label}</h3>
         <p className="mt-2 max-w-md text-sm leading-6 text-slate-200">{note}</p>
       </div>
@@ -194,66 +207,78 @@ function FactoryVisualCard({ label, note, image, priority = false, className = "
 
 export default function AboutPage() {
   return (
-    <div className="bg-white text-slate-950">
-      <section className="overflow-hidden border-b border-slate-200 bg-white px-5 py-14 sm:py-18 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div>
+    <div className="overflow-x-hidden bg-white text-slate-950">
+      <section className="overflow-hidden border-b border-slate-200 bg-white px-5 py-12 sm:py-16 lg:px-8">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[0.74fr_1.26fr] lg:items-center">
+          <div className="min-w-0">
             <p className="text-sm font-bold uppercase tracking-normal text-red-600">About JIESTAR</p>
-            <h1 className="mt-4 max-w-4xl text-4xl font-bold tracking-normal text-slate-950 sm:text-5xl lg:text-[64px] lg:leading-[1.02]">
-              Large-scale building block factory behind the JIESTAR brand
+            <h1 className="mt-4 max-w-2xl break-words text-[34px] font-bold leading-[1.12] tracking-normal text-slate-950 sm:text-5xl lg:text-[60px] lg:leading-[1.04]">
+              Inside JIESTAR&apos;s Building Block Manufacturing Base
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
-              Founded in 1998, JIESTAR connects integrated building block factory capability with one-stop custom service, wholesale cooperation, sub-brand partnerships, and direct-to-consumer product experiences.
+              Since 1998, JIESTAR has supported global building block partners with product development, injection molding, quality inspection, warehouse supply, wholesale cooperation, and OEM / ODM projects.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/products"
-                className="inline-flex min-h-12 items-center justify-center rounded-md bg-slate-950 px-5 text-sm font-bold text-white transition hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-slate-950 px-5 text-sm font-bold text-white transition hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:w-auto"
               >
                 Explore Products
               </Link>
               <Link
                 href="/custom-solutions"
-                className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-300 bg-white px-5 text-sm font-bold text-slate-950 transition hover:border-slate-950 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-slate-300 bg-white px-5 text-sm font-bold text-slate-950 transition hover:border-slate-950 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:w-auto"
               >
                 Custom Solutions
                 <ArrowRightIcon className="ml-2 size-4" />
               </Link>
             </div>
-            <dl className="mt-10 grid gap-3 sm:grid-cols-3">
-              {factorySignals.map(([label, value]) => (
-                <div key={label} className="border-l-2 border-red-600 pl-4">
-                  <dt className="text-xs font-bold uppercase tracking-normal text-slate-500">{label}</dt>
-                  <dd className="mt-2 text-sm font-bold leading-6 text-slate-950">{value}</dd>
+            <div className="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 sm:grid-cols-5">
+              {factorySignals.map((signal, index) => (
+                <div
+                  key={signal.label}
+                  className={`min-w-0 bg-white px-3 py-4 text-center ${index === factorySignals.length - 1 ? "col-span-2 sm:col-span-1" : ""}`}
+                >
+                  <div className="mx-auto flex size-10 items-center justify-center text-red-600">
+                    <signal.icon className="size-6" />
+                  </div>
+                  <p className="mt-3 break-words text-xs font-bold leading-5 text-slate-950">{signal.label}</p>
                 </div>
               ))}
-            </dl>
+            </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-[1fr_0.78fr]">
+          <div className="grid min-w-0 gap-4 lg:grid-cols-[1.08fr_0.92fr]">
             <FactoryVisualCard
-              label="Factory-backed brand hub"
-              note="Representative AI visual for factory capability and brand presentation until approved onsite photography is available."
-              image="/images/site-visuals/factory-overview.avif"
+              label="Injection Workshop"
+              note="Organized molding lines support stable building block part production."
+              image="/images/site-visuals/factory/factory-injection-workshop.webp"
+              alt="Injection molding machines arranged in a clean JIESTAR factory workshop"
               priority
-              className="min-h-[360px] sm:min-h-[500px]"
+              sizes="(min-width: 1024px) 38vw, 100vw"
+              className="min-h-[360px] sm:min-h-[520px] lg:row-span-2 lg:min-h-[620px]"
+              imageClassName="object-[center_54%]"
             />
-            <div className="grid gap-4">
-              <FactoryVisualCard
-                label="Showroom product wall"
-                note="Representative AI visual for finished models, sample shelves, and brand display areas."
-                image="/images/site-visuals/showroom-product-wall.avif"
-                priority
-                className="min-h-56 sm:min-h-[240px]"
-              />
-              <div className="rounded-lg bg-slate-950 p-5 text-white">
-                <div className="flex size-11 items-center justify-center rounded-md bg-white text-slate-950">
-                  <FactoryIcon className="size-5" />
-                </div>
-                <p className="mt-5 text-sm font-bold uppercase tracking-normal text-red-300">Factory tour page</p>
-                <p className="mt-2 text-2xl font-bold tracking-normal">Prepared for real factory, showroom, production, packaging, and QC photography.</p>
-              </div>
-            </div>
+            <FactoryVisualCard
+              label="QC & Weighing Record"
+              note="Parts are checked and weighed with recorded inspection steps."
+              image="/images/site-visuals/factory/qc-random-inspection.webp"
+              alt="Quality inspection table with building block parts, weighing scale, and inspection records"
+              priority
+              sizes="(min-width: 1024px) 30vw, 100vw"
+              className="min-h-[240px] sm:min-h-[300px]"
+              imageClassName="object-[center_48%]"
+            />
+            <FactoryVisualCard
+              label="Warehouse Storage"
+              note="Cartons are sorted by SKU and area for efficient supply handling."
+              image="/images/site-visuals/factory/warehouse-ready-stock.webp"
+              alt="Labeled JIESTAR cartons arranged in an organized warehouse aisle"
+              priority
+              sizes="(min-width: 1024px) 30vw, 100vw"
+              className="min-h-[240px] sm:min-h-[300px]"
+              imageClassName="object-[center_52%]"
+            />
           </div>
         </div>
       </section>
@@ -268,7 +293,7 @@ export default function AboutPage() {
               </h2>
             </div>
             <p className="text-sm leading-7 text-slate-600 sm:text-base">
-              The About page should help international buyers understand how JIESTAR works behind the storefront: product development, production coordination, packaging discussion, quality review, and global cooperation are connected into one practical building block supply path.
+              From product development to production coordination, packaging review, quality checks, and global cooperation, JIESTAR gives partners a clearer path from idea to supply.
             </p>
           </div>
 
@@ -294,12 +319,12 @@ export default function AboutPage() {
               From product idea to market-ready building block line
             </h2>
             <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
-              JIESTAR can support partners beyond basic wholesale: custom product development, packaging and brand customization, exclusive SKUs, exclusive product lines, and sub-brand cooperation can be planned as one connected project.
+              JIESTAR can support partners beyond basic wholesale. Custom product development, packaging and brand customization, exclusive SKUs, exclusive product lines, and sub-brand cooperation can be planned as one connected project.
             </p>
-            <div className="mt-6 rounded-lg border border-red-100 bg-red-50 p-5">
-              <p className="text-sm font-bold text-slate-950">No unverified claims</p>
-              <p className="mt-2 text-sm leading-6 text-slate-700">
-                Certification, capacity, output, and award details should be added only after official JIESTAR materials are provided.
+            <div className="mt-6 border-t border-slate-200 pt-5">
+              <p className="text-sm font-bold text-slate-950">Project scope confirmed with partners</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Product type, destination market, order details, and documentation needs are aligned during project review.
               </p>
             </div>
           </div>
@@ -353,17 +378,19 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <ShowroomHighlights />
+
       <section className="px-5 py-16 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
             <div>
-              <p className="text-sm font-bold uppercase tracking-normal text-red-600">Temporary visual system</p>
+              <p className="text-sm font-bold uppercase tracking-normal text-red-600">Production workflow</p>
               <h2 className="mt-3 text-3xl font-bold tracking-normal text-slate-950 sm:text-4xl">
-                Representative visuals until the real factory shoot is ready
+                Inside the production workflow
               </h2>
             </div>
             <p className="text-sm leading-7 text-slate-600 sm:text-base">
-              These AI-generated visuals keep the public site polished while factory photos are still being prepared. Replace them with approved onsite photos after the exterior, showroom, sample room, production, packaging, warehouse, and QC areas are photographed.
+              Production, sorting, inspection, trial assembly, packaging, and warehouse handling work together before product handoff.
             </p>
           </div>
 
@@ -404,7 +431,7 @@ export default function AboutPage() {
                 Explore products, wholesale supply, or a custom building block project
               </h2>
               <p className="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
-                Use the About page as the trust layer, then choose the path that matches your goal: direct shopping, wholesale catalog discussion, OEM / ODM customization, sub-brand cooperation, or general contact.
+                Choose the JIESTAR path that fits your goal: product browsing, wholesale supply, OEM / ODM customization, sub-brand cooperation, or general contact.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 xl:justify-items-end">

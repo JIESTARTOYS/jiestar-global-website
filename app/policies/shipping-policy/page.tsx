@@ -41,8 +41,8 @@ export default function ShippingPolicyPage() {
         },
       ]}
       note={{
-        title: "Launch-stage policy note",
-        body: "JIESTAR is preparing its global storefront. Exact retail shipping coverage, delivery methods, and market-specific shipping rules may be adjusted as Shopify checkout and logistics settings are finalized.",
+        title: "Shipping coverage",
+        body: "Retail shipping options and delivery methods vary by destination, product availability, order size, and active checkout coverage.",
       }}
     />
   );

@@ -311,7 +311,7 @@ function CartDrawer() {
             <div className="flex min-h-80 flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 text-center">
               <p className="text-lg font-black text-slate-950">Your cart is empty</p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Add a Shopify-connected product to start a secure checkout.
+                Add a product to start secure checkout.
               </p>
               <Link
                 href="/products"

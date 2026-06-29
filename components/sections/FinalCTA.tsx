@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRightIcon, FactoryIcon, PackageIcon, StoreIcon } from "@/components/ui/Icons";
-import { LinkButton } from "@/components/ui/LinkButton";
+import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 
 const paths = [
   {
@@ -38,15 +38,12 @@ export function FinalCTA() {
               JIESTAR supports direct shoppers, wholesale buyers, and long-term product partners through one global brand website.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <LinkButton href="/products" variant="dark" className="min-w-44">
+              <HeroBannerButton href="/products" className="min-w-44">
                 Explore Products
-              </LinkButton>
-              <Link
-                href="/contact"
-                className="inline-flex min-h-11 min-w-52 items-center justify-center rounded-md border border-white/70 px-6 py-3 text-sm font-bold text-white transition duration-200 hover:border-white hover:bg-white hover:text-slate-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
+              </HeroBannerButton>
+              <HeroBannerButton href="/contact" variant="secondary" className="min-w-52">
                 Start a Business Inquiry
-              </Link>
+              </HeroBannerButton>
             </div>
 
             <div className="mt-8 grid gap-3 md:grid-cols-3">
@@ -74,9 +71,10 @@ export function FinalCTA() {
           </div>
           <div className="relative min-h-72 bg-slate-100 lg:min-h-full">
             <Image
-              src="/images/site-visuals/b2b-catalog-meeting.avif"
-              alt="Representative B2B catalog review and building block cooperation scene"
+              src="/images/site-visuals/factory/warehouse-ready-stock.webp"
+              alt="Labeled cartons arranged in a JIESTAR warehouse aisle for wholesale and project supply"
               fill
+              unoptimized
               sizes="(min-width: 1024px) 34vw, 100vw"
               className="object-cover object-center"
             />

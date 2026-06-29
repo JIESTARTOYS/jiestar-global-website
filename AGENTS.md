@@ -1924,3 +1924,45 @@ Do not sacrifice clarity for visual effects.
 
 The first version should be premium, clear, fast, and maintainable.
 
+
+
+\---
+
+
+
+\## 32. Project AI Skills
+
+
+
+Reusable project-level AI Skills live in `skills/`.
+
+
+
+Current Skill:
+
+
+
+\- `skills/catalog-design/SKILL.md` — premium overseas product catalog, brand brochure, distributor brochure, trade show brochure, product detail sheet, wholesale catalog, PDF/PPTX/Canva/Figma/Markdown/HTML catalog structure.
+
+
+
+Supported command-style aliases:
+
+
+
+\- `/catalog-design`
+
+\- `/product-catalog`
+
+\- `/brochure-design`
+
+\- `/画册设计`
+
+\- `/产品画册`
+
+\- `/招商画册`
+
+
+
+Command entry files are registered under `.claude/commands/`, `.opencode/commands/`, and `.codex/commands/`. When a catalog or brochure command is used, read `skills/catalog-design/SKILL.md` first and follow its rules for missing data, image placeholders, B2B tone, overseas catalog design, and prohibited claims.
+

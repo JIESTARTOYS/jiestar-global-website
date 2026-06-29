@@ -145,7 +145,7 @@ const complianceNotes = [
   },
   {
     title: "Product scope",
-    text: "Documentation depends on product type and order details.",
+    text: "Documentation is reviewed by product type and order details.",
     icon: PackageIcon,
   },
   {
@@ -206,10 +206,11 @@ export default function QualitySafetyPage() {
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
         <div className="absolute inset-0 opacity-35">
           <Image
-            src="/images/site-visuals/qc-inspection.avif"
+            src="/images/site-visuals/factory/manual-sorting-review.webp"
             alt=""
             fill
             priority
+            unoptimized
             sizes="100vw"
             className="object-cover"
           />
@@ -262,7 +263,7 @@ export default function QualitySafetyPage() {
               ))}
             </dl>
             <p className="mt-5 border-t border-white/10 pt-5 text-xs leading-5 text-slate-400">
-              Formal documentation depends on specific product, order, and market requirements.
+              Formal documentation is confirmed by product, order, and destination market.
             </p>
           </aside>
         </div>
@@ -299,9 +300,10 @@ export default function QualitySafetyPage() {
           <div className="mt-10 grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch">
             <div className="relative min-h-[360px] overflow-hidden rounded-[20px] border border-slate-200/80 bg-slate-100 shadow-lg shadow-slate-950/[0.07] sm:min-h-[480px] lg:min-h-full">
               <Image
-                src="/images/site-visuals/qc-inspection.avif"
-                alt="Representative quality control inspection scene for building block sets"
+                src="/images/site-visuals/factory/manual-sorting-review.webp"
+                alt="Manual sorting review station with packed building block parts and an inspection checklist"
                 fill
+                unoptimized
                 sizes="(min-width: 1024px) 40vw, 100vw"
                 className="object-cover"
               />
@@ -532,7 +534,7 @@ export default function QualitySafetyPage() {
               <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.07] p-4">
                 <p className="text-sm font-black text-white">Reduced-resolution public previews.</p>
                 <p className="mt-1 text-xs leading-5 text-slate-300">
-                  Final documents should be confirmed for the relevant product, age grade, market, and order scope.
+                  Final document availability is confirmed for the relevant product, age grade, market, and order scope.
                 </p>
               </div>
 

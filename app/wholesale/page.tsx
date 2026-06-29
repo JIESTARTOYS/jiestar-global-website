@@ -68,10 +68,11 @@ export default function WholesalePage() {
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
         <div className="absolute inset-0 opacity-35">
           <Image
-            src="/images/site-visuals/b2b-catalog-meeting.avif"
+            src="/images/site-visuals/factory/warehouse-ready-stock.webp"
             alt=""
             fill
             priority
+            unoptimized
             sizes="100vw"
             className="object-cover"
           />
@@ -127,7 +128,7 @@ export default function WholesalePage() {
             <SectionHeader
               eyebrow="Wholesale fit"
               title="For buyers who want to review wholesale pricing first"
-              description="This page is for B2B buyers who want to receive a wholesale price catalog before discussing MOQ, order planning, logistics, or product selection in detail."
+              description="Request wholesale catalog materials before detailed MOQ, order planning, logistics, and product selection discussions."
             />
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {buyers.map(([title, description]) => (
@@ -141,7 +142,7 @@ export default function WholesalePage() {
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <SectionHeader
               eyebrow="What buyers can discuss"
-              title="What happens after you leave your email"
+              title="Wholesale follow-up process"
               description="JIESTAR uses the inquiry to understand your market and product direction, then shares relevant wholesale materials and continues business details through direct communication."
             />
             <div className="mt-8 grid gap-4">
@@ -230,7 +231,7 @@ export default function WholesalePage() {
           <SectionHeader
             eyebrow="FAQ"
             title="Catalog request questions"
-            description="These answers explain what happens before the team continues the conversation by email, WhatsApp, or social media."
+            description="Common questions before requesting wholesale catalog materials from JIESTAR."
           />
           <div className="grid gap-4">
             {faqs.map(([question, answer]) => (

@@ -34,6 +34,21 @@ Local development runs at:
 http://localhost:3000
 ```
 
+## Project AI Skills
+
+Reusable project-level AI skills are stored in `skills/`.
+
+- `catalog-design`: creates premium overseas product catalogs, brand brochures, distributor brochures, trade show brochures, product detail sheets, wholesale catalogs, and structured PDF/PPTX/Canva/Figma/Markdown/HTML catalog plans.
+
+Supported command-style aliases are documented in `.claude/commands/`, `.opencode/commands/`, and `.codex/commands/`:
+
+- `/catalog-design`
+- `/product-catalog`
+- `/brochure-design`
+- `/画册设计`
+- `/产品画册`
+- `/招商画册`
+
 ## Current V1 Scope
 
 Implemented routes include:

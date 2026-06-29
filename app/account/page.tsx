@@ -43,7 +43,7 @@ const supportLinks = [
   },
   {
     title: "Returns and refunds",
-    text: "Check the current return and refund guidance before contacting support.",
+    text: "Review return and refund guidance for retail orders.",
     href: "/policies/refund-policy",
     icon: RotateIcon,
   },
@@ -95,7 +95,7 @@ export default function AccountPage() {
 
             {!accountUrl && (
               <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-                Shopify customer account login is not configured for this environment yet. You can still contact JIESTAR support for order and account help.
+                Customer account sign-in is unavailable right now. Contact JIESTAR support for order or account help.
               </p>
             )}
           </div>

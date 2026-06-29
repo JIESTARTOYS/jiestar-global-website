@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
   return (
     <PolicyPage
       title="Privacy Policy"
-      description="This privacy policy explains how JIESTAR may collect and use information from website visitors, retail customers, support contacts, and business inquiry contacts. It is written as a global website policy and does not replace market-specific legal notices where those are required."
+      description="This privacy policy explains how JIESTAR may collect and use information from website visitors, retail customers, support contacts, and business inquiry contacts. Region-specific privacy requirements may require additional notices or procedures."
       sections={[
         {
           title: "Information we may collect",

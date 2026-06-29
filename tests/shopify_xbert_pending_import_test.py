@@ -146,6 +146,100 @@ class XbertImportTests(unittest.TestCase):
         self.assertEqual(xbert.product_type_for_row(rows["66145"]), "Movie & Game")
         self.assertEqual(xbert.product_type_for_row(rows["66223"]), "Street View")
 
+    def test_xbert_0618_uses_sku_image_metadata_and_titles(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "砖悦图包"
+            folder = root / "66058" / "66058英文"
+            folder.mkdir(parents=True)
+            for name in ["1.jpg", "6-白底.jpg", "66058详情（英）.jpg", "尺寸.jpg"]:
+                (folder / name).write_bytes(b"image")
+            (Path(tmp) / "66058.jpg").write_bytes(b"sku image")
+
+            rows = {
+                "66058": xbert.XbertWorkbookRow(
+                    sku="66058",
+                    series="战锤系列",
+                    name="CHAINAXE/链锯斧",
+                    package_size="44*32*10",
+                    finished_size="83.5*8.8*31.6",
+                    age="14+",
+                    notes="2371块颗粒数",
+                    factory_price="198",
+                )
+            }
+
+            manifest, skipped, supplements = xbert.build_manifest(root=root, workbook_rows=rows)
+
+        self.assertEqual(skipped, [])
+        self.assertEqual(supplements, [])
+        self.assertEqual(len(manifest), 1)
+        item = manifest[0]
+        self.assertEqual(item["title"], "Xbert Fantasy Battle Axe Model Kit")
+        self.assertEqual(item["product_type"], "Weapon")
+        self.assertEqual(item["metafields"]["custom.series"], "Weapon")
+        self.assertEqual(item["metafields"]["specs.piece_count"], "2371")
+        self.assertEqual(item["metafields"]["specs.package_size"], "44x32x10 cm")
+        self.assertEqual(item["metafields"]["specs.finished_model_size"], "83.5x8.8x31.6 cm")
+        self.assertEqual(item["metadata_source"], "sku_image")
+        self.assertEqual(item["metadata_conflicts"], {})
+        self.assertEqual([Path(path).name for path in item["sku_images"]], ["66058.jpg"])
+
+    def test_xbert_0618_maps_confirmed_categories_and_titles(self) -> None:
+        rows = {
+            "66080": xbert.XbertWorkbookRow(
+                sku="66080",
+                series="皇家海盗系列",
+                name="Shipwreck Island/沉船岛",
+                package_size="30*22*7",
+                finished_size="18.7*27.1*24.3",
+                age="8+",
+                notes="587块颗粒数",
+                factory_price="53",
+            ),
+            "66132": xbert.XbertWorkbookRow(
+                sku="66132",
+                series="创意系列",
+                name="hipogrif/巴克比克",
+                package_size="34*27.5*10",
+                finished_size="57.8*43.6*37.7",
+                age="8+",
+                notes="1548块颗粒数",
+                factory_price="118",
+            ),
+            "66174": xbert.XbertWorkbookRow(
+                sku="66174",
+                series="创意系列",
+                name="Common Room House/格兰芬多学院休息室",
+                package_size="45*30*11",
+                finished_size="21.0*21.6*28.2",
+                age="14+",
+                notes="2163块颗粒数",
+                factory_price="189",
+            ),
+            "66186": xbert.XbertWorkbookRow(
+                sku="66186",
+                series="船系列",
+                name="Clipper Stad Amsterdam/克利珀城阿姆斯特丹",
+                package_size="58*14.5*45.5",
+                finished_size="27.4*121.2*63.8",
+                age="14+",
+                notes="3046块颗粒数",
+                factory_price="339",
+            ),
+        }
+
+        expected = {
+            "66080": ("Xbert Shipwreck Island Building Set", "Pirates"),
+            "66132": ("Xbert Hippogriff Building Set", "Movie & Game"),
+            "66174": ("Xbert Wizard Common Room Building Set", "Movie & Game"),
+            "66186": ("Xbert Clipper Sailing Ship Model Kit", "Ship Model"),
+        }
+
+        for sku, (title, product_type) in expected.items():
+            with self.subTest(sku=sku):
+                self.assertEqual(xbert.title_for_product(sku, rows[sku], f"{sku}英文"), title)
+                self.assertEqual(xbert.product_type_for_row(rows[sku]), product_type)
+
     def test_manifest_uses_xbert_vendor_and_reports_workbook_only_skus(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

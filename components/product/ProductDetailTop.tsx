@@ -47,7 +47,7 @@ export function ProductDetailTop({ product }: { product: Product }) {
               title: "Secure checkout",
               text: product.variantId
                 ? "Checkout is handled by Shopify."
-                : "Checkout preview until Shopify variants are connected.",
+                : "Contact JIESTAR for availability.",
               icon: ShieldIcon,
             },
             { title: "Support", text: "Missing piece support available.", icon: TruckIcon },

@@ -56,11 +56,12 @@ export function B2BCooperation() {
         </div>
         <div className="relative min-h-64 overflow-hidden rounded-lg bg-slate-100">
           <Image
-            src="/images/site-visuals/b2b-catalog-meeting.avif"
-            alt="Representative wholesale catalog and building block product cooperation scene"
+            src="/images/site-visuals/showroom/showroom-b2b-product-review.webp"
+            alt="JIESTAR showroom table with a building block model, packaging, instructions, and product development materials"
             fill
+            unoptimized
             sizes="(min-width: 1024px) 32vw, 100vw"
-            className="object-cover"
+            className="object-cover object-[center_52%]"
           />
         </div>
       </div>

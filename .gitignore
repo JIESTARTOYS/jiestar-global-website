@@ -20,6 +20,11 @@
 # production
 /build
 
+# generated exports and local temp artifacts
+/output/
+/outputs/
+/tmp/
+
 # misc
 .DS_Store
 *.pem

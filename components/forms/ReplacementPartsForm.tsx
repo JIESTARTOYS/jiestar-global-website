@@ -70,8 +70,8 @@ export function ReplacementPartsForm() {
           </p>
           <div className="mt-5 rounded-md border border-white bg-white p-4 text-sm leading-6 text-slate-600">
             <strong className="block font-semibold text-slate-950">Helpful but optional:</strong>
-            Product SKU, product name, package photo, or manual page reference. You do not need to identify every missing
-            piece before submitting this form.
+            Product SKU, product name, package photo, or manual page reference. The support team can help confirm exact
+            missing pieces after review.
           </div>
         </div>
 

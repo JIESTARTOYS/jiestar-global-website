@@ -15,11 +15,12 @@ export function BrandStory() {
         <div className="grid lg:min-h-[28rem] lg:grid-cols-[1fr_1fr]">
           <div className="relative min-h-80 overflow-hidden bg-slate-100 lg:min-h-full">
             <Image
-              src="/images/site-visuals/brand-operations.avif"
-              alt="Representative product planning workspace for global building block brand operations"
+              src="/images/site-visuals/showroom/showroom-entrance-overview.webp"
+              alt="JIESTAR showroom entrance with product displays and brand wall"
               fill
+              unoptimized
               sizes="(min-width: 1024px) 48vw, 100vw"
-              className="object-cover"
+              className="object-cover object-[center_48%]"
             />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0)_42%,rgba(15,23,42,.45)_100%)]" />
             <div className="absolute left-6 top-6 rounded-md bg-white p-1 shadow-lg shadow-slate-950/15">
@@ -58,7 +59,7 @@ export function BrandStory() {
             </div>
 
             <div className="mt-7 flex flex-col gap-4 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-              <LinkButton href="/about" variant="secondary">
+              <LinkButton href="/about">
                 Learn Our Story
               </LinkButton>
               <p className="max-w-xs text-xs font-semibold leading-5 text-slate-500">
