@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeftIcon, MinusIcon, PlusIcon, TrashIcon, XIcon } from "@/components/ui/Icons";
 import type { Cart } from "@/lib/shopify";
 
@@ -248,7 +248,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider value={value}>
-      {children}
+      <div aria-hidden={isOpen ? true : undefined} inert={isOpen ? true : undefined}>
+        {children}
+      </div>
       <CartDrawer />
     </CartContext.Provider>
   );
@@ -266,11 +268,39 @@ export function useCart() {
 
 function CartDrawer() {
   const { cart, closeCart, isLoading, isOpen, message, removeLine, removingLineId, updateLine } = useCart();
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    closeButtonRef.current?.focus();
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeCart();
+      }
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [closeCart, isOpen]);
 
   return (
     <div
       className={`fixed inset-0 z-[80] ${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}
       aria-hidden={!isOpen}
+      inert={!isOpen ? true : undefined}
     >
       <button
         type="button"
@@ -283,7 +313,9 @@ function CartDrawer() {
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
         aria-label="Shopping cart"
+        aria-modal={isOpen ? true : undefined}
         aria-live="polite"
+        role="dialog"
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <div>
@@ -291,9 +323,10 @@ function CartDrawer() {
             <h2 className="text-xl font-black text-slate-950">Your cart</h2>
           </div>
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={closeCart}
-            className="flex h-10 w-10 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+            className="flex h-11 w-11 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
             aria-label="Close cart"
           >
             <XIcon className="h-5 w-5" />
@@ -316,7 +349,7 @@ function CartDrawer() {
               <Link
                 href="/products"
                 onClick={closeCart}
-                className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-black text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-black text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
               >
                 <ChevronLeftIcon className="h-4 w-4" />
                 Browse products
@@ -356,7 +389,7 @@ function CartDrawer() {
                         <button
                           type="button"
                           onClick={() => void removeLine(line.id, line.merchandiseId)}
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-45"
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-45"
                           aria-label={`Remove ${line.productTitle} from cart`}
                           aria-busy={removingLineId === line.id}
                           disabled={isLoading}
@@ -369,21 +402,21 @@ function CartDrawer() {
                       ) : null}
                       <p className="mt-1 text-xs font-semibold text-slate-500">{line.price}</p>
                       <div className="mt-3 flex items-center justify-between gap-3">
-                        <div className="flex h-9 items-center rounded-md border border-slate-200 bg-white">
+                        <div className="flex h-11 items-center rounded-md border border-slate-200 bg-white">
                           <button
                             type="button"
                             onClick={() => void updateLine(line.id, line.merchandiseId, Math.max(1, line.quantity - 1))}
-                            className="flex h-9 w-9 items-center justify-center text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:text-slate-300"
+                            className="flex h-11 w-11 items-center justify-center text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:text-slate-300"
                             aria-label={`Decrease ${line.productTitle} quantity`}
                             disabled={isLoading || line.quantity <= 1}
                           >
                             <MinusIcon className="h-4 w-4" />
                           </button>
-                          <span className="min-w-8 text-center text-sm font-black text-slate-950">{line.quantity}</span>
+                          <span className="min-w-9 text-center text-sm font-black text-slate-950">{line.quantity}</span>
                           <button
                             type="button"
                             onClick={() => void updateLine(line.id, line.merchandiseId, line.quantity + 1)}
-                            className="flex h-9 w-9 items-center justify-center text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:text-slate-300"
+                            className="flex h-11 w-11 items-center justify-center text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:text-slate-300"
                             aria-label={`Increase ${line.productTitle} quantity`}
                             disabled={isLoading}
                           >

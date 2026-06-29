@@ -30,7 +30,10 @@ export function HeaderMobileNav({ navigation }: HeaderMobileNavProps) {
 
   return (
     <details ref={detailsRef} className="group lg:hidden">
-      <summary className="cursor-pointer list-none rounded-md border border-slate-200 bg-white p-2 text-slate-900 shadow-sm">
+      <summary
+        aria-label="Toggle mobile navigation"
+        className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md border border-slate-200 bg-white text-slate-900 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+      >
         <MenuIcon className="h-5 w-5" />
       </summary>
       <div className="absolute left-0 top-full w-full border-b border-slate-200 bg-white px-5 py-5 shadow-lg shadow-slate-950/5">

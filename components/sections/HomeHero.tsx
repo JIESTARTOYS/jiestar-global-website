@@ -68,7 +68,7 @@ export function HomeHero() {
               className="absolute -bottom-[3%] left-[23%] right-[1%] h-[22%] rounded-full bg-slate-950/10 blur-2xl"
             />
             <Image
-              src="/images/home/jiestar-home-hero-product-showcase-soft-background-v4.png"
+              src="/images/home/jiestar-home-hero-product-showcase-soft-background-v4.avif"
               alt="JIESTAR product line showcase with sports car, aircraft, train, space shuttle, airship, flower and vehicle building block models"
               fill
               priority

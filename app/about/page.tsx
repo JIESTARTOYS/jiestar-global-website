@@ -215,6 +215,18 @@ export default function AboutPage() {
             <h1 className="mt-4 max-w-2xl break-words text-[34px] font-bold leading-[1.12] tracking-normal text-slate-950 sm:text-5xl lg:text-[60px] lg:leading-[1.04]">
               Inside JIESTAR&apos;s Building Block Manufacturing Base
             </h1>
+            <div className="mt-8 lg:hidden">
+              <FactoryVisualCard
+                label="Injection Workshop"
+                note="Organized molding lines show the production base behind JIESTAR building block parts."
+                image="/images/site-visuals/factory/factory-injection-workshop.webp"
+                alt="Injection molding machines arranged in a clean JIESTAR factory workshop"
+                priority
+                sizes="100vw"
+                className="min-h-[260px]"
+                imageClassName="object-[center_54%]"
+              />
+            </div>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
               Since 1998, JIESTAR has supported global building block partners with product development, injection molding, quality inspection, warehouse supply, wholesale cooperation, and OEM / ODM projects.
             </p>
@@ -248,7 +260,7 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="grid min-w-0 gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="hidden min-w-0 gap-4 lg:grid lg:grid-cols-[1.08fr_0.92fr]">
             <FactoryVisualCard
               label="Injection Workshop"
               note="Organized molding lines support stable building block part production."

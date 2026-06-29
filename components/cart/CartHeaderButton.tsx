@@ -16,10 +16,10 @@ export function CartHeaderButton({ compact = false }: CartHeaderButtonProps) {
         type="button"
         onClick={openCart}
         aria-label={`Open cart, ${count} item${count === 1 ? "" : "s"}`}
-        className="relative rounded-md p-2 text-slate-800 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+        className="relative flex h-11 w-11 items-center justify-center rounded-md text-slate-800 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
       >
         <CartIcon className="h-5 w-5" />
-        <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+        <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
           {count}
         </span>
       </button>

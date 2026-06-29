@@ -160,7 +160,11 @@ export function HeaderSearch({ className = "h-11 w-64", autoFocusSignal }: Heade
           }
         }}
       />
-      <button type="submit" aria-label="Search products" className="rounded-sm p-1 text-slate-700 transition hover:text-red-600">
+      <button
+        type="submit"
+        aria-label="Search products"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-slate-700 transition hover:text-red-600"
+      >
         <SearchIcon className="h-4 w-4" />
       </button>
 
@@ -240,7 +244,7 @@ export function HeaderMobileSearch() {
         aria-label={isOpen ? "Close product search" : "Open product search"}
         aria-expanded={isOpen}
         aria-controls="mobile-header-search"
-        className="rounded-md p-2 text-slate-800 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-red-200"
+        className="flex h-11 w-11 items-center justify-center rounded-md text-slate-800 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-red-200"
         onClick={toggleSearch}
       >
         <SearchIcon className="h-5 w-5" />
