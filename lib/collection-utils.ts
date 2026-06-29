@@ -1,4 +1,5 @@
 import type { Collection, ProductSummary } from "./data";
+import { isSubBrandCollectionHandle } from "./sub-brands.ts";
 
 export function getCollectionProductCount(collection: Collection, products: ProductSummary[]) {
   return products.filter(
@@ -7,5 +8,7 @@ export function getCollectionProductCount(collection: Collection, products: Prod
 }
 
 export function getCollectionsWithProducts(collections: Collection[], products: ProductSummary[]) {
-  return collections.filter((collection) => getCollectionProductCount(collection, products) > 0);
+  return collections.filter(
+    (collection) => !isSubBrandCollectionHandle(collection.handle) && getCollectionProductCount(collection, products) > 0,
+  );
 }

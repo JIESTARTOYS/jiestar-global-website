@@ -2,9 +2,16 @@ import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/data";
 import { getBlogPosts } from "@/lib/blog";
 import { getShopifyCollections, getShopifyProductSummaries } from "@/lib/shopify";
+import { subBrands } from "@/lib/sub-brands";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [collections, products] = await Promise.all([getShopifyCollections(), getShopifyProductSummaries()]);
+  const collectionHandles = Array.from(
+    new Set([
+      ...collections.map((collection) => collection.handle),
+      ...subBrands.map((brand) => brand.collectionHandle).filter((handle): handle is string => Boolean(handle)),
+    ]),
+  );
   const staticRoutes = [
     "",
     "/products",
@@ -23,8 +30,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticRoutes.map((route) => ({ url: `${siteConfig.url}${route}`, lastModified: new Date() })),
-    ...collections.map((collection) => ({
-      url: `${siteConfig.url}/collections/${collection.handle}`,
+    ...collectionHandles.map((handle) => ({
+      url: `${siteConfig.url}/collections/${handle}`,
       lastModified: new Date(),
     })),
     ...products.map((product) => ({

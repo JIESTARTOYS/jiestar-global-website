@@ -1,14 +1,20 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { MouseEvent, PointerEvent } from "react";
+
+const DRAG_THRESHOLD = 8;
 
 export type SubBrand = {
   name: string;
   description: string;
+  collectionDescription?: string;
   image: string;
   width: number;
   height: number;
+  collectionHandle?: string;
 };
 
 type SubBrandCarouselProps = {
@@ -18,7 +24,8 @@ type SubBrandCarouselProps = {
 
 export function SubBrandCarousel({ brands, fadeBackground = "white" }: SubBrandCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef({ startX: 0, scrollLeft: 0 });
+  const dragRef = useRef({ pointerId: -1, startX: 0, scrollLeft: 0, hasDragged: false });
+  const cancelClickRef = useRef(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const repeatedBrands = [...brands, ...brands, ...brands];
@@ -81,41 +88,83 @@ export function SubBrandCarousel({ brands, fadeBackground = "white" }: SubBrandC
     return () => cancelAnimationFrame(frameId);
   }, [isDragging, isPaused, normalizeScroll]);
 
-  function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (event.button !== 0) {
+      return;
+    }
+
     const viewport = scrollRef.current;
 
     if (!viewport) {
       return;
     }
 
-    setIsDragging(true);
     dragRef.current = {
+      pointerId: event.pointerId,
       startX: event.clientX,
       scrollLeft: viewport.scrollLeft,
+      hasDragged: false,
     };
-    viewport.setPointerCapture(event.pointerId);
+    cancelClickRef.current = false;
   }
 
-  function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
     const viewport = scrollRef.current;
+    const dragState = dragRef.current;
 
-    if (!isDragging || !viewport) {
+    if (!viewport || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - dragState.startX;
+
+    if (!dragState.hasDragged && Math.abs(deltaX) > DRAG_THRESHOLD) {
+      dragState.hasDragged = true;
+      cancelClickRef.current = true;
+      setIsDragging(true);
+
+      if (!viewport.hasPointerCapture(event.pointerId)) {
+        viewport.setPointerCapture(event.pointerId);
+      }
+    }
+
+    if (dragState.hasDragged) {
+      event.preventDefault();
+      viewport.scrollLeft = dragState.scrollLeft - deltaX;
+      normalizeScroll(viewport);
+    }
+  }
+
+  function handlePointerEnd(event: PointerEvent<HTMLDivElement>) {
+    const viewport = scrollRef.current;
+    const dragState = dragRef.current;
+
+    if (!viewport || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+
+    if (viewport.hasPointerCapture(event.pointerId)) {
+      viewport.releasePointerCapture(event.pointerId);
+    }
+
+    dragRef.current = {
+      pointerId: -1,
+      startX: 0,
+      scrollLeft: 0,
+      hasDragged: false,
+    };
+    setIsDragging(false);
+  }
+
+  function handleClickCapture(event: MouseEvent<HTMLDivElement>) {
+    if (!cancelClickRef.current) {
       return;
     }
 
     event.preventDefault();
-    viewport.scrollLeft = dragRef.current.scrollLeft - (event.clientX - dragRef.current.startX);
-    normalizeScroll(viewport);
-  }
-
-  function handlePointerEnd(event: React.PointerEvent<HTMLDivElement>) {
-    const viewport = scrollRef.current;
-
-    setIsDragging(false);
-
-    if (viewport?.hasPointerCapture(event.pointerId)) {
-      viewport.releasePointerCapture(event.pointerId);
-    }
+    event.stopPropagation();
+    cancelClickRef.current = false;
   }
 
   return (
@@ -138,6 +187,8 @@ export function SubBrandCarousel({ brands, fadeBackground = "white" }: SubBrandC
             handlePointerEnd(event);
           }
         }}
+        onClickCapture={handleClickCapture}
+        onDragStart={(event) => event.preventDefault()}
         onScroll={(event) => normalizeScroll(event.currentTarget)}
         className={`scrollbar-none overflow-x-auto ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
       >
@@ -146,11 +197,7 @@ export function SubBrandCarousel({ brands, fadeBackground = "white" }: SubBrandC
             const isPrimarySegment = index >= brands.length && index < brands.length * 2;
 
             return (
-              <article
-                key={`${brand.name}-${index}`}
-                aria-hidden={!isPrimarySegment}
-                className="w-64 shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-md sm:w-72 sm:p-5"
-              >
+              <BrandCard key={`${brand.name}-${index}`} brand={brand} isPrimarySegment={isPrimarySegment}>
                 <div className="flex h-44 items-center justify-center rounded-md bg-white p-4">
                   <Image
                     src={brand.image}
@@ -164,11 +211,44 @@ export function SubBrandCarousel({ brands, fadeBackground = "white" }: SubBrandC
                 </div>
                 <h2 className="mt-5 text-base font-semibold text-slate-950">{brand.name}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{brand.description}</p>
-              </article>
+              </BrandCard>
             );
           })}
         </div>
       </div>
     </div>
+  );
+}
+
+function BrandCard({
+  brand,
+  children,
+  isPrimarySegment,
+}: {
+  brand: SubBrand;
+  children: React.ReactNode;
+  isPrimarySegment: boolean;
+}) {
+  const className =
+    "block w-64 shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:w-72 sm:p-5";
+
+  if (brand.collectionHandle) {
+    return (
+      <Link
+        href={`/collections/${brand.collectionHandle}`}
+        draggable={false}
+        aria-hidden={!isPrimarySegment}
+        tabIndex={isPrimarySegment ? undefined : -1}
+        className={className}
+      >
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <article aria-hidden={!isPrimarySegment} className={className}>
+      {children}
+    </article>
   );
 }

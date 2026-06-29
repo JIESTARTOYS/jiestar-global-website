@@ -1,5 +1,6 @@
 import { collections, products, type Collection, type Product, type ProductSummary, type ProductVariant } from "./data";
 import { getLocalProductSpecifications } from "./product-specifications";
+import { isSubBrandCollectionHandle } from "./sub-brands";
 import { readShopifyConnectionPages } from "./shopify-pagination";
 
 const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION ?? "2026-01";
@@ -241,6 +242,10 @@ type ShopifyCollectionNode = {
     altText?: string | null;
   } | null;
   products?: {
+    pageInfo?: {
+      hasNextPage: boolean;
+      endCursor?: string | null;
+    };
     edges: Array<{
       node: ShopifyProductNode;
     }>;
@@ -249,6 +254,10 @@ type ShopifyCollectionNode = {
 
 type ShopifyCollectionSummaryNode = Omit<ShopifyCollectionNode, "products"> & {
   products?: {
+    pageInfo?: {
+      hasNextPage: boolean;
+      endCursor?: string | null;
+    };
     edges: Array<{
       node: ShopifyProductSummaryNode;
     }>;
@@ -522,20 +531,21 @@ function formatPieceCount(value?: string) {
 
 function pickPrimaryCollection(node: Pick<ShopifyProductSummaryNode, "collections">) {
   const shopifyCollections = node.collections.edges.map(({ node: collection }) => collection);
-  const mainCategoryCollection = shopifyCollections.find(
+  const catalogCollections = shopifyCollections.filter((collection) => !isSubBrandCollectionHandle(collection.handle));
+  const mainCategoryCollection = catalogCollections.find(
     (collection) =>
       getWebsiteCollectionType(collection) === "main_category" ||
       MAIN_CATEGORY_COLLECTION_HANDLES.has(collection.handle),
   );
-  const productTypeCollection = shopifyCollections.find((collection) =>
+  const productTypeCollection = catalogCollections.find((collection) =>
     PRODUCT_TYPE_COLLECTION_HANDLES.has(collection.handle),
   );
   const configuredCollection =
     mainCategoryCollection ??
     productTypeCollection ??
-    shopifyCollections.find((collection) =>
+    catalogCollections.find((collection) =>
       collections.some((localCollection) => localCollection.handle === collection.handle),
-    ) ?? shopifyCollections[0];
+    ) ?? catalogCollections[0];
 
   return configuredCollection;
 }
@@ -866,19 +876,6 @@ const collectionSummaryFragment = `
     image {
       url
       altText
-    }
-  }
-`;
-
-const collectionFragment = `
-  fragment CollectionFields on Collection {
-    ...CollectionSummaryFields
-    products(first: 100) {
-      edges {
-        node {
-          ...ProductFields
-        }
-      }
     }
   }
 `;
@@ -1234,6 +1231,118 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
   }
 }
 
+async function fetchShopifyCollectionSummaryDirect(
+  handle: string,
+): Promise<{ collection: Collection; products: ProductSummary[] } | undefined> {
+  let collectionNode: ShopifyCollectionSummaryNode | undefined;
+  const productNodes = await readShopifyConnectionPages(async (cursor) => {
+    const data = await shopifyFetch<ShopifyCollectionSummaryResponse>(
+      `
+        ${productSummaryFragment}
+        ${collectionSummaryFragment}
+        query CollectionSummary($handle: String!, $cursor: String) {
+          collection(handle: $handle) {
+            ...CollectionSummaryFields
+            products(first: 50, after: $cursor) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+              edges {
+                node {
+                  ...ProductSummaryFields
+                }
+              }
+            }
+          }
+        }
+      `,
+      { handle, cursor },
+    );
+
+    if (!data.collection) {
+      return {
+        nodes: [],
+        hasNextPage: false,
+        endCursor: null,
+      };
+    }
+
+    collectionNode ??= data.collection;
+
+    return {
+      nodes: data.collection.products?.edges.map(({ node }) => node) ?? [],
+      hasNextPage: Boolean(data.collection.products?.pageInfo?.hasNextPage),
+      endCursor: data.collection.products?.pageInfo?.endCursor,
+    };
+  });
+
+  if (!collectionNode) {
+    return undefined;
+  }
+
+  return {
+    collection: mapShopifyCollection(collectionNode),
+    products: productNodes.map((node) => mapShopifyProductSummary(node)),
+  };
+}
+
+async function fetchShopifyCollectionDirect(
+  handle: string,
+): Promise<{ collection: Collection; products: Product[] } | undefined> {
+  let collectionNode: ShopifyCollectionNode | undefined;
+  const productNodes = await readShopifyConnectionPages(async (cursor) => {
+    const data = await shopifyFetch<ShopifyCollectionResponse>(
+      `
+        ${productFragment}
+        ${collectionSummaryFragment}
+        query Collection($handle: String!, $cursor: String) {
+          collection(handle: $handle) {
+            ...CollectionSummaryFields
+            products(first: 50, after: $cursor) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+              edges {
+                node {
+                  ...ProductFields
+                }
+              }
+            }
+          }
+        }
+      `,
+      { handle, cursor },
+    );
+
+    if (!data.collection) {
+      return {
+        nodes: [],
+        hasNextPage: false,
+        endCursor: null,
+      };
+    }
+
+    collectionNode ??= data.collection;
+
+    return {
+      nodes: data.collection.products?.edges.map(({ node }) => node) ?? [],
+      hasNextPage: Boolean(data.collection.products?.pageInfo?.hasNextPage),
+      endCursor: data.collection.products?.pageInfo?.endCursor,
+    };
+  });
+
+  if (!collectionNode) {
+    return undefined;
+  }
+
+  return {
+    collection: mapShopifyCollection(collectionNode),
+    products: productNodes.map((node) => mapShopifyProduct(node)),
+  };
+}
+
 export async function getShopifyCollectionSummary(
   handle: string,
 ): Promise<{ collection: Collection; products: ProductSummary[] } | undefined> {
@@ -1286,42 +1395,20 @@ export async function getShopifyCollectionSummary(
   }
 
   try {
-    const data = await shopifyFetch<ShopifyCollectionSummaryResponse>(
-      `
-        ${productSummaryFragment}
-        ${collectionSummaryFragment}
-        query CollectionSummary($handle: String!) {
-          collection(handle: $handle) {
-            ...CollectionSummaryFields
-            products(first: 100) {
-              edges {
-                node {
-                  ...ProductSummaryFields
-                }
-              }
-            }
-          }
-        }
-      `,
-      { handle },
-    );
+    const directCollection = await fetchShopifyCollectionSummaryDirect(handle);
 
-    if (!data.collection) {
+    if (!directCollection) {
       logShopifyDataSource("getShopifyCollectionSummary", "shopify", { found: false, handle });
       return shouldUseLocalFallback() ? getLocalCollectionProducts(handle) : undefined;
     }
 
-    const collectionProducts = data.collection.products?.edges.map(({ node }) => mapShopifyProductSummary(node)) ?? [];
     logShopifyDataSource("getShopifyCollectionSummary", "shopify", {
       found: true,
       handle,
-      productCount: collectionProducts.length,
+      productCount: directCollection.products.length,
     });
 
-    return {
-      collection: mapShopifyCollection(data.collection),
-      products: collectionProducts,
-    };
+    return directCollection;
   } catch (error) {
     const shopifyError = getShopifyRequestError("getShopifyCollectionSummary", error);
 
@@ -1389,36 +1476,20 @@ export async function getShopifyCollection(
   }
 
   try {
-    const data = await shopifyFetch<ShopifyCollectionResponse>(
-      `
-        ${productFragment}
-        ${collectionSummaryFragment}
-        ${collectionFragment}
-        query Collection($handle: String!) {
-          collection(handle: $handle) {
-            ...CollectionFields
-          }
-        }
-      `,
-      { handle },
-    );
+    const directCollection = await fetchShopifyCollectionDirect(handle);
 
-    if (!data.collection) {
+    if (!directCollection) {
       logShopifyDataSource("getShopifyCollection", "shopify", { found: false, handle });
       return shouldUseLocalFallback() ? getLocalCollectionProducts(handle) : undefined;
     }
 
-    const collectionProducts = data.collection.products?.edges.map(({ node }) => mapShopifyProduct(node)) ?? [];
     logShopifyDataSource("getShopifyCollection", "shopify", {
       found: true,
       handle,
-      productCount: collectionProducts.length,
+      productCount: directCollection.products.length,
     });
 
-    return {
-      collection: mapShopifyCollection(data.collection),
-      products: collectionProducts,
-    };
+    return directCollection;
   } catch (error) {
     const shopifyError = getShopifyRequestError("getShopifyCollection", error);
 

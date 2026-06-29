@@ -7,6 +7,7 @@ import { LinkButton } from "@/components/ui/LinkButton";
 import { getCollection, getProductsByCollection } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
 import { getShopifyCollectionSummary, getShopifyCollections } from "@/lib/shopify";
+import { getSubBrandByCollectionHandle } from "@/lib/sub-brands";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
@@ -24,6 +25,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps) {
   const { handle } = await params;
   const collection = (await getShopifyCollectionSummary(handle))?.collection ?? getCollection(handle);
+  const subBrand = collection ? getSubBrandByCollectionHandle(collection.handle) : undefined;
 
   if (!collection) {
     return {};
@@ -31,7 +33,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   return createMetadata({
     title: `${collection.title} Building Block Sets`,
-    description: collection.description,
+    description: subBrand?.collectionDescription ?? collection.description,
     path: `/collections/${handle}`,
   });
 }
@@ -46,6 +48,9 @@ export default async function CollectionPage({ params }: PageProps) {
   }
 
   const products = shopifyCollection?.products ?? getProductsByCollection(handle);
+  const subBrand = getSubBrandByCollectionHandle(collection.handle);
+  const isBrandCollection = Boolean(subBrand);
+  const collectionDescription = subBrand?.collectionDescription ?? collection.description;
 
   return (
     <div className="bg-[#f7f8fa] px-4 py-8 sm:px-5 lg:px-8 lg:py-12">
@@ -64,11 +69,13 @@ export default async function CollectionPage({ params }: PageProps) {
         <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03]">
           <div className="grid lg:grid-cols-[1.02fr_0.98fr] lg:items-stretch">
             <div className="flex flex-col justify-center p-5 sm:p-8 lg:p-10">
-              <p className="text-sm font-black uppercase text-red-600">Collection</p>
+              <p className="text-sm font-black uppercase text-red-600">
+                {isBrandCollection ? "Brand collection" : "Collection"}
+              </p>
               <h1 className="mt-3 text-3xl font-black leading-tight text-slate-950 sm:text-4xl">
                 {collection.title} Building Block Sets
               </h1>
-              <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">{collection.description}</p>
+              <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">{collectionDescription}</p>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {[
                   { title: `${products.length} products`, text: "Available in this collection", icon: PackageIcon },
@@ -87,8 +94,25 @@ export default async function CollectionPage({ params }: PageProps) {
                 })}
               </div>
             </div>
-            <div className="relative min-h-64 bg-slate-100 lg:min-h-full">
-              {collection.image ? (
+            <div
+              className={
+                isBrandCollection
+                  ? "relative flex min-h-64 items-center justify-center bg-white p-8 sm:p-10 lg:min-h-full"
+                  : "relative min-h-64 bg-slate-100 lg:min-h-full"
+              }
+            >
+              {subBrand ? (
+                <div className="relative h-44 w-full max-w-[16rem] sm:h-56 sm:max-w-[22rem] lg:h-72 lg:max-w-[30rem]">
+                  <Image
+                    src={subBrand.image}
+                    alt={`${subBrand.name} sub-brand logo`}
+                    fill
+                    sizes="(min-width: 1024px) 30rem, (min-width: 640px) 22rem, 16rem"
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+              ) : collection.image ? (
                 <>
                   <Image
                     src={collection.image}
@@ -113,13 +137,17 @@ export default async function CollectionPage({ params }: PageProps) {
           <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.03] lg:sticky lg:top-24 lg:self-start">
             <p className="text-sm font-black text-slate-950">Collection options</p>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Browse this product direction, compare available sets, or contact JIESTAR for wholesale supply and custom cooperation.
+              {isBrandCollection
+                ? "Browse this brand collection, compare available sets, or contact JIESTAR for wholesale supply and custom cooperation."
+                : "Browse this product direction, compare available sets, or contact JIESTAR for wholesale supply and custom cooperation."}
             </p>
             <div className="mt-5 grid gap-3 text-sm">
               <LinkButton href="/products" variant="secondary" className="w-full px-4">All Products</LinkButton>
-              <LinkButton href={`/products?category=${collection.handle}`} variant="secondary" className="w-full px-4">
-                Filter Catalog
-              </LinkButton>
+              {isBrandCollection ? null : (
+                <LinkButton href={`/products?category=${collection.handle}`} variant="secondary" className="w-full px-4">
+                  Filter Catalog
+                </LinkButton>
+              )}
               <LinkButton href="/wholesale" className="w-full px-4">
                 Wholesale Inquiry
                 <ArrowRightIcon className="ml-2 h-4 w-4" />
@@ -141,9 +169,11 @@ export default async function CollectionPage({ params }: PageProps) {
           <div>
             <div className="mb-4 flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/[0.03] sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-black text-slate-950">{products.length} products in this collection</p>
-              <Link href={`/products?category=${collection.handle}`} className="text-xs font-black leading-5 text-red-600 transition hover:text-red-700">
-                Open with catalog filters
-              </Link>
+              {isBrandCollection ? null : (
+                <Link href={`/products?category=${collection.handle}`} className="text-xs font-black leading-5 text-red-600 transition hover:text-red-700">
+                  Open with catalog filters
+                </Link>
+              )}
             </div>
             <CollectionProductListing
               products={products}

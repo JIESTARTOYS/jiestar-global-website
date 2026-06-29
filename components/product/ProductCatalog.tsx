@@ -6,8 +6,9 @@ import type { Collection, ProductSummary } from "@/lib/data";
 import { getCollectionsWithProducts } from "@/lib/collection-utils";
 import { clampProductPage, normalizeProductPage, PRODUCT_PAGE_SIZE } from "@/lib/product-pagination";
 import { DEFAULT_PRODUCT_SORT, priceNumber, sortProductsForCatalog } from "@/lib/product-sorting";
+import { subBrands } from "@/lib/sub-brands";
+import { BrandCollectionCarousel } from "@/components/product/BrandCollectionCarousel";
 import { CatalogProductCard } from "@/components/product/CatalogProductCard";
-import { CategoryCarousel } from "@/components/product/CategoryCarousel";
 import { ProductPagination } from "@/components/product/ProductPagination";
 import {
   ChevronDownIcon,
@@ -689,7 +690,7 @@ export function ProductCatalog(props: ProductCatalogProps) {
             </div>
           </div>
 
-          <CategoryCarousel collections={visibleCollections} products={allProducts} />
+          <BrandCollectionCarousel brands={subBrands} />
 
           <MobileControls
             allProducts={allProducts}
