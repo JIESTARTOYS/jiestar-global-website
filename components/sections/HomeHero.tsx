@@ -62,32 +62,14 @@ export function HomeHero() {
             </div>
           </div>
 
-          <div className="relative z-0 -mx-2 aspect-[1890/1206] w-[calc(100%+1rem)] overflow-visible sm:mx-0 sm:w-full lg:-mb-9 lg:-mr-10 lg:translate-x-4 lg:scale-[1.1]">
-            <div
-              aria-hidden="true"
-              className="absolute bottom-[31%] left-[8%] right-[2%] top-[4%] overflow-hidden rounded-2xl border border-slate-200/70 bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_52%,#f5f8fb_100%)] shadow-[0_20px_48px_rgba(15,23,42,0.10)]"
-            >
-              <span className="absolute -right-[8%] top-0 h-full w-[28%] -skew-x-12 bg-slate-950/[0.018]" />
-              <span className="absolute right-[18%] top-0 h-full w-[8%] -skew-x-12 bg-red-600/[0.055]" />
-              <span className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-200/22 to-transparent" />
-            </div>
-            <div
-              aria-hidden="true"
-              className="absolute bottom-[25%] left-[11%] right-[5%] h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"
-            />
+          <div className="relative z-0 -mx-2 aspect-[1448/1086] w-[calc(100%+1rem)] overflow-visible sm:mx-0 sm:w-full lg:-mb-9 lg:-mr-10 lg:translate-x-4 lg:scale-[1.1]">
             <div
               aria-hidden="true"
               className="absolute -bottom-[3%] left-[23%] right-[1%] h-[22%] rounded-full bg-slate-950/10 blur-2xl"
             />
-            <div
-              aria-hidden="true"
-              className="absolute right-[8%] top-[14%] rounded-md border border-slate-200 bg-white/80 px-4 py-2 text-xs font-black text-slate-950 shadow-sm"
-            >
-              Product Line Showcase
-            </div>
             <Image
-              src="/images/home/jiestar-home-hero-user-composite-wechat-v2-web.png"
-              alt="JIESTAR product line showcase with real car, train, modular building, flower, space and ship building block models"
+              src="/images/home/jiestar-home-hero-product-showcase-soft-background-v4.png"
+              alt="JIESTAR product line showcase with sports car, aircraft, train, space shuttle, airship, flower and vehicle building block models"
               fill
               priority
               sizes="(min-width: 1024px) 58vw, 100vw"
