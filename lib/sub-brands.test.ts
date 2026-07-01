@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getSubBrandByCollectionHandle, subBrands } from "./sub-brands.ts";
+import {
+  getEnabledSubBrandCollectionHandles,
+  getSubBrandByCollectionHandle,
+  isSubBrandCollectionEnabled,
+  isSubBrandCollectionHandle,
+  subBrands,
+} from "./sub-brands.ts";
 
 test("subBrands expose Shopify collection handles for clickable brand cards", () => {
   const handlesByName = Object.fromEntries(subBrands.map((brand) => [brand.name, brand.collectionHandle]));
@@ -15,6 +21,16 @@ test("subBrands expose Shopify collection handles for clickable brand cards", ()
     JIQI: "jiqi",
     "Small Angle": "small-angle",
   });
+});
+
+test("Small Angle stays registered but is disabled for public collection navigation", () => {
+  const smallAngle = subBrands.find((brand) => brand.name === "Small Angle");
+
+  assert.equal(smallAngle?.collectionHandle, "small-angle");
+  assert.equal(smallAngle?.isCollectionEnabled, false);
+  assert.equal(isSubBrandCollectionHandle("small-angle"), true);
+  assert.equal(isSubBrandCollectionEnabled("small-angle"), false);
+  assert.deepEqual(getEnabledSubBrandCollectionHandles().includes("small-angle"), false);
 });
 
 test("getSubBrandByCollectionHandle returns the display logo data for a brand collection", () => {

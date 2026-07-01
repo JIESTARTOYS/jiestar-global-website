@@ -7,7 +7,7 @@ import { LinkButton } from "@/components/ui/LinkButton";
 import { getCollection, getProductsByCollection } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
 import { getShopifyCollectionSummary, getShopifyCollections } from "@/lib/shopify";
-import { getSubBrandByCollectionHandle } from "@/lib/sub-brands";
+import { getSubBrandByCollectionHandle, isSubBrandCollectionEnabled } from "@/lib/sub-brands";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
@@ -24,6 +24,12 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps) {
   const { handle } = await params;
+  const subBrandForHandle = getSubBrandByCollectionHandle(handle);
+
+  if (subBrandForHandle && !isSubBrandCollectionEnabled(handle)) {
+    return {};
+  }
+
   const collection = (await getShopifyCollectionSummary(handle))?.collection ?? getCollection(handle);
   const subBrand = collection ? getSubBrandByCollectionHandle(collection.handle) : undefined;
 
@@ -40,6 +46,12 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function CollectionPage({ params }: PageProps) {
   const { handle } = await params;
+  const subBrandForHandle = getSubBrandByCollectionHandle(handle);
+
+  if (subBrandForHandle && !isSubBrandCollectionEnabled(handle)) {
+    notFound();
+  }
+
   const shopifyCollection = await getShopifyCollectionSummary(handle);
   const collection = shopifyCollection?.collection ?? getCollection(handle);
 

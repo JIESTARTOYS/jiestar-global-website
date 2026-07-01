@@ -15,6 +15,7 @@ export type SubBrand = {
   width: number;
   height: number;
   collectionHandle?: string;
+  isCollectionEnabled?: boolean;
 };
 
 type SubBrandCarouselProps = {
@@ -232,7 +233,7 @@ function BrandCard({
   const className =
     "block w-64 shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:w-72 sm:p-5";
 
-  if (brand.collectionHandle) {
+  if (brand.collectionHandle && brand.isCollectionEnabled !== false) {
     return (
       <Link
         href={`/collections/${brand.collectionHandle}`}

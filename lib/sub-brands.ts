@@ -80,12 +80,29 @@ export const subBrands: SubBrand[] = [
     width: 500,
     height: 280,
     collectionHandle: "small-angle",
+    isCollectionEnabled: false,
   },
 ];
 
 export const subBrandCollectionHandles = new Set(
   subBrands.map((brand) => brand.collectionHandle).filter((handle): handle is string => Boolean(handle)),
 );
+
+export function isSubBrandCollectionEnabled(handle: string) {
+  const brand = getSubBrandByCollectionHandle(handle);
+
+  return Boolean(brand?.collectionHandle && brand.isCollectionEnabled !== false);
+}
+
+export function getEnabledSubBrands() {
+  return subBrands.filter((brand) => !brand.collectionHandle || brand.isCollectionEnabled !== false);
+}
+
+export function getEnabledSubBrandCollectionHandles() {
+  return subBrands
+    .filter((brand) => brand.collectionHandle && brand.isCollectionEnabled !== false)
+    .map((brand) => brand.collectionHandle as string);
+}
 
 export function isSubBrandCollectionHandle(handle: string) {
   return subBrandCollectionHandles.has(handle);

@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import type { MouseEvent, PointerEvent } from "react";
 import type { SubBrand } from "@/components/sections/SubBrandCarousel";
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
+import { isSubBrandCollectionEnabled } from "@/lib/sub-brands";
 
 const DRAG_THRESHOLD = 8;
 
@@ -18,7 +19,10 @@ type LinkedSubBrand = SubBrand & {
 };
 
 export function BrandCollectionCarousel({ brands }: BrandCollectionCarouselProps) {
-  const linkedBrands = brands.filter((brand): brand is LinkedSubBrand => Boolean(brand.collectionHandle));
+  const linkedBrands = brands.filter(
+    (brand): brand is LinkedSubBrand =>
+      Boolean(brand.collectionHandle && isSubBrandCollectionEnabled(brand.collectionHandle)),
+  );
   const scrollerRef = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef({
     pointerId: -1,
