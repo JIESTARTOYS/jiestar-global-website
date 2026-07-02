@@ -118,7 +118,7 @@ BRAND_LOGOS = {
     "TK Two": Path("public/images/sub-brands/tktwo-logo.png"),
     "Small Angle": Path("public/images/sub-brands/xiaojiaodu-logo.png"),
     "GULY": Path("public/images/sub-brands/guly-logo.png"),
-    "Zoin": Path("public/images/sub-brands/zoin-logo.png"),
+    "Zoin": Path("public/images/sub-brands/zoin-logo-high-res-web.png"),
     "iBlock": Path("public/images/sub-brands/iblock-logo.png"),
     "JIQI": Path("public/images/sub-brands/jiqi-logo.png"),
 }

@@ -56,9 +56,9 @@ export const subBrands: SubBrand[] = [
     description: "Creative display sets across architecture, landmarks, art, seasonal, and playful themes.",
     collectionDescription:
       "ZOIN develops creative display building block sets across architecture, landmarks, art, seasonal subjects, and playful themes, with a stronger focus on visual storytelling and giftable models.",
-    image: "/images/sub-brands/zoin-logo.png",
-    width: 512,
-    height: 512,
+    image: "/images/sub-brands/zoin-logo-high-res-web.png",
+    width: 900,
+    height: 884,
     collectionHandle: "zoin",
   },
   {

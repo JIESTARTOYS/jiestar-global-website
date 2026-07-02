@@ -41,6 +41,15 @@ test("getSubBrandByCollectionHandle returns the display logo data for a brand co
   assert.equal(getSubBrandByCollectionHandle("vehicles"), undefined);
 });
 
+test("ZOIN uses the current high resolution logo asset", () => {
+  const brand = getSubBrandByCollectionHandle("zoin");
+
+  assert.equal(brand?.name, "ZOIN");
+  assert.equal(brand?.image, "/images/sub-brands/zoin-logo-high-res-web.png");
+  assert.equal(brand?.width, 900);
+  assert.equal(brand?.height, 884);
+});
+
 test("subBrands include collection-page introductions", () => {
   for (const brand of subBrands) {
     assert.ok(brand.collectionDescription, `${brand.name} needs a collection page introduction`);
