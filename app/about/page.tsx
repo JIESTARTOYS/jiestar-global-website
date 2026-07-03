@@ -228,7 +228,7 @@ export default function AboutPage() {
               />
             </div>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
-              JIESTAR, also written as Jie Star or JIE-STAR, is the official building block brand of Guangdong Jiexing Toys Industrial Co., Ltd. Since 1998, JIESTAR has supported global building block partners with product development, injection molding, quality inspection, warehouse supply, wholesale cooperation, and OEM / ODM projects.
+              JIESTAR, also written as Jie Star or JIE-STAR, is the official building block brand of Guangdong Jiexing Toys Industrial Co., Ltd. Since 1998, JIESTAR has supported global building block partners with product development, injection molding, quality inspection, warehouse supply, wholesale cooperation, and OEM / ODM projects. The company exhibits at international toy fairs, including the Hong Kong Toys &amp; Games Fair, the China Toy Expo in Shanghai, and Mir Detstva in Moscow.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
