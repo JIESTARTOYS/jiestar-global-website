@@ -2,8 +2,11 @@ import Link from "next/link";
 import type { ProductSummary } from "@/lib/data";
 import { ArrowRightIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
+import { getDisplayPrice } from "@/lib/seo";
 
 export function CatalogProductCard({ product }: { product: ProductSummary }) {
+  const displayPrice = getDisplayPrice(product.price);
+
   return (
     <article className="group rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06]">
       <div className="relative">
@@ -27,7 +30,10 @@ export function CatalogProductCard({ product }: { product: ProductSummary }) {
           <span>{product.pieceCount.toUpperCase()}</span>
           <span className="rounded bg-slate-100 px-1.5 py-1 text-slate-600">{product.category}</span>
         </div>
-        <p className="mt-2 text-sm font-black text-slate-950 sm:text-base">{product.price}</p>
+        <p className="mt-2 text-sm font-black text-slate-950 sm:text-base">{displayPrice.label}</p>
+        {displayPrice.isQuoteOnly ? (
+          <p className="mt-1 text-[11px] font-semibold leading-4 text-slate-500">Wholesale price available after inquiry</p>
+        ) : null}
         <Link
           href={`/products/${product.handle}`}
           className="mt-3 flex min-h-9 w-full items-center justify-center gap-2 rounded-md bg-red-600 px-3 py-2 text-xs font-black text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:min-h-10 sm:text-sm"

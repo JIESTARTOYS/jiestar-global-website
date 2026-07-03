@@ -7,7 +7,7 @@ import { siteConfig } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Contact JIESTAR",
+  title: "Contact JIESTAR | Wholesale & Custom Building Block Inquiries",
   description:
     "Contact JIESTAR for product purchases, wholesale inquiries, OEM / ODM customization, product co-development, sub-brand partnerships, and customer support.",
   path: "/contact",

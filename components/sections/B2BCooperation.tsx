@@ -11,7 +11,7 @@ const items = [
   },
   {
     title: "Custom Development",
-    text: "Tailored designs, molds, packaging and instructions.",
+    text: "Discuss product direction, packaging, manuals, and launch needs.",
     icon: SparkIcon,
   },
   {

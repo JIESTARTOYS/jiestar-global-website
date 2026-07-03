@@ -3,7 +3,7 @@ import { PolicyPage } from "@/components/ui/PolicyPage";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Replacement Parts & Missing Pieces",
+  title: "Replacement Parts & Missing Pieces | JIESTAR Support",
   description: "Request JIESTAR support for missing, incorrect, damaged, or lost building block pieces.",
   path: "/support/replacement-parts",
 });

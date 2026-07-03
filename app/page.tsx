@@ -15,9 +15,9 @@ import { getShopifyCollections, getShopifyProductSummaries } from "@/lib/shopify
 export const revalidate = 300;
 
 export const metadata = createMetadata({
-  title: "JIESTAR Toys | Building Block Sets, Wholesale & Custom Solutions",
+  title: "JIESTAR Official | Building Block Sets, Wholesale & Custom OEM/ODM Solutions",
   description:
-    "Discover JIESTAR building block sets for collectors, retailers, distributors, and global ecommerce sellers. Explore factory-direct products, wholesale support, OEM/ODM customization, product co-development, and sub-brand partnerships.",
+    "JIESTAR is the official building block brand of Guangdong Jiexing Toys, supporting global buyers with building block sets, wholesale supply, OEM/ODM customization, packaging, and long-term product cooperation.",
   path: "/",
 });
 
@@ -35,7 +35,7 @@ export default async function Home() {
       <CustomSolutions />
       <QualitySafety />
       <BrandStory />
-      <BrandStrength productCount={products.length} />
+      <BrandStrength />
       <FinalCTA />
       <BlogPreview />
     </>

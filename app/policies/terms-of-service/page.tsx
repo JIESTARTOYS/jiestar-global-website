@@ -2,7 +2,7 @@ import { PolicyPage } from "@/components/ui/PolicyPage";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Terms of Service",
+  title: "Terms of Service | JIESTAR Toys",
   description: "JIESTAR website terms for retail visitors, support requests, and business cooperation inquiries.",
   path: "/policies/terms-of-service",
 });

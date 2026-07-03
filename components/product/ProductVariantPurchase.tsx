@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import type { Product, ProductVariant } from "@/lib/data";
 import { ProductActions } from "@/components/product/ProductActions";
+import { LinkButton } from "@/components/ui/LinkButton";
+import { getDisplayPrice } from "@/lib/seo";
 
 function getVariantLabel(variant: ProductVariant) {
   const optionLabel = variant.selectedOptions
@@ -68,6 +70,7 @@ export function ProductVariantPurchase({
     variants[0];
   const hasMultipleVariants = variants.length > 1;
   const currentPrice = selectedVariant?.price ?? product.price;
+  const currentDisplayPrice = getDisplayPrice(currentPrice);
   const currentSku = selectedVariant?.sku || product.sku;
   const currentVariantLabel = selectedVariant ? getVariantLabel(selectedVariant) : undefined;
 
@@ -78,7 +81,10 @@ export function ProductVariantPurchase({
 
   return (
     <div className="mt-4">
-      <p className="text-2xl font-semibold text-slate-950">{currentPrice}</p>
+      <p className="text-2xl font-semibold text-slate-950">{currentDisplayPrice.label}</p>
+      {currentDisplayPrice.caption ? (
+        <p className="mt-1 text-sm font-semibold text-slate-500">{currentDisplayPrice.caption}</p>
+      ) : null}
 
       {hasMultipleVariants ? (
         <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm shadow-slate-950/[0.03]">
@@ -117,7 +123,7 @@ export function ProductVariantPurchase({
                     </span>
                   </span>
                   <span className={variant.availableForSale ? "shrink-0 text-xs text-slate-500" : "shrink-0 text-xs text-slate-400"}>
-                    {variant.availableForSale ? variant.price : "Unavailable"}
+                    {variant.availableForSale ? getDisplayPrice(variant.price).label : "Unavailable"}
                   </span>
                 </button>
               );
@@ -130,14 +136,27 @@ export function ProductVariantPurchase({
         <p className="mt-2 text-sm font-semibold text-slate-500">SKU pending</p>
       )}
 
-      <div className="mt-6">
-        <ProductActions
-          productTitle={product.title}
-          variantId={selectedVariant?.id ?? product.variantId}
-          variantLabel={currentVariantLabel}
-          availableForSale={selectedVariant?.availableForSale}
-        />
-      </div>
+      {currentDisplayPrice.isQuoteOnly ? (
+        <div className="mt-6 rounded-lg border border-red-100 bg-red-50 p-4">
+          <p className="text-xs font-black uppercase text-red-600">Wholesale quote required</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            This product is available for business inquiry. Request catalog pricing, MOQ discussion, and shipping options before ordering.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <LinkButton href="/wholesale" className="px-4">Request Wholesale Quote</LinkButton>
+            <LinkButton href="/custom-solutions" variant="secondary" className="px-4">Discuss Custom Packaging</LinkButton>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-6">
+          <ProductActions
+            productTitle={product.title}
+            variantId={selectedVariant?.id ?? product.variantId}
+            variantLabel={currentVariantLabel}
+            availableForSale={selectedVariant?.availableForSale}
+          />
+        </div>
+      )}
     </div>
   );
 }

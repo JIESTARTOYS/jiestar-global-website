@@ -3,32 +3,32 @@ import { LinkButton } from "@/components/ui/LinkButton";
 
 const metrics = [
   {
-    value: "200+",
-    label: "Global Partners",
+    value: "Wholesale",
+    label: "Catalog supply",
     icon: GlobeIcon,
   },
   {
-    value: "100+",
-    label: "Countries Served",
+    value: "OEM/ODM",
+    label: "Project discussion",
     icon: TruckIcon,
   },
   {
-    value: "20M+",
-    label: "Sets Delivered",
+    value: "Packaging",
+    label: "Custom planning",
     icon: PackageIcon,
   },
   {
-    value: "15+",
-    label: "Years of Experience",
+    value: "Support",
+    label: "Long-term supply",
     icon: ShieldIcon,
   },
 ];
 
 const steps = [
   ["1", "Contact Us", "Share your needs and business info."],
-  ["2", "Proposal & Quote", "Get a tailored solution and pricing."],
-  ["3", "Sample & Confirm", "Review samples and finalize details."],
-  ["4", "Mass Production", "Strict quality control and on-time delivery."],
+  ["2", "Catalog Review", "Review suitable product categories."],
+  ["3", "Sample Discussion", "Confirm sample and packaging needs."],
+  ["4", "Order Planning", "Discuss quantity, timeline, and shipping."],
   ["5", "After-Sales Support", "Long-term service and growth support."],
 ];
 

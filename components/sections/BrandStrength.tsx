@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
-import { ArrowRightIcon, FactoryIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon } from "@/components/ui/Icons";
+import { ArrowRightIcon, FactoryIcon, StoreIcon, TruckIcon } from "@/components/ui/Icons";
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -42,47 +42,15 @@ const confidencePaths: Array<{
   },
 ];
 
-type TrustMetric = {
-  value: string;
-  label: string;
-  icon: IconComponent;
-};
-
-export function BrandStrength({ productCount }: { productCount: number }) {
-  const trustMetrics: TrustMetric[] = [
-    { value: productCount.toLocaleString("en-US"), label: "live Shopify products", icon: PackageIcon },
-    { value: "3", label: "buyer paths", icon: ShieldIcon },
-  ];
-
+export function BrandStrength() {
   return (
     <section className="bg-[#f6f7f9] px-5 pb-6 pt-10 lg:px-8 lg:pt-14">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-5 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div>
-            <p className="text-sm font-black uppercase text-red-600">Buyer & Partner Confidence</p>
-            <h2 className="mt-2 text-3xl font-black tracking-normal text-slate-950 sm:text-4xl">
-              Clear paths for shoppers, buyers, and custom partners.
-            </h2>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[24rem]">
-            {trustMetrics.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <div key={item.label} className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm shadow-slate-950/[0.03]">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-red-50 text-red-600">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="text-xl font-black leading-none text-slate-950">{item.value}</p>
-                      <p className="mt-1 text-xs font-semibold uppercase text-slate-500">{item.label}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        <div className="mb-5 max-w-3xl">
+          <p className="text-sm font-black uppercase text-red-600">Buyer & Partner Confidence</p>
+          <h2 className="mt-2 text-3xl font-black tracking-normal text-slate-950 sm:text-4xl">
+            Clear paths for shoppers, buyers, and custom partners.
+          </h2>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-3">

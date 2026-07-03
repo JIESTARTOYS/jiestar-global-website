@@ -2,7 +2,7 @@ import { PolicyPage } from "@/components/ui/PolicyPage";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Privacy Policy",
+  title: "Privacy Policy | JIESTAR Toys",
   description: "How JIESTAR handles website, customer, checkout, support, and business inquiry information.",
   path: "/policies/privacy-policy",
 });

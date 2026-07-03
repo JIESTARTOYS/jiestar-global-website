@@ -10,6 +10,32 @@ export type BlogPost = {
   content: string;
 };
 
+export type MarkdownInline =
+  | {
+      type: "text";
+      text: string;
+    }
+  | {
+      type: "link";
+      text: string;
+      href: string;
+    };
+
+export type MarkdownBlock =
+  | {
+      type: "heading";
+      level: 2 | 3;
+      text: string;
+    }
+  | {
+      type: "paragraph";
+      children: MarkdownInline[];
+    }
+  | {
+      type: "list";
+      items: string[];
+    };
+
 const blogDirectory = path.join(process.cwd(), "content/blog");
 
 function parsePost(fileContent: string, slug: string): BlogPost {
@@ -54,4 +80,96 @@ export function getBlogPosts(): BlogPost[] {
 
 export function getBlogPost(slug: string) {
   return getBlogPosts().find((post) => post.slug === slug);
+}
+
+export function parseInlineMarkdown(text: string): MarkdownInline[] {
+  const parts: MarkdownInline[] = [];
+  const linkPattern = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = linkPattern.exec(text))) {
+    if (match.index > cursor) {
+      parts.push({ type: "text", text: text.slice(cursor, match.index) });
+    }
+
+    parts.push({ type: "link", text: match[1], href: match[2] });
+    cursor = match.index + match[0].length;
+  }
+
+  if (cursor < text.length) {
+    parts.push({ type: "text", text: text.slice(cursor) });
+  }
+
+  return parts.length ? parts : [{ type: "text", text }];
+}
+
+export function parseMarkdownBlocks(markdown: string): MarkdownBlock[] {
+  const blocks: MarkdownBlock[] = [];
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  let paragraph: string[] = [];
+  let listItems: string[] = [];
+
+  function flushParagraph() {
+    if (!paragraph.length) {
+      return;
+    }
+
+    blocks.push({
+      type: "paragraph",
+      children: parseInlineMarkdown(paragraph.join(" ")),
+    });
+    paragraph = [];
+  }
+
+  function flushList() {
+    if (!listItems.length) {
+      return;
+    }
+
+    blocks.push({
+      type: "list",
+      items: listItems,
+    });
+    listItems = [];
+  }
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
+    if (!line) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    const headingMatch = line.match(/^(#{2,3})\s+(.+)$/);
+
+    if (headingMatch) {
+      flushParagraph();
+      flushList();
+      blocks.push({
+        type: "heading",
+        level: headingMatch[1].length as 2 | 3,
+        text: headingMatch[2].trim(),
+      });
+      continue;
+    }
+
+    const listMatch = line.match(/^[-*]\s+(.+)$/);
+
+    if (listMatch) {
+      flushParagraph();
+      listItems.push(listMatch[1].trim());
+      continue;
+    }
+
+    flushList();
+    paragraph.push(line);
+  }
+
+  flushParagraph();
+  flushList();
+
+  return blocks;
 }

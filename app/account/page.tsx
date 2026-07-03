@@ -4,7 +4,7 @@ import { getCustomerAccountUrl } from "@/lib/account";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Account",
+  title: "Account | JIESTAR Toys",
   description:
     "Manage your JIESTAR customer account through Shopify for orders, profile details, saved addresses, and checkout-related account support.",
   path: "/account",

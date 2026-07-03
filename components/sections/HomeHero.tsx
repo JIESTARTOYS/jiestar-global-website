@@ -3,10 +3,10 @@ import { LinkButton } from "@/components/ui/LinkButton";
 import { FactoryIcon, PackageIcon, ShieldIcon, TruckIcon } from "@/components/ui/Icons";
 
 const stats = [
-  ["10,000+", "Designs"],
-  ["100+", "Countries"],
-  ["20M+", "Happy Builders"],
-  ["Since 1998", "Building Dreams"],
+  ["Official", "Brand website"],
+  ["DTC", "Building block sets"],
+  ["Wholesale", "Business inquiry"],
+  ["OEM/ODM", "Custom solutions"],
 ];
 
 const trustItems = [

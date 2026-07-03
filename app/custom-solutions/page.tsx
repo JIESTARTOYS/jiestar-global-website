@@ -5,17 +5,22 @@ import { SubBrandCarousel } from "@/components/sections/SubBrandCarousel";
 import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, SparkIcon, StoreIcon } from "@/components/ui/Icons";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { createMetadata } from "@/lib/seo";
+import { createBreadcrumbJsonLd, createJsonLdScript, createMetadata } from "@/lib/seo";
 import { subBrands } from "@/lib/sub-brands";
 
 export const metadata = createMetadata({
-  title: "Custom Building Block Solutions",
+  title: "Custom Building Blocks Manufacturer | OEM/ODM Brick Sets | JIESTAR",
   description:
-    "Explore JIESTAR OEM / ODM customization, product co-development, exclusive SKUs, product line planning, and sub-brand partnership.",
+    "Discuss custom building block sets, OEM/ODM projects, private label packaging, logo customization, exclusive SKUs, and product development with JIESTAR.",
   path: "/custom-solutions",
 });
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
+
+const breadcrumbJsonLd = createBreadcrumbJsonLd([
+  { name: "Home", path: "/" },
+  { name: "Custom Solutions", path: "/custom-solutions" },
+]);
 
 const heroStats = [
   ["Cooperation scope", "OEM / ODM, co-development, sub-brand"],
@@ -85,6 +90,8 @@ const faqs = [
 export default function CustomSolutionsPage() {
   return (
     <div className="bg-slate-50 text-slate-950">
+      <script type="application/ld+json" dangerouslySetInnerHTML={createJsonLdScript(breadcrumbJsonLd)} />
+
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
         <div className="absolute inset-0 opacity-35">
           <Image

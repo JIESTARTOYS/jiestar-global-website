@@ -2,7 +2,7 @@ import { PolicyPage } from "@/components/ui/PolicyPage";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Returns & Refunds",
+  title: "Returns & Refunds | JIESTAR Toys",
   description: "JIESTAR returns, refunds, exchanges, quality issue support, and replacement part guidance.",
   path: "/policies/refund-policy",
 });

@@ -6,7 +6,7 @@ import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Quality & Safety",
+  title: "Quality & Safety | JIESTAR Building Block Sets",
   description:
     "Learn how JIESTAR approaches material safety, quality control, product inspection, stable clutch power, compliance preparation, and missing piece support.",
   path: "/quality-safety",

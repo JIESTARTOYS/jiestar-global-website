@@ -4,14 +4,19 @@ import { InquiryForm } from "@/components/forms/InquiryForm";
 import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon, UserIcon } from "@/components/ui/Icons";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { createMetadata } from "@/lib/seo";
+import { createBreadcrumbJsonLd, createJsonLdScript, createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Request Wholesale Price Catalog",
+  title: "Wholesale Building Blocks & Brick Sets | JIESTAR Factory Supply",
   description:
-    "Leave your email to request JIESTAR wholesale catalog and private pricing follow-up for product, MOQ, and order discussions.",
+    "Request JIESTAR wholesale building block catalogs and pricing for retailers, distributors, Amazon sellers, TikTok Shop sellers, and toy business buyers.",
   path: "/wholesale",
 });
+
+const breadcrumbJsonLd = createBreadcrumbJsonLd([
+  { name: "Home", path: "/" },
+  { name: "Wholesale", path: "/wholesale" },
+]);
 
 const heroStats = [
   ["INQUIRY", "Business profile review"],
@@ -65,11 +70,13 @@ const faqs = [
 export default function WholesalePage() {
   return (
     <div className="bg-slate-50 text-slate-950">
+      <script type="application/ld+json" dangerouslySetInnerHTML={createJsonLdScript(breadcrumbJsonLd)} />
+
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
         <div className="absolute inset-0 opacity-35">
           <Image
             src="/images/site-visuals/factory/warehouse-ready-stock.webp"
-            alt=""
+            alt="JIESTAR warehouse cartons prepared for wholesale business inquiries"
             fill
             priority
             unoptimized

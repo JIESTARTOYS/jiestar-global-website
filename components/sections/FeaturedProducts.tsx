@@ -3,6 +3,7 @@ import { ArrowRightIcon, CartIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 import type { ProductSummary } from "@/lib/data";
 import { selectLatestHomeProducts } from "@/lib/home-products";
+import { getDisplayPrice } from "@/lib/seo";
 
 export function FeaturedProducts({ products }: { products: ProductSummary[] }) {
   const latestProducts = selectLatestHomeProducts(products);
@@ -37,6 +38,8 @@ export function FeaturedProducts({ products }: { products: ProductSummary[] }) {
 }
 
 function HomeProductCard({ product }: { product: ProductSummary }) {
+  const displayPrice = getDisplayPrice(product.price);
+
   return (
     <article className="group w-[56vw] max-w-56 shrink-0 snap-start overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06] sm:w-auto sm:max-w-none">
       <div className="relative">
@@ -64,7 +67,10 @@ function HomeProductCard({ product }: { product: ProductSummary }) {
         <p className="mt-1 text-[11px] text-slate-500 sm:text-xs">
           {product.pieceCount} · Ages {product.recommendedAge}
         </p>
-        <p className="mt-2 text-base font-black text-slate-950 sm:mt-3 sm:text-lg">{product.price}</p>
+        <p className="mt-2 text-base font-black text-slate-950 sm:mt-3 sm:text-lg">{displayPrice.label}</p>
+        {displayPrice.isQuoteOnly ? (
+          <p className="mt-1 text-[11px] font-semibold leading-4 text-slate-500">Contact for catalog pricing</p>
+        ) : null}
         <Link
           href={`/products/${product.handle}`}
           className="mt-3 flex h-9 w-full items-center justify-center gap-1.5 rounded-md bg-red-600 px-2 text-xs font-black text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:mt-4 sm:h-10 sm:gap-2 sm:px-3 sm:text-sm"

@@ -6,7 +6,7 @@ import { ArrowRightIcon, FactoryIcon, PackageIcon, SearchIcon, SparkIcon } from 
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
 
 export const metadata = createMetadata({
-  title: "Building Guides & Business Insights",
+  title: "Building Block Guides & B2B Insights | JIESTAR Blog",
   description:
     "Read JIESTAR guides about building block sets, wholesale sourcing, OEM / ODM customization, and product co-development.",
   path: "/blog",

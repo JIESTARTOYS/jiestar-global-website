@@ -679,10 +679,18 @@ export function ProductCatalog(props: ProductCatalogProps) {
 
           <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h1 className="text-3xl font-black leading-tight text-slate-950 sm:text-4xl">All Products</h1>
+              <h1 className="text-3xl font-black leading-tight text-slate-950 sm:text-4xl">JIESTAR Building Block Sets</h1>
               <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
-                Explore our full collection of JIESTAR building block sets.
+                Explore JIESTAR building block sets for direct shopping, wholesale catalog planning, and custom product cooperation.
               </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link href="/wholesale" className="text-sm font-black text-red-600 underline decoration-red-200 underline-offset-4 hover:text-red-700">
+                  wholesale building block sets
+                </Link>
+                <Link href="/custom-solutions" className="text-sm font-black text-red-600 underline decoration-red-200 underline-offset-4 hover:text-red-700">
+                  custom building block solutions
+                </Link>
+              </div>
             </div>
             <div className="hidden rounded-lg border border-red-200 bg-white px-4 py-3 text-sm font-black text-red-600 shadow-sm shadow-slate-950/[0.03] lg:flex lg:items-center lg:gap-2">
               <TruckIcon className="h-5 w-5" />
