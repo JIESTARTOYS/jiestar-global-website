@@ -179,9 +179,69 @@ def read_quote_rows() -> list[dict[str, str]]:
     return rows
 
 
-def all_image_files() -> list[Path]:
+def load_metadata_json(path: Path | None) -> dict[str, dict[str, str]]:
+    if not path:
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(data, list):
+        return {clean(row.get("sku", "")).upper(): {str(key): clean(value) for key, value in row.items()} for row in data if clean(row.get("sku", ""))}
+    if isinstance(data, dict):
+        output: dict[str, dict[str, str]] = {}
+        for key, value in data.items():
+            if not isinstance(value, dict):
+                continue
+            sku = clean(value.get("sku") or key).upper()
+            if sku:
+                output[sku] = {str(item_key): clean(item_value) for item_key, item_value in value.items()}
+                output[sku]["sku"] = sku
+        return output
+    raise RuntimeError(f"Unsupported metadata JSON shape: {path}")
+
+
+def row_from_metadata(sku: str, metadata: dict[str, str]) -> dict[str, str]:
+    return {
+        "sheet": metadata.get("sheet", "metadata_json"),
+        "sku": sku,
+        "original_sku_cell": metadata.get("original_sku_cell", sku),
+        "original_name_cn": metadata.get("original_name_cn", ""),
+        "factory_price": metadata.get("factory_price", ""),
+        "motor_price": metadata.get("motor_price", ""),
+        "carton_qty": metadata.get("carton_qty", ""),
+        "package_size": metadata.get("package_size", ""),
+        "outer_carton_size": metadata.get("outer_carton_size", ""),
+        "gross_net_weight": metadata.get("gross_net_weight", ""),
+        "piece_count": metadata.get("piece_count", ""),
+        "barcode": metadata.get("barcode", ""),
+        "remarks": metadata.get("remarks", ""),
+        "discontinued": metadata.get("discontinued", ""),
+        "title": metadata.get("title", ""),
+        "product_type": metadata.get("product_type", ""),
+        "series": metadata.get("series", ""),
+        "recommended_age": metadata.get("recommended_age", metadata.get("age", "")),
+        "finished_model_size": metadata.get("finished_model_size", ""),
+        "source_note": metadata.get("source_note", ""),
+        "pricing_note": metadata.get("pricing_note", ""),
+        "retail_reference_cny": metadata.get("retail_reference_cny", ""),
+        "douyin_control_price_cny": metadata.get("douyin_control_price_cny", ""),
+        "alibaba_control_price_cny": metadata.get("alibaba_control_price_cny", ""),
+        "packaging_mode": metadata.get("packaging_mode", ""),
+        "cert": metadata.get("cert", ""),
+        "expected_shopify_price": metadata.get("expected_shopify_price", ""),
+        "expected_shopify_compare_at": metadata.get("expected_shopify_compare_at", ""),
+    }
+
+
+def merge_metadata(row: dict[str, str], metadata: dict[str, str]) -> dict[str, str]:
+    merged = dict(row)
+    for key, value in row_from_metadata(row["sku"], metadata).items():
+        if value:
+            merged[key] = value
+    return merged
+
+
+def all_image_files(root: Path = IMAGE_ROOT) -> list[Path]:
     files: list[Path] = []
-    for path in IMAGE_ROOT.rglob("*"):
+    for path in root.rglob("*"):
         if not path.is_file():
             continue
         if path.name.startswith("._") or path.name.lower() in {"thumbs.db", ".ds_store"}:
@@ -194,22 +254,30 @@ def all_image_files() -> list[Path]:
     return sorted(files, key=natural_key)
 
 
-def image_files_for_sku(sku: str, image_files: list[Path]) -> list[Path]:
+def image_files_for_sku(sku: str, image_files: list[Path], root: Path = IMAGE_ROOT, single_sku_root: bool = False) -> list[Path]:
+    if single_sku_root:
+        return sorted(image_files, key=natural_key)
     pattern = re.compile(rf"(?<!\d){re.escape(sku)}(?!\d)")
-    output = [path for path in image_files if pattern.search(str(path.relative_to(IMAGE_ROOT)))]
+    output = [path for path in image_files if pattern.search(str(path.relative_to(root)))]
     return sorted(output, key=natural_key)
 
 
-def media_for_sku(sku: str, image_files: list[Path]) -> dict[str, list[Path]]:
-    files = image_files_for_sku(sku, image_files)
+def media_for_sku(sku: str, image_files: list[Path], root: Path = IMAGE_ROOT, single_sku_root: bool = False) -> dict[str, list[Path]]:
+    files = image_files_for_sku(sku, image_files, root=root, single_sku_root=single_sku_root)
 
     def path_text(path: Path) -> str:
-        return str(path.relative_to(IMAGE_ROOT))
+        return str(path.relative_to(root))
 
     def has_part(path: Path, term: str) -> bool:
-        return any(term in part for part in path.relative_to(IMAGE_ROOT).parts)
+        return any(term in part for part in path.relative_to(root).parts)
 
     details = [path for path in files if has_part(path, "详情") and not has_part(path, "白底")]
+    preferred_790_details = [path for path in details if has_part(path, "详情页") and "790" in path_text(path)]
+    preferred_750_details = [path for path in details if has_part(path, "详情页") and "750" in path_text(path)]
+    if preferred_790_details:
+        details = preferred_790_details
+    elif preferred_750_details:
+        details = preferred_750_details
     details = sorted(details, key=natural_key)
 
     whites = [path for path in files if has_part(path, "白底") and "详情" not in path.name]
@@ -225,7 +293,7 @@ def media_for_sku(sku: str, image_files: list[Path]) -> dict[str, list[Path]]:
     size_images = [path for path in files if "尺寸" in path_text(path)]
     sku_images = sorted([path for path in files if "sku" in path.name.lower()], key=natural_key)
 
-    main = [
+    main_candidates = [
         path
         for path in files
         if path not in details
@@ -234,9 +302,11 @@ def media_for_sku(sku: str, image_files: list[Path]) -> dict[str, list[Path]]:
         and path not in size_images
         and ("主图" in path_text(path) or "800主图" in path.name or re.search(r"主图[-_ ]*\d+", path.name))
     ]
+    preferred_800_main = [path for path in main_candidates if "800" in path_text(path)]
+    main = preferred_800_main if preferred_800_main else main_candidates
     main = sorted(main, key=natural_key)
 
-    fallback_sku = sku_images[:1] or whites[:1]
+    fallback_sku = sku_images[:1] or sorted(size_images, key=natural_key)[:1] or whites[:1]
     return {
         "white": whites[:1],
         "main": main,
@@ -507,6 +577,8 @@ def arcade_descriptor(name: str) -> str:
 
 def title_for_row(row: dict[str, str]) -> str:
     sku = row["sku"]
+    if clean(row.get("title")):
+        return clean(row["title"])
     name = row.get("original_name_cn", "")
     product_type, series = product_type_and_series(name)
     scale = scale_from_name(name)
@@ -584,6 +656,8 @@ def metafields_for_row(row: dict[str, str], product_type: str, series: str) -> d
 
     metafields = {
         "specs.piece_count": piece_count,
+        "specs.recommended_age": clean(row.get("recommended_age", "")),
+        "specs.finished_model_size": clean(row.get("finished_model_size", "")),
         "specs.package_size": clean(row.get("package_size", "")),
         "specs.difficulty_level": "See product package",
         "custom.series": series or product_type,
@@ -591,12 +665,19 @@ def metafields_for_row(row: dict[str, str], product_type: str, series: str) -> d
     return {key: value for key, value in metafields.items() if value}
 
 
-def manifest_item(row: dict[str, str], image_files: list[Path]) -> tuple[dict[str, Any], list[str]]:
+def manifest_item(
+    row: dict[str, str],
+    image_files: list[Path],
+    image_root: Path = IMAGE_ROOT,
+    single_sku_root: bool = False,
+) -> tuple[dict[str, Any], list[str]]:
     sku = row["sku"]
-    media = media_for_sku(sku, image_files)
+    media = media_for_sku(sku, image_files, root=image_root, single_sku_root=single_sku_root)
     title = title_for_row(row)
     handle = slugify(title)
     product_type, series = product_type_and_series(row.get("original_name_cn", ""))
+    product_type = clean(row.get("product_type")) or product_type
+    series = clean(row.get("series")) or series
     issues: list[str] = []
 
     if row.get("discontinued"):
@@ -629,7 +710,7 @@ def manifest_item(row: dict[str, str], image_files: list[Path]) -> tuple[dict[st
     ]
     item = {
         "folder": sku,
-        "folder_path": str(IMAGE_ROOT),
+        "folder_path": str(image_root),
         "base": sku,
         "handle": handle,
         "title": title,
@@ -639,6 +720,8 @@ def manifest_item(row: dict[str, str], image_files: list[Path]) -> tuple[dict[st
         "category": CATEGORY_ID,
         "category_name": CATEGORY_NAME,
         "price": PRICE,
+        "expected_price": clean(row.get("expected_shopify_price", "")),
+        "expected_compare_at_price": clean(row.get("expected_shopify_compare_at", "")),
         "option_name": OPTION_NAME,
         "variants": [
             {
@@ -647,9 +730,10 @@ def manifest_item(row: dict[str, str], image_files: list[Path]) -> tuple[dict[st
                 "title_source": clean(row.get("original_name_cn")),
                 "series": series,
                 "age": "",
+                "recommended_age": clean(row.get("recommended_age", "")),
                 "piece_count": clean(row.get("piece_count")),
                 "package_size": clean(row.get("package_size")),
-                "finished_size": "",
+                "finished_size": clean(row.get("finished_model_size", "")),
             }
         ],
         "metafields": metafields_for_row(row, product_type, series),
@@ -671,21 +755,37 @@ def manifest_item(row: dict[str, str], image_files: list[Path]) -> tuple[dict[st
             "white": not bool(media["white"]),
             "main": not bool(media["main"]),
             "detail": not bool(media["detail"]),
-            "sku_image_fallback_to_white": not any("sku" in Path(path).name.lower() for path in media["sku"]),
+            "sku_image_fallback_to_white": bool(media["sku"])
+            and not any("sku" in Path(path).name.lower() or "尺寸" in Path(path).name for path in media["sku"]),
         },
     }
     return item, issues
 
 
-def build_manifest() -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, str]]]:
-    rows = read_quote_rows()
-    image_files = all_image_files()
+def build_manifest(
+    source_root: Path = IMAGE_ROOT,
+    metadata_rows: dict[str, dict[str, str]] | None = None,
+    sku_filter: set[str] | None = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, str]]]:
+    metadata_rows = metadata_rows or {}
+    normalized_filter = {sku.upper() for sku in sku_filter} if sku_filter else None
+    use_default_quote_rows = source_root == IMAGE_ROOT and not metadata_rows
+    rows = read_quote_rows() if use_default_quote_rows else []
+    image_files = all_image_files(source_root)
     manifest: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
     rows_by_sku = {row["sku"]: row for row in rows}
 
-    for row in rows:
-        item, issues = manifest_item(row, image_files)
+    for sku, metadata in metadata_rows.items():
+        rows_by_sku[sku] = merge_metadata(rows_by_sku[sku], metadata) if sku in rows_by_sku else row_from_metadata(sku, metadata)
+
+    process_rows = list(rows_by_sku.values())
+    if normalized_filter:
+        process_rows = [row for row in process_rows if row["sku"].upper() in normalized_filter]
+    single_sku_root = bool(normalized_filter and len(normalized_filter) == 1 and source_root != IMAGE_ROOT)
+
+    for row in process_rows:
+        item, issues = manifest_item(row, image_files, image_root=source_root, single_sku_root=single_sku_root)
         has_any_asset = bool(item["media_status"]["all_count"])
         if issues:
             skipped.append(
@@ -705,11 +805,16 @@ def build_manifest() -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[d
 
     asset_skus: set[str] = set()
     for path in image_files:
-        text = str(path.relative_to(IMAGE_ROOT))
+        text = str(path.relative_to(source_root))
         for match in re.finditer(r"(?<!\d)(\d{5})(?!\d)", text):
             asset_skus.add(match.group(1))
+    if single_sku_root and normalized_filter:
+        asset_skus |= normalized_filter
 
-    for sku in sorted(asset_skus - set(rows_by_sku), key=natural_key):
+    known_skus = {row["sku"] for row in process_rows}
+    for sku in sorted(asset_skus - known_skus, key=natural_key):
+        if normalized_filter and sku not in normalized_filter:
+            continue
         skipped.append(
             {
                 "sku": sku,
@@ -1293,11 +1398,12 @@ def verify_products(manifest: list[dict[str, Any]]) -> list[dict[str, Any]]:
         metafields = {f"{node['namespace']}.{node['key']}": node["value"] for node in product["metafields"]["nodes"]}
         first_alt = (product["media"]["nodes"][0].get("alt") or "") if product["media"]["nodes"] else ""
         issues = []
+        expected_price = item.get("expected_price") or PRICE
         checks = {
             "title": product["title"] == item["title"],
             "vendor": product["vendor"] == VENDOR,
             "status": product["status"] == STATUS,
-            "price": same_money(variant.get("price"), PRICE),
+            "price": same_money(variant.get("price"), expected_price),
             "product_type": product["productType"] == item["product_type"],
             "category": (product.get("category") or {}).get("id") == CATEGORY_ID,
             "description_has_images": "<img" in (product.get("descriptionHtml") or ""),
@@ -1343,7 +1449,14 @@ def verify_products(manifest: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def main() -> int:
+    global METADATA_XLSX, OUT_DIR
+
     parser = argparse.ArgumentParser(description="Prepare and upload GULY products to Shopify.")
+    parser.add_argument("--source-root", type=Path, default=IMAGE_ROOT, help="Image root to scan. Defaults to the historical GULY整理 root.")
+    parser.add_argument("--metadata-json", type=Path, help="Optional SKU metadata JSON for batch-only products.")
+    parser.add_argument("--out-dir", type=Path, default=OUT_DIR, help="Directory for generated JSON/CSV reports and temporary upload assets.")
+    parser.add_argument("--metadata-xlsx-output", type=Path, help="Optional metadata workbook output path.")
+    parser.add_argument("--sku", action="append", default=[], help="Limit manifest generation to this SKU. Can be passed more than once.")
     parser.add_argument("--dry-run", action="store_true", help="Generate manifest, skipped report, and metadata workbook only.")
     parser.add_argument("--check-shopify", action="store_true", help="Read-only Shopify SKU/handle conflict check.")
     parser.add_argument("--apply", action="store_true", help="Create ready GULY products in Shopify.")
@@ -1358,7 +1471,15 @@ def main() -> int:
     if not (args.dry_run or args.check_shopify or args.apply or args.verify):
         parser.error("Choose at least one of --dry-run, --check-shopify, --apply, or --verify")
 
-    manifest, skipped, quote_rows = build_manifest()
+    OUT_DIR = args.out_dir
+    if args.metadata_xlsx_output:
+        METADATA_XLSX = args.metadata_xlsx_output
+    elif args.metadata_json:
+        METADATA_XLSX = args.out_dir / "guly-metafields.xlsx"
+
+    metadata_rows = load_metadata_json(args.metadata_json)
+    sku_filter = {sku.upper() for sku in args.sku} if args.sku else None
+    manifest, skipped, quote_rows = build_manifest(args.source_root, metadata_rows, sku_filter)
     write_reports(manifest, skipped, quote_rows)
 
     skipped_with_assets = [
@@ -1375,9 +1496,11 @@ def main() -> int:
 
     summary: dict[str, Any] = {
         "quote_xlsx": str(QUOTE_XLSX),
-        "image_root": str(IMAGE_ROOT),
+        "image_root": str(args.source_root),
+        "metadata_json": str(args.metadata_json) if args.metadata_json else "",
         "metadata_xlsx": str(METADATA_XLSX),
         "quote_rows": len(quote_rows),
+        "source_products": len(manifest) + len(skipped),
         "manifest_count": len(manifest),
         "skipped_count": len(skipped),
         "skipped_with_assets": len(skipped_with_assets),
@@ -1395,6 +1518,7 @@ def main() -> int:
     if args.check_shopify:
         conflicts = check_shopify_conflicts(manifest)
         summary["shopify_conflicts"] = len(conflicts)
+        summary["todo_products"] = len(manifest) - len(conflicts)
 
     if args.verify:
         verify_rows = verify_products(manifest)

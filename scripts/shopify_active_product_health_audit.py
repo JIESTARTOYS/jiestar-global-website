@@ -18,7 +18,6 @@ OUT_DIR = Path("/private/tmp/jiestar-shopify-active-health")
 API_VERSION_FALLBACK = "2026-01"
 EXPECTED_VENDOR = "JieStar"
 ALLOWED_VENDORS = {"JieStar", "Xbert", "Zoin"}
-EXPECTED_PRICE = "999.00"
 INTERLOCKING_BLOCKS_ID = "gid://shopify/TaxonomyCategory/tg-5-7-12"
 REQUIRED_SPECS_METAFIELDS = [
     "piece_count",
@@ -357,9 +356,6 @@ def audit_products(products: list[dict[str, Any]]) -> tuple[list[dict[str, str]]
                 if has_chinese(sku):
                     add_issue(issues, product, "critical", "variant_sku_contains_chinese", sku)
                 sku_to_products[sku.upper()].append({"handle": handle, "title": title})
-
-            if str(variant.get("price") or "") != EXPECTED_PRICE:
-                add_issue(issues, product, "critical", "variant_price_not_999", f"{sku}: {variant.get('price')}")
 
             tracked = (variant.get("inventoryItem") or {}).get("tracked")
             if tracked:

@@ -3,6 +3,8 @@ import sys
 import tempfile
 import unittest
 
+from openpyxl import Workbook
+
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
@@ -38,6 +40,100 @@ def write_images(folder: Path, sku: str, *, detail: bool = True) -> None:
 
 
 class JiqiImportTests(unittest.TestCase):
+    def test_july_2_new_products_use_specific_english_titles(self) -> None:
+        expected_titles = {
+            "JQ1167": ("机械马", "JIQI Mechanical Horse Display Model Kit JQ1167"),
+            "JQ1168": ("机械蜗牛", "JIQI Mechanical Snail Display Model Kit JQ1168"),
+            "JQ1150": ("月球基地", "JIQI Moon Base Space Building Set JQ1150"),
+            "JQ1152": ("机械凤凰", "JIQI Mechanical Phoenix Display Model Kit JQ1152"),
+            "JQ1153": ("深邃星空画", "JIQI Deep Space Starry Sky Wall Art Building Set JQ1153"),
+        }
+
+        for sku, (name, title) in expected_titles.items():
+            with self.subTest(sku=sku):
+                self.assertEqual(jiqi.title_for_row(quote_row(sku, name)), title)
+
+    def test_build_manifest_can_filter_to_explicit_skus(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_images(root / "积琪—JQ1167图片", "JQ1167")
+            write_images(root / "积琪—JQ1168图片", "JQ1168")
+            rows = [
+                quote_row("JQ1167", "机械马", "991PCS"),
+                quote_row("JQ1168", "机械蜗牛", "458PCS"),
+            ]
+
+            manifest, skipped, _quote_rows = jiqi.build_manifest(
+                image_root=root,
+                quote_rows=rows,
+                sku_filter={"JQ1167"},
+            )
+
+        self.assertEqual(skipped, [])
+        self.assertEqual([item["base"] for item in manifest], ["JQ1167"])
+
+    def test_pricing_workbook_sets_initial_price_and_compare_at_price(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_images(root / "积琪—JQ1167图片", "JQ1167")
+            pricing_path = Path(tmp) / "jiqi-pricing.xlsx"
+            workbook = Workbook()
+            c_sheet = workbook.active
+            c_sheet.title = "C端_公开售价"
+            c_sheet.append(["SKU", "品牌", "品名", "控价状态", "最终公开价USD_不含运", "最终CompareAtPriceUSD"])
+            c_sheet.append(["JQ1167", "积琪", "机械马", "REVIEW: 缺品牌/平台控价", 30.99, 36.99])
+            shopify_sheet = workbook.create_sheet("Shopify导入价格")
+            shopify_sheet.append(["Variant SKU", "Variant Price", "Variant Compare At Price", "Title"])
+            shopify_sheet.append(["JQ1167", 30.99, 36.99, "JIQI Mechanical Horse Display Model Kit JQ1167"])
+            workbook.save(pricing_path)
+
+            pricing_rows = jiqi.load_initial_pricing_rows(pricing_path)
+            manifest, skipped, _quote_rows = jiqi.build_manifest(
+                image_root=root,
+                quote_rows=[quote_row("JQ1167", "机械马", "991PCS")],
+                pricing_rows=pricing_rows,
+            )
+
+        self.assertEqual(skipped, [])
+        self.assertEqual(len(manifest), 1)
+        self.assertEqual(manifest[0]["price"], "30.99")
+        self.assertEqual(manifest[0]["compare_at_price"], "36.99")
+        self.assertEqual(manifest[0]["pricing_status"], "REVIEW: 缺品牌/平台控价")
+
+    def test_product_set_includes_compare_at_price_when_available(self) -> None:
+        class CapturingAdmin(jiqi.ShopifyAdmin):
+            def __init__(self) -> None:
+                self.variables = None
+
+            def graphql(self, _query: str, variables: dict) -> dict:
+                self.variables = variables
+                return {
+                    "productSet": {
+                        "product": {"id": "gid://shopify/Product/1", "title": "Created"},
+                        "userErrors": [],
+                    }
+                }
+
+        admin = CapturingAdmin()
+        item = {
+            "title": "JIQI Mechanical Horse Display Model Kit JQ1167",
+            "handle": "jiqi-mechanical-horse-display-model-kit-jq1167",
+            "vendor": "JIQI",
+            "status": "ACTIVE",
+            "product_type": "Animal",
+            "price": "30.99",
+            "compare_at_price": "36.99",
+            "option_name": "Model",
+            "variants": [{"sku": "JQ1167", "option_name": "JQ1167 - Mechanical Horse Display"}],
+            "metafields": {},
+        }
+
+        admin.product_set(item, "")
+
+        variant_input = admin.variables["input"]["variants"][0]
+        self.assertEqual(variant_input["price"], "30.99")
+        self.assertEqual(variant_input["compareAtPrice"], "36.99")
+
     def test_build_manifest_skips_ip_risk_rows_even_when_assets_are_complete(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

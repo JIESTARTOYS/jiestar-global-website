@@ -16,7 +16,6 @@ from typing import Any
 OUT_DIR = Path("/private/tmp/jiestar-shopify-active-health-fix")
 API_VERSION_FALLBACK = "2026-01"
 INTERLOCKING_BLOCKS_ID = "gid://shopify/TaxonomyCategory/tg-5-7-12"
-PRICE = "999.00"
 VENDOR = "JieStar"
 
 SKU_FIX_BY_HANDLE = {
@@ -247,9 +246,6 @@ def build_plan(products: list[dict[str, Any]]) -> list[dict[str, Any]]:
         for variant in product["variants"]["nodes"]:
             update = {"id": variant["id"]}
             reasons = []
-            if str(variant.get("price") or "") != PRICE:
-                update["price"] = PRICE
-                reasons.append("price")
 
             fixed_sku = SKU_FIX_BY_HANDLE.get(product["handle"])
             if fixed_sku and not (variant.get("sku") or "").strip():

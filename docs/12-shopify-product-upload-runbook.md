@@ -262,6 +262,78 @@ scripts/shopify_cn_pending_import.py
 - 没有详情图：描述留空
 - 不重复创建：每次都会先按 Shopify 当前 handle / SKU 排除已存在产品
 
+## 5.1 已上架商品价格更新规则
+
+真实上架价格不再使用上传期的 `999` 占位价作为健康标准。价格、控价、缺报价草稿下架和写入边界统一按：
+
+```text
+docs/14-shopify-pricing-shipping-rules.md
+```
+
+常用脚本：
+
+```text
+scripts/shopify_price_update_from_pricing.py
+scripts/shopify_draft_unpriced_active_products.py
+```
+
+先跑 dry-run：
+
+```bash
+PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_price_update_from_pricing.py --allow-missing-map
+```
+
+确认 `price-update-eligible.csv` 只包含允许更新的 SKU 后，才能执行价格写入：
+
+```bash
+PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_price_update_from_pricing.py \
+  --allow-missing-map \
+  --apply \
+  --yes \
+  --input-approved-report /private/tmp/jiestar-shopify-price-update/price-update-eligible.csv
+```
+
+如果 dry-run 仍有 Active 缺报价或 `$999.00` 占位价，先按规则补定价模型；无法补报价的产品应通过 `scripts/shopify_draft_unpriced_active_products.py` 改为 `DRAFT`，不要继续 Active 上架。
+
+## 5.2 Shopify 运费规则更新规则
+
+运费计费重量、体积重、重货人工复核、shipping profile 和写入边界统一按：
+
+```text
+docs/14-shopify-pricing-shipping-rules.md
+```
+
+当前补全版运费模板：
+
+```text
+/Users/chensen/jiestar/定价参考/Shopify运费模板_体积重_Shopify盒规补全_缺失SKU补全_20260701.xlsx
+```
+
+专用脚本：
+
+```text
+scripts/shopify_shipping_update_from_template.py
+```
+
+先跑 dry-run，必须显式指定当前补全版模板：
+
+```bash
+PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_shipping_update_from_template.py \
+  --template-workbook /Users/chensen/jiestar/定价参考/Shopify运费模板_体积重_Shopify盒规补全_缺失SKU补全_20260701.xlsx
+```
+
+只有 `shipping-update-summary.json` 中 `ready_for_apply = true`，且人工确认报告后，才能执行写入：
+
+```bash
+PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_shipping_update_from_template.py \
+  --template-workbook /Users/chensen/jiestar/定价参考/Shopify运费模板_体积重_Shopify盒规补全_缺失SKU补全_20260701.xlsx \
+  --apply \
+  --yes \
+  --input-approved-report /private/tmp/jiestar-shopify-shipping-update/shipping-update-summary.json
+```
+
+写入后必须再次 dry-run，确认 Active 运费未匹配为 `0`、所有权重为 `noop`、`JIESTAR Manual Shipping Review` 没有可用费率。当前已知超过 10kg SKU 仍需人工向货代询价或手动报价。
+
 ## 6. Dry-run 检查
 
 每次上传前先跑：

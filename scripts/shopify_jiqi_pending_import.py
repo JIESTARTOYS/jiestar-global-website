@@ -23,6 +23,7 @@ QUOTE_XLSX = Path("/Volumes/ORICO/积琪积木/积琪报价表-26.6.3 32款(3).x
 IMAGE_ROOT = Path("/Volumes/ORICO/积琪积木/积琪电商图整理")
 METADATA_XLSX = Path("/Volumes/ORICO/积琪积木/JIQI产品元字段资料表.xlsx")
 OUT_DIR = Path("/private/tmp/jiestar-shopify-jiqi-import")
+DEFAULT_OUT_DIR = OUT_DIR
 
 VENDOR = "JIQI"
 STATUS = "ACTIVE"
@@ -71,6 +72,39 @@ SOURCE_FIELDS = [
     "power",
 ]
 
+JULY_2_TITLE_OVERRIDES = {
+    "JQ1167": {
+        "title": "JIQI Mechanical Horse Display Model Kit JQ1167",
+        "descriptor": "Mechanical Horse Display",
+        "product_type": "Animal",
+        "series": "Mechanical Animals",
+    },
+    "JQ1168": {
+        "title": "JIQI Mechanical Snail Display Model Kit JQ1168",
+        "descriptor": "Mechanical Snail Display",
+        "product_type": "Animal",
+        "series": "Mechanical Animals",
+    },
+    "JQ1150": {
+        "title": "JIQI Moon Base Space Building Set JQ1150",
+        "descriptor": "Moon Base Space",
+        "product_type": "Space",
+        "series": "Space",
+    },
+    "JQ1152": {
+        "title": "JIQI Mechanical Phoenix Display Model Kit JQ1152",
+        "descriptor": "Mechanical Phoenix Display",
+        "product_type": "Animal",
+        "series": "Mechanical Animals",
+    },
+    "JQ1153": {
+        "title": "JIQI Deep Space Starry Sky Wall Art Building Set JQ1153",
+        "descriptor": "Deep Space Starry Sky Wall Art",
+        "product_type": "Wall Art",
+        "series": "Space Wall Art",
+    },
+}
+
 
 def clean(value: Any) -> str:
     return re.sub(r"\s+", " ", str(value or "")).strip()
@@ -89,6 +123,21 @@ def same_money(left: Any, right: Any) -> bool:
         return Decimal(str(left)) == Decimal(str(right))
     except (InvalidOperation, ValueError):
         return False
+
+
+def money(value: Any) -> Decimal | None:
+    if value is None or value == "":
+        return None
+    try:
+        return Decimal(str(value)).quantize(Decimal("0.01"))
+    except (InvalidOperation, ValueError):
+        return None
+
+
+def money_str(value: Decimal | None) -> str:
+    if value is None:
+        return ""
+    return f"{value:.2f}"
 
 
 def natural_key(value: str | Path) -> tuple[Any, ...]:
@@ -164,6 +213,51 @@ def read_quote_rows(path: Path = QUOTE_XLSX) -> list[dict[str, str]]:
                 }
             )
 
+    return rows
+
+
+def row_dicts(sheet: Any) -> list[dict[str, Any]]:
+    rows = sheet.iter_rows(values_only=True)
+    try:
+        headers = [clean(cell) for cell in next(rows)]
+    except StopIteration:
+        return []
+    output: list[dict[str, Any]] = []
+    for row in rows:
+        if not row or not any(cell not in (None, "") for cell in row):
+            continue
+        output.append({headers[index]: row[index] if index < len(row) else None for index in range(len(headers)) if headers[index]})
+    return output
+
+
+def load_initial_pricing_rows(path: Path | None) -> dict[str, dict[str, str]]:
+    if not path:
+        return {}
+    workbook = load_workbook(path, read_only=True, data_only=True)
+    if "Shopify导入价格" not in workbook.sheetnames:
+        raise RuntimeError(f"Missing Shopify导入价格 sheet: {path}")
+
+    c_rows = row_dicts(workbook["C端_公开售价"]) if "C端_公开售价" in workbook.sheetnames else []
+    c_by_sku = {clean(row.get("SKU")).upper(): row for row in c_rows if clean(row.get("SKU"))}
+    rows: dict[str, dict[str, str]] = {}
+
+    for row in row_dicts(workbook["Shopify导入价格"]):
+        sku = clean(row.get("Variant SKU")).upper()
+        if not sku:
+            continue
+        price = money(row.get("Variant Price"))
+        compare_at = money(row.get("Variant Compare At Price"))
+        if price is None:
+            continue
+        if compare_at is not None and compare_at <= price:
+            compare_at = None
+        c_row = c_by_sku.get(sku, {})
+        rows[sku] = {
+            "price": money_str(price),
+            "compare_at_price": money_str(compare_at),
+            "pricing_status": clean(c_row.get("控价状态")),
+            "pricing_source_file": path.name,
+        }
     return rows
 
 
@@ -349,8 +443,17 @@ def upload_ready_image_path(path: Path, sku: str, role: str) -> Path:
 
 
 def product_type_and_series(name: str) -> tuple[str, str]:
+    override = JULY_2_TITLE_OVERRIDES.get(sku_from_cell(name).upper())
+    if override:
+        return override["product_type"], override["series"]
     if any(term in name for term in ["独角兽", "大熊", "鱼缸", "机械鹿"]):
         return "Animal", "Display Animals"
+    if any(term in name for term in ["机械马", "机械蜗牛", "机械凤凰"]):
+        return "Animal", "Mechanical Animals"
+    if any(term in name for term in ["星空画"]):
+        return "Wall Art", "Space Wall Art"
+    if any(term in name for term in ["月球基地"]):
+        return "Space", "Space"
     if any(term in name for term in ["宇航员", "星舰", "钛战斗机"]):
         return "Space", "Space"
     if any(term in name for term in ["龙墟"]):
@@ -405,11 +508,24 @@ def descriptor_for_name(name: str) -> str:
         return "Pink Mecha"
     if "天狼座机甲" in name:
         return "Sirius Mecha"
+    if "机械马" in name:
+        return "Mechanical Horse Display"
+    if "机械蜗牛" in name:
+        return "Mechanical Snail Display"
+    if "月球基地" in name:
+        return "Moon Base Space"
+    if "机械凤凰" in name:
+        return "Mechanical Phoenix Display"
+    if "深邃星空画" in name:
+        return "Deep Space Starry Sky Wall Art"
     return "Display Model"
 
 
 def title_for_row(row: dict[str, str]) -> str:
     sku = row["sku"]
+    override = JULY_2_TITLE_OVERRIDES.get(sku.upper())
+    if override:
+        return override["title"]
     descriptor = descriptor_for_name(row.get("original_name_cn", ""))
     product_type, _series = product_type_and_series(row.get("original_name_cn", ""))
     suffix = "Model Kit" if product_type in {"Mecha", "Weapon", "Space"} else "Building Set"
@@ -428,12 +544,19 @@ def metafields_for_row(row: dict[str, str], product_type: str, series: str) -> d
     return {key: value for key, value in metafields.items() if value}
 
 
-def manifest_item(row: dict[str, str], image_root: Path) -> tuple[dict[str, Any], list[str]]:
+def manifest_item(row: dict[str, str], image_root: Path, pricing: dict[str, str] | None = None) -> tuple[dict[str, Any], list[str]]:
     sku = row["sku"].upper()
+    pricing = pricing or {}
     media = media_for_sku(image_root, sku)
-    product_type, series = product_type_and_series(row.get("original_name_cn", ""))
+    override = JULY_2_TITLE_OVERRIDES.get(sku)
+    if override:
+        product_type, series = override["product_type"], override["series"]
+    else:
+        product_type, series = product_type_and_series(row.get("original_name_cn", ""))
     title = title_for_row(row)
     handle = slugify(title)
+    item_price = pricing.get("price") or PRICE
+    compare_at_price = pricing.get("compare_at_price", "")
     issues: list[str] = []
 
     if sku in IP_RISK_SKUS:
@@ -450,8 +573,10 @@ def manifest_item(row: dict[str, str], image_root: Path) -> tuple[dict[str, Any]
         issues.append("gif_detail_requires_conversion")
     if VENDOR != "JIQI":
         issues.append("vendor_mismatch")
-    if PRICE != "999":
-        issues.append("price_not_999")
+    if money(item_price) is None:
+        issues.append("invalid_price")
+    if compare_at_price and money(compare_at_price) is None:
+        issues.append("invalid_compare_at_price")
     if STATUS != "ACTIVE":
         issues.append("status_not_active")
 
@@ -475,7 +600,10 @@ def manifest_item(row: dict[str, str], image_root: Path) -> tuple[dict[str, Any]
         "product_type": product_type,
         "category": CATEGORY_ID,
         "category_name": CATEGORY_NAME,
-        "price": PRICE,
+        "price": item_price,
+        "compare_at_price": compare_at_price,
+        "pricing_status": pricing.get("pricing_status", ""),
+        "pricing_source_file": pricing.get("pricing_source_file", ""),
         "option_name": OPTION_NAME,
         "variants": [
             {
@@ -519,14 +647,20 @@ def manifest_item(row: dict[str, str], image_root: Path) -> tuple[dict[str, Any]
 def build_manifest(
     image_root: Path = IMAGE_ROOT,
     quote_rows: list[dict[str, str]] | None = None,
+    pricing_rows: dict[str, dict[str, str]] | None = None,
+    sku_filter: set[str] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, str]]]:
     rows = quote_rows if quote_rows is not None else read_quote_rows()
+    pricing_rows = pricing_rows or {}
+    normalized_filter = {sku.upper() for sku in sku_filter} if sku_filter else set()
+    if normalized_filter:
+        rows = [row for row in rows if row["sku"].upper() in normalized_filter]
     manifest: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
     rows_by_sku = {row["sku"].upper(): row for row in rows}
 
     for row in rows:
-        item, issues = manifest_item(row, image_root)
+        item, issues = manifest_item(row, image_root, pricing_rows.get(row["sku"].upper()))
         has_any_asset = bool(item["media_status"]["all_count"])
         if issues:
             skipped.append(
@@ -550,6 +684,8 @@ def build_manifest(
         for folder in image_root.iterdir():
             if folder.is_dir():
                 asset_skus.update(folder_skus(folder.name))
+    if normalized_filter:
+        asset_skus &= normalized_filter
 
     for sku in sorted(asset_skus - set(rows_by_sku), key=natural_key):
         skipped.append(
@@ -595,6 +731,8 @@ def metadata_row(item: dict[str, Any], upload_status: str, issues: str, source: 
         item.get("handle", ""),
         item.get("status", ""),
         item.get("price", ""),
+        item.get("compare_at_price", ""),
+        item.get("pricing_status", ""),
         item.get("product_type", ""),
         item.get("category_name", ""),
         metafields.get("specs.piece_count", ""),
@@ -628,6 +766,8 @@ def write_metadata_workbook(manifest: list[dict[str, Any]], skipped: list[dict[s
         "handle",
         "status",
         "price",
+        "compare_at_price",
+        "pricing_status",
         "product_type",
         "category",
         "specs.piece_count",
@@ -710,25 +850,27 @@ def write_metadata_workbook(manifest: list[dict[str, Any]], skipped: list[dict[s
         "D": 48,
         "E": 12,
         "F": 10,
-        "G": 20,
-        "H": 24,
-        "I": 16,
-        "J": 18,
-        "K": 22,
+        "G": 16,
+        "H": 18,
+        "I": 20,
+        "J": 24,
+        "K": 16,
         "L": 18,
-        "M": 24,
-        "N": 22,
-        "O": 16,
-        "P": 18,
-        "Q": 32,
-        "R": 12,
-        "S": 12,
-        "T": 20,
-        "U": 18,
-        "V": 12,
-        "W": 42,
-        "X": 14,
-        "Y": 34,
+        "M": 22,
+        "N": 18,
+        "O": 24,
+        "P": 22,
+        "Q": 16,
+        "R": 18,
+        "S": 32,
+        "T": 12,
+        "U": 12,
+        "V": 20,
+        "W": 18,
+        "X": 12,
+        "Y": 42,
+        "Z": 14,
+        "AA": 34,
     }
     for column, width in widths.items():
         sheet.column_dimensions[column].width = width
@@ -754,6 +896,8 @@ def write_reports(manifest: list[dict[str, Any]], skipped: list[dict[str, Any]],
                 "vendor": item["vendor"],
                 "status": item["status"],
                 "price": item["price"],
+                "compare_at_price": item.get("compare_at_price", ""),
+                "pricing_status": item.get("pricing_status", ""),
                 "product_type": item["product_type"],
                 "main_media_count": len(item["main_media"]),
                 "detail_count": len(item["detail_images"]),
@@ -771,6 +915,8 @@ def write_reports(manifest: list[dict[str, Any]], skipped: list[dict[str, Any]],
             "vendor",
             "status",
             "price",
+            "compare_at_price",
+            "pricing_status",
             "product_type",
             "main_media_count",
             "detail_count",
@@ -879,19 +1025,22 @@ def expected_first_media_alt(item: dict[str, Any]) -> str:
 class ShopifyAdmin(BaseShopifyAdmin):
     def product_set(self, item: dict[str, Any], description_html_value: str) -> dict[str, Any]:
         variants = [
-            {
-                "optionValues": [
-                    {
-                        "optionName": "SKU",
-                        "name": variant["option_name"],
-                    }
-                ],
-                "price": item["price"],
-                "inventoryItem": {
-                    "sku": variant["sku"],
-                    "tracked": False,
+            dict(
+                {
+                    "optionValues": [
+                        {
+                            "optionName": "SKU",
+                            "name": variant["option_name"],
+                        }
+                    ],
+                    "price": item["price"],
+                    "inventoryItem": {
+                        "sku": variant["sku"],
+                        "tracked": False,
+                    },
                 },
-            }
+                **({"compareAtPrice": item["compare_at_price"]} if item.get("compare_at_price") else {}),
+            )
             for variant in item["variants"]
         ]
         data = self.graphql(
@@ -993,6 +1142,7 @@ class ShopifyAdmin(BaseShopifyAdmin):
                           id
                           title
                           price
+                          compareAtPrice
                           sku
                           image {
                             id
@@ -1137,7 +1287,12 @@ def verify_products(manifest: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "title": product["title"] == item["title"],
             "vendor": product["vendor"] == VENDOR,
             "status": product["status"] == STATUS,
-            "price": same_money(variant.get("price"), PRICE),
+            "price": same_money(variant.get("price"), item.get("price") or PRICE),
+            "compare_at_price": (
+                same_money(variant.get("compareAtPrice"), item["compare_at_price"])
+                if item.get("compare_at_price")
+                else not variant.get("compareAtPrice")
+            ),
             "product_type": product["productType"] == item["product_type"],
             "category": (product.get("category") or {}).get("id") == CATEGORY_ID,
             "description_has_images": "<img" in (product.get("descriptionHtml") or ""),
@@ -1184,7 +1339,15 @@ def verify_products(manifest: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def main() -> int:
+    global METADATA_XLSX, OUT_DIR
+
     parser = argparse.ArgumentParser(description="Prepare and upload JIQI products to Shopify.")
+    parser.add_argument("--quote-xlsx", type=Path, default=QUOTE_XLSX, help="Quote workbook to read. Defaults to the historical JIQI quote workbook.")
+    parser.add_argument("--source-root", type=Path, default=IMAGE_ROOT, help="Image root to scan. Defaults to the historical JIQI image root.")
+    parser.add_argument("--out-dir", type=Path, default=OUT_DIR, help="Directory for generated JSON/CSV reports and temporary upload assets.")
+    parser.add_argument("--metadata-xlsx-output", type=Path, help="Optional metadata workbook output path.")
+    parser.add_argument("--pricing-file", type=Path, help="Optional pricing workbook used for initial product price and compare-at price.")
+    parser.add_argument("--sku", action="append", default=[], help="Limit manifest generation to this SKU. Can be passed more than once.")
     parser.add_argument("--dry-run", action="store_true", help="Generate manifest, skipped report, and metadata workbook only.")
     parser.add_argument("--check-shopify", action="store_true", help="Read-only Shopify SKU/handle conflict check.")
     parser.add_argument("--apply", action="store_true", help="Create ready JIQI products in Shopify.")
@@ -1199,7 +1362,16 @@ def main() -> int:
     if not (args.dry_run or args.check_shopify or args.apply or args.verify):
         parser.error("Choose at least one of --dry-run, --check-shopify, --apply, or --verify")
 
-    manifest, skipped, quote_rows = build_manifest()
+    OUT_DIR = args.out_dir
+    if args.metadata_xlsx_output:
+        METADATA_XLSX = args.metadata_xlsx_output
+    elif args.out_dir != DEFAULT_OUT_DIR:
+        METADATA_XLSX = args.out_dir / "JIQI产品元字段资料表.xlsx"
+
+    quote_rows = read_quote_rows(args.quote_xlsx)
+    pricing_rows = load_initial_pricing_rows(args.pricing_file)
+    sku_filter = {clean(sku).upper() for sku in args.sku if clean(sku)}
+    manifest, skipped, quote_rows = build_manifest(args.source_root, quote_rows, pricing_rows, sku_filter or None)
     write_reports(manifest, skipped, quote_rows)
 
     skipped_with_assets = [
@@ -1217,7 +1389,10 @@ def main() -> int:
 
     summary: dict[str, Any] = {
         "quote_xlsx": str(QUOTE_XLSX),
-        "image_root": str(IMAGE_ROOT),
+        "effective_quote_xlsx": str(args.quote_xlsx),
+        "image_root": str(args.source_root),
+        "pricing_file": str(args.pricing_file) if args.pricing_file else "",
+        "sku_filter": sorted(sku_filter),
         "metadata_xlsx": str(METADATA_XLSX),
         "quote_rows": len(quote_rows),
         "manifest_count": len(manifest),
