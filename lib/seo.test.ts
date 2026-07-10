@@ -3,6 +3,7 @@ import test from "node:test";
 import type { Product } from "./data.ts";
 import {
   createBreadcrumbJsonLd,
+  createBlogPostingJsonLd,
   createMetadata,
   createOrganizationJsonLd,
   createProductJsonLd,
@@ -101,6 +102,24 @@ test("createOrganizationJsonLd uses the real onsite logo path", () => {
   assert.equal(schema.name, "JIESTAR");
   assert.equal(schema.logo, "https://www.jiestartoys.com/images/brand/jiestar-logo-color.png");
   assert.ok(schema.alternateName.includes("Guangdong Jiexing Toys Industrial Co., Ltd."));
+});
+
+test("createBlogPostingJsonLd includes cover image and honest publication dates", () => {
+  const schema = createBlogPostingJsonLd({
+    title: "Sample guide",
+    description: "A sample guide description.",
+    datePublished: "2026-07-10",
+    dateModified: "2026-07-11",
+    image: "/images/site-visuals/factory/qc-random-inspection.webp",
+    path: "/blog/sample-guide",
+  });
+
+  assert.equal(schema.datePublished, "2026-07-10");
+  assert.equal(schema.dateModified, "2026-07-11");
+  assert.equal(
+    schema.image,
+    "https://www.jiestartoys.com/images/site-visuals/factory/qc-random-inspection.webp",
+  );
 });
 
 test("product SEO helpers create category-aware crawlable text without fake data", () => {

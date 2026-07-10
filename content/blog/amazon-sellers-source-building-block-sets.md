@@ -3,6 +3,9 @@ title: "How Amazon Sellers Can Source Building Block Sets from a Manufacturer"
 description: "A sourcing guide for Amazon sellers buying building block sets from a manufacturer, including category selection, packaging, MOQ, replenishment, shipping, and custom differentiation."
 category: "Wholesale Tips"
 date: "2026-07-02"
+updatedAt: "2026-07-10"
+coverImage: "/images/site-visuals/factory/warehouse-ready-stock.webp"
+coverAlt: "Cartons of JIESTAR building block products prepared in the factory warehouse"
 ---
 
 ## Product Category Selection for Online Sales

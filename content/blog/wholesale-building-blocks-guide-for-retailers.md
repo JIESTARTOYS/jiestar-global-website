@@ -3,6 +3,9 @@ title: "Wholesale Building Blocks: Complete Buying Guide for Retailers"
 description: "A practical buying guide for retailers sourcing wholesale building blocks, including category fit, MOQ, packaging, shipping, supplier review, and JIESTAR inquiry steps."
 category: "Wholesale Tips"
 date: "2026-07-02"
+updatedAt: "2026-07-10"
+coverImage: "/images/site-visuals/showroom/showroom-product-gallery.webp"
+coverAlt: "Wide JIESTAR showroom gallery presenting building block product categories"
 ---
 
 ## Why Retailers Source Building Block Sets Wholesale

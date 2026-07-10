@@ -40,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     ...getBlogPosts().map((post) => ({
       url: `${siteConfig.url}/blog/${post.slug}`,
-      lastModified: new Date(post.date),
+      lastModified: new Date(post.updatedAt ?? post.date),
     })),
   ];
 }

@@ -1,13 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getBlogPosts } from "@/lib/blog";
+import { formatBlogDate, getBlogPosts } from "@/lib/blog";
 import { ArrowRightIcon } from "@/components/ui/Icons";
-
-const images = [
-  "/images/site-visuals/blog-buying-guide.avif",
-  "/images/site-visuals/blog-wholesale-guide.avif",
-  "/images/site-visuals/blog-custom-guide.avif",
-];
 
 export function BlogPreview() {
   const posts = getBlogPosts().slice(0, 3);
@@ -23,12 +17,12 @@ export function BlogPreview() {
           </Link>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
-          {posts.map((post, index) => (
+          {posts.map((post) => (
             <Link key={post.slug} href={`/blog/${post.slug}`} className="grid overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:grid-cols-[0.8fr_1fr] md:grid-cols-1">
               <div className="relative min-h-40 bg-slate-100">
                 <Image
-                  src={images[index % images.length]}
-                  alt={`${post.title} article image`}
+                  src={post.coverImage}
+                  alt={post.coverAlt}
                   fill
                   sizes="(min-width: 768px) 33vw, 100vw"
                   className="object-cover"
@@ -38,7 +32,9 @@ export function BlogPreview() {
                 <p className="text-xs font-black uppercase tracking-normal text-slate-400">{post.category}</p>
                 <h3 className="mt-2 text-base font-black leading-6 text-slate-950">{post.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{post.description}</p>
-                <p className="mt-4 text-xs font-semibold text-slate-400">{post.date} · 5 min read</p>
+                <p className="mt-4 text-xs font-semibold text-slate-400">
+                  {formatBlogDate(post.date)} · {post.readingMinutes} min read
+                </p>
               </div>
             </Link>
           ))}

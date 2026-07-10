@@ -3,6 +3,9 @@ title: "JIESTAR at International Toy Fairs: Hong Kong, Shanghai and Moscow"
 description: "Where to meet JIESTAR in person: exhibition history at the Hong Kong Toys & Games Fair, China Toy Expo in Shanghai, and Mir Detstva in Moscow, plus how buyers can prepare for a fair meeting."
 category: "Company News"
 date: "2026-07-03"
+updatedAt: "2026-07-10"
+coverImage: "/images/blog/jiestar-international-toy-fair-buyers.avif"
+coverAlt: "International retail buyers reviewing building block display models at a professional toy fair"
 ---
 
 Trade fairs are where building block buyers can see products in person, compare finished models, check packaging quality, and talk directly with the manufacturer. JIESTAR, the official building block brand of Guangdong Jiexing Toys Industrial Co., Ltd., exhibits regularly at major toy fairs in Asia and beyond. This article summarizes where JIESTAR has exhibited and how retailers, distributors, and custom project buyers can make the most of a fair visit.

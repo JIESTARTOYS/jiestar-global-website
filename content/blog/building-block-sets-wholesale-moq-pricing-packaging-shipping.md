@@ -3,6 +3,9 @@ title: "Building Block Sets Wholesale: MOQ, Pricing, Packaging and Shipping"
 description: "Understand the key factors behind building block sets wholesale inquiries, including MOQ, pricing, packaging, mixed SKU planning, shipping, and quote preparation."
 category: "Wholesale Tips"
 date: "2026-07-02"
+updatedAt: "2026-07-10"
+coverImage: "/images/site-visuals/factory/packaging-materials-storage.webp"
+coverAlt: "Organized packaging materials stored inside the JIESTAR production facility"
 ---
 
 ## What Affects Wholesale Pricing

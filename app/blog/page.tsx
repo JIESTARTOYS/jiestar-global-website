@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getBlogPosts } from "@/lib/blog";
+import { formatBlogDate, getBlogPosts } from "@/lib/blog";
 import { createMetadata } from "@/lib/seo";
 import { ArrowRightIcon, FactoryIcon, PackageIcon, SearchIcon, SparkIcon } from "@/components/ui/Icons";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
@@ -16,19 +16,13 @@ export default function BlogPage() {
   const posts = getBlogPosts();
   const [featuredPost, ...latestPosts] = posts;
   const categories = Array.from(new Set(posts.map((post) => post.category)));
-  const articleImages = [
-    "/images/site-visuals/blog-buying-guide.avif",
-    "/images/site-visuals/blog-wholesale-guide.avif",
-    "/images/site-visuals/blog-custom-guide.avif",
-  ];
-
   return (
     <div className="overflow-x-hidden bg-[#f6f7f9]">
       <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white sm:py-20 lg:px-8">
         <div className="absolute inset-0 opacity-35">
           <Image
-            src="/images/site-visuals/blog-knowledge-hub.avif"
-            alt=""
+            src="/images/site-visuals/showroom/showroom-entrance-overview.webp"
+            alt="JIESTAR showroom entrance with building block displays"
             fill
             priority
             sizes="100vw"
@@ -104,8 +98,8 @@ export default function BlogPage() {
               >
                 <div className="relative min-h-72 bg-slate-100 lg:min-h-[420px]">
                   <Image
-                    src={articleImages[0]}
-                    alt={`${featuredPost.title} article cover`}
+                    src={featuredPost.coverImage}
+                    alt={featuredPost.coverAlt}
                     fill
                     priority
                     sizes="(min-width: 1024px) 45vw, 100vw"
@@ -116,7 +110,9 @@ export default function BlogPage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-normal">
                       <span className="rounded-full bg-red-50 px-3 py-1 text-red-700">{featuredPost.category}</span>
-                      <span className="text-slate-400">{featuredPost.date}</span>
+                      <span className="text-slate-400">{formatBlogDate(featuredPost.date)}</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-slate-400">{featuredPost.readingMinutes} min read</span>
                     </div>
                     <h3 className="mt-5 text-3xl font-black leading-tight tracking-normal text-slate-950 sm:text-4xl">
                       {featuredPost.title}
@@ -151,7 +147,7 @@ export default function BlogPage() {
             </div>
 
             <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {(latestPosts.length ? latestPosts : posts).map((post, index) => (
+              {(latestPosts.length ? latestPosts : posts).map((post) => (
                 <Link
                   key={post.slug}
                   href={`/blog/${post.slug}`}
@@ -159,8 +155,8 @@ export default function BlogPage() {
                 >
                   <div className="relative aspect-[4/3] bg-slate-100">
                     <Image
-                      src={articleImages[(index + 1) % articleImages.length]}
-                      alt={`${post.title} article cover`}
+                      src={post.coverImage}
+                      alt={post.coverAlt}
                       fill
                       sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                       className="object-cover"
@@ -170,13 +166,16 @@ export default function BlogPage() {
                     <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-normal">
                       <span className="text-red-600">{post.category}</span>
                       <span className="text-slate-300">/</span>
-                      <span className="text-slate-400">{post.date}</span>
+                      <span className="text-slate-400">{formatBlogDate(post.date)}</span>
                     </div>
                     <h3 className="mt-4 text-xl font-black leading-7 tracking-normal text-slate-950">{post.title}</h3>
                     <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{post.description}</p>
-                    <div className="mt-auto flex items-center gap-2 pt-6 text-sm font-bold text-slate-950 transition group-hover:text-red-600">
-                      Read article
-                      <ArrowRightIcon className="h-4 w-4" />
+                    <div className="mt-auto flex items-center justify-between gap-3 pt-6 text-sm font-bold text-slate-950 transition group-hover:text-red-600">
+                      <span className="flex items-center gap-2">
+                        Read article
+                        <ArrowRightIcon className="h-4 w-4" />
+                      </span>
+                      <span className="text-xs font-semibold text-slate-400">{post.readingMinutes} min</span>
                     </div>
                   </div>
                 </Link>

@@ -117,10 +117,12 @@ type BlogPostingJsonLdInput = {
   title: string;
   description: string;
   datePublished?: string;
+  dateModified?: string;
+  image?: string;
   path: string;
 };
 
-export function createBlogPostingJsonLd({ title, description, datePublished, path }: BlogPostingJsonLdInput) {
+export function createBlogPostingJsonLd({ title, description, datePublished, dateModified, image, path }: BlogPostingJsonLdInput) {
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -144,6 +146,14 @@ export function createBlogPostingJsonLd({ title, description, datePublished, pat
 
   if (datePublished) {
     schema.datePublished = datePublished;
+  }
+
+  if (dateModified) {
+    schema.dateModified = dateModified;
+  }
+
+  if (image) {
+    schema.image = absoluteUrl(image);
   }
 
   return schema;

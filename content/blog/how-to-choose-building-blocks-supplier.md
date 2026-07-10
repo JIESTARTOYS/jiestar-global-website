@@ -3,6 +3,9 @@ title: "How to Choose a Building Blocks Supplier for Your Toy Business"
 description: "A B2B guide to choosing a building blocks supplier by product range, catalog support, packaging capability, quality review, replenishment, and inquiry quality."
 category: "Wholesale Tips"
 date: "2026-07-02"
+updatedAt: "2026-07-10"
+coverImage: "/images/site-visuals/factory/factory-injection-workshop.webp"
+coverAlt: "Rows of injection molding equipment inside the JIESTAR production workshop"
 ---
 
 ## Product Range and Category Fit

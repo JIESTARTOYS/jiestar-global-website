@@ -7,6 +7,10 @@ export type BlogPost = {
   description: string;
   category: string;
   date: string;
+  updatedAt?: string;
+  coverImage: string;
+  coverAlt: string;
+  readingMinutes: number;
   content: string;
 };
 
@@ -38,6 +42,17 @@ export type MarkdownBlock =
 
 const blogDirectory = path.join(process.cwd(), "content/blog");
 
+function calculateReadingMinutes(content: string) {
+  const wordCount = content
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[#*_`>-]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+
+  return Math.max(1, Math.ceil(wordCount / 200));
+}
+
 function parsePost(fileContent: string, slug: string): BlogPost {
   const match = fileContent.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   const frontmatter = match?.[1] ?? "";
@@ -58,6 +73,10 @@ function parsePost(fileContent: string, slug: string): BlogPost {
     description: fields.description ?? "",
     category: fields.category ?? "Guides",
     date: fields.date ?? "",
+    updatedAt: fields.updatedAt || undefined,
+    coverImage: fields.coverImage ?? "",
+    coverAlt: fields.coverAlt ?? "",
+    readingMinutes: calculateReadingMinutes(content),
     content,
   };
 }
@@ -80,6 +99,35 @@ export function getBlogPosts(): BlogPost[] {
 
 export function getBlogPost(slug: string) {
   return getBlogPosts().find((post) => post.slug === slug);
+}
+
+export function formatBlogDate(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
+}
+
+export function getRelatedBlogPosts(post: BlogPost, limit = 3) {
+  return getBlogPosts()
+    .filter((candidate) => candidate.slug !== post.slug)
+    .sort((a, b) => {
+      const aCategoryMatch = a.category === post.category ? 1 : 0;
+      const bCategoryMatch = b.category === post.category ? 1 : 0;
+
+      if (aCategoryMatch !== bCategoryMatch) {
+        return bCategoryMatch - aCategoryMatch;
+      }
+
+      return b.date.localeCompare(a.date);
+    })
+    .slice(0, limit);
 }
 
 export function parseInlineMarkdown(text: string): MarkdownInline[] {

@@ -3,6 +3,9 @@ title: "Custom Building Block Sets: From Concept to Mass Production"
 description: "A guide for buyers planning custom building block sets, covering concept briefs, structure, colors, printed parts, packaging, sampling, production discussion, and JIESTAR review."
 category: "Custom Solutions"
 date: "2026-07-02"
+updatedAt: "2026-07-10"
+coverImage: "/images/site-visuals/factory/prototype-build-validation.webp"
+coverAlt: "JIESTAR team member checking a building block prototype during product validation"
 ---
 
 ## Starting with a Product Concept
