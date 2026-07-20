@@ -4,9 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ProductSummary } from "@/lib/data";
 import {
   buildPaginationHref,
-  clampProductPage,
+  getPaginatedItems,
   normalizeProductPage,
-  PRODUCT_PAGE_SIZE,
 } from "@/lib/product-pagination";
 import { ArrowRightIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
@@ -16,7 +15,7 @@ import { ProductPagination } from "@/components/product/ProductPagination";
 type CollectionProductListingProps = {
   products: ProductSummary[];
   collectionHandle: string;
-  selectedPage?: string;
+  selectedPage?: string | string[];
 };
 
 export function CollectionProductListing({
@@ -27,16 +26,8 @@ export function CollectionProductListing({
   const listingRef = useRef<HTMLDivElement>(null);
   const basePath = `/collections/${collectionHandle}`;
   const [currentPage, setCurrentPage] = useState(() => normalizeProductPage(selectedPage));
-  const totalPages = Math.max(1, Math.ceil(products.length / PRODUCT_PAGE_SIZE));
-  const safeCurrentPage = clampProductPage(currentPage, totalPages);
-  const paginatedProducts = useMemo(
-    () =>
-      products.slice(
-        (safeCurrentPage - 1) * PRODUCT_PAGE_SIZE,
-        safeCurrentPage * PRODUCT_PAGE_SIZE,
-      ),
-    [products, safeCurrentPage],
-  );
+  const pagination = useMemo(() => getPaginatedItems(products, currentPage), [products, currentPage]);
+  const { currentPage: safeCurrentPage, items: paginatedProducts, totalPages } = pagination;
   const getPageHref = useCallback((page: number) => buildPaginationHref(basePath, page), [basePath]);
   const scrollToListing = useCallback(() => {
     window.requestAnimationFrame(() => {
@@ -58,13 +49,13 @@ export function CollectionProductListing({
   }, []);
   const handlePageChange = useCallback(
     (page: number) => {
-      const nextPage = clampProductPage(page, totalPages);
+      const nextPage = getPaginatedItems(products, page).currentPage;
 
       setCurrentPage(nextPage);
       window.history.pushState(null, "", getPageHref(nextPage));
       scrollToListing();
     },
-    [getPageHref, scrollToListing, totalPages],
+    [getPageHref, products, scrollToListing],
   );
 
   useEffect(() => {

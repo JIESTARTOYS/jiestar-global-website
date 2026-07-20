@@ -1,4 +1,5 @@
 export type CompactPaginationItem = number | "ellipsis";
+export type ProductPageValue = string | string[] | number | null | undefined;
 
 export const PRODUCT_PAGE_SIZE = 12;
 
@@ -6,8 +7,9 @@ function range(start: number, end: number) {
   return Array.from({ length: end - start + 1 }, (_, index) => start + index);
 }
 
-export function normalizeProductPage(value?: string | number | null) {
-  const page = typeof value === "number" ? value : Number.parseInt(value ?? "", 10);
+export function normalizeProductPage(value?: ProductPageValue) {
+  const firstValue = Array.isArray(value) ? value[0] : value;
+  const page = typeof firstValue === "number" ? firstValue : Number.parseInt(firstValue ?? "", 10);
 
   return Number.isFinite(page) && page > 1 ? Math.floor(page) : 1;
 }
@@ -23,6 +25,18 @@ export function buildPaginationHref(basePath: string, page: number) {
   const safePage = normalizeProductPage(page);
 
   return safePage > 1 ? `${basePath}?page=${safePage}` : basePath;
+}
+
+export function getPaginatedItems<T>(items: T[], page: ProductPageValue, pageSize = PRODUCT_PAGE_SIZE) {
+  const safePageSize = Math.max(1, Math.floor(pageSize));
+  const totalPages = Math.max(1, Math.ceil(items.length / safePageSize));
+  const currentPage = clampProductPage(normalizeProductPage(page), totalPages);
+
+  return {
+    currentPage,
+    totalPages,
+    items: items.slice((currentPage - 1) * safePageSize, currentPage * safePageSize),
+  };
 }
 
 export function getCompactPaginationItems(

@@ -5,6 +5,7 @@ import {
   buildPaginationHref,
   clampProductPage,
   getCompactPaginationItems,
+  getPaginatedItems,
   normalizeProductPage,
 } from "./product-pagination.ts";
 
@@ -34,6 +35,23 @@ test("normalizeProductPage treats invalid or first-page values as page 1", () =>
   assert.equal(normalizeProductPage("not-a-page"), 1);
   assert.equal(normalizeProductPage("1"), 1);
   assert.equal(normalizeProductPage("3"), 3);
+  assert.equal(normalizeProductPage(["4", "5"]), 4);
+});
+
+test("getPaginatedItems returns the requested server-renderable product slice", () => {
+  const products = Array.from({ length: 25 }, (_, index) => `product-${index + 1}`);
+  const pagination = getPaginatedItems(products, "2");
+
+  assert.equal(pagination.currentPage, 2);
+  assert.equal(pagination.totalPages, 3);
+  assert.deepEqual(pagination.items, products.slice(12, 24));
+});
+
+test("getPaginatedItems clamps out-of-range pages for matching HTML and canonical output", () => {
+  const pagination = getPaginatedItems(["first", "second"], "99", 1);
+
+  assert.equal(pagination.currentPage, 2);
+  assert.deepEqual(pagination.items, ["second"]);
 });
 
 test("clampProductPage keeps the page inside the available range", () => {

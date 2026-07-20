@@ -5,12 +5,14 @@ import { CollectionProductListing } from "@/components/product/CollectionProduct
 import { ArrowRightIcon, HomeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { getCollection, getProductsByCollection } from "@/lib/data";
+import { buildPaginationHref, getPaginatedItems } from "@/lib/product-pagination";
 import { createBreadcrumbJsonLd, createJsonLdScript, createMetadata } from "@/lib/seo";
 import { getShopifyCollectionSummary, getShopifyCollections } from "@/lib/shopify";
 import { getSubBrandByCollectionHandle, isSubBrandCollectionEnabled } from "@/lib/sub-brands";
 
 type PageProps = {
   params: Promise<{ handle: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
 };
 
 function getCollectionSeoCopy(title: string) {
@@ -35,29 +37,36 @@ export async function generateStaticParams() {
   return collections.map((collection) => ({ handle: collection.handle }));
 }
 
-export async function generateMetadata({ params }: PageProps) {
-  const { handle } = await params;
+export async function generateMetadata({ params, searchParams }: PageProps) {
+  const [{ handle }, { page }] = await Promise.all([params, searchParams]);
   const subBrandForHandle = getSubBrandByCollectionHandle(handle);
 
   if (subBrandForHandle && !isSubBrandCollectionEnabled(handle)) {
     return {};
   }
 
-  const collection = (await getShopifyCollectionSummary(handle))?.collection ?? getCollection(handle);
+  const shopifyCollection = await getShopifyCollectionSummary(handle);
+  const collection = shopifyCollection?.collection ?? getCollection(handle);
 
   if (!collection) {
     return {};
   }
 
+  const products = shopifyCollection?.products ?? getProductsByCollection(handle);
+  const currentPage = getPaginatedItems(products, page).currentPage;
+
   return createMetadata({
-    title: `${collection.title} Building Block Sets | JIESTAR Wholesale & Custom Supply`,
+    title:
+      currentPage > 1
+        ? `${collection.title} Building Block Sets - Page ${currentPage} | JIESTAR`
+        : `${collection.title} Building Block Sets | JIESTAR Wholesale & Custom Supply`,
     description: `Explore JIESTAR ${collection.title} building block sets for retail, wholesale, gift, display, and custom product planning. Contact us for catalog, MOQ, packaging, and B2B cooperation.`,
-    path: `/collections/${handle}`,
+    path: buildPaginationHref(`/collections/${handle}`, currentPage),
   });
 }
 
-export default async function CollectionPage({ params }: PageProps) {
-  const { handle } = await params;
+export default async function CollectionPage({ params, searchParams }: PageProps) {
+  const [{ handle }, { page }] = await Promise.all([params, searchParams]);
   const subBrandForHandle = getSubBrandByCollectionHandle(handle);
 
   if (subBrandForHandle && !isSubBrandCollectionEnabled(handle)) {
@@ -236,6 +245,7 @@ export default async function CollectionPage({ params }: PageProps) {
             <CollectionProductListing
               products={products}
               collectionHandle={collection.handle}
+              selectedPage={page}
             />
           </div>
         </section>

@@ -35,6 +35,7 @@ export type ProductSummary = {
   series?: string;
   releaseDate?: string;
   createdAt?: string;
+  updatedAt?: string;
 };
 
 export type Product = ProductSummary & {

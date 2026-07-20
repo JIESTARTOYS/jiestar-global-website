@@ -93,6 +93,7 @@ type ShopifyProductNode = {
   description: string;
   descriptionHtml: string;
   createdAt: string;
+  updatedAt: string;
   featuredImage?: {
     url: string;
     altText?: string | null;
@@ -144,6 +145,7 @@ type ShopifyProductSummaryNode = {
   handle: string;
   title: string;
   createdAt: string;
+  updatedAt: string;
   featuredImage?: {
     url: string;
     altText?: string | null;
@@ -588,6 +590,7 @@ function mapShopifyProductSummary(node: ShopifyProductSummaryNode): ProductSumma
     series: localSpecs?.series,
     releaseDate: localSpecs?.releaseDate,
     createdAt: node.createdAt,
+    updatedAt: node.updatedAt,
   };
 }
 
@@ -656,6 +659,7 @@ function mapShopifyProduct(node: ShopifyProductNode): Product {
     series: localSpecs?.series,
     releaseDate: localSpecs?.releaseDate,
     createdAt: node.createdAt,
+    updatedAt: node.updatedAt,
   };
 }
 
@@ -744,6 +748,7 @@ const productSummaryFragment = `
     handle
     title
     createdAt
+    updatedAt
     featuredImage {
       url
       altText
@@ -799,6 +804,7 @@ const productFragment = `
     description
     descriptionHtml
     createdAt
+    updatedAt
     featuredImage {
       url
       altText

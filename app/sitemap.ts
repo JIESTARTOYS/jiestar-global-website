@@ -29,15 +29,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   return [
-    ...staticRoutes.map((route) => ({ url: `${siteConfig.url}${route}`, lastModified: new Date() })),
+    ...staticRoutes.map((route) => ({ url: `${siteConfig.url}${route}` })),
     ...collectionHandles.map((handle) => ({
       url: `${siteConfig.url}/collections/${handle}`,
-      lastModified: new Date(),
     })),
-    ...products.map((product) => ({
-      url: `${siteConfig.url}/products/${product.handle}`,
-      lastModified: new Date(),
-    })),
+    ...products.map((product) => {
+      const lastModified = product.updatedAt ?? product.createdAt;
+
+      return {
+        url: `${siteConfig.url}/products/${product.handle}`,
+        ...(lastModified ? { lastModified: new Date(lastModified) } : {}),
+      };
+    }),
     ...getBlogPosts().map((post) => ({
       url: `${siteConfig.url}/blog/${post.slug}`,
       lastModified: new Date(post.updatedAt ?? post.date),

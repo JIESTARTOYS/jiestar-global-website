@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
+import { permanentRedirects } from "./lib/seo-routing";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
+  async redirects() {
+    return [...permanentRedirects];
+  },
   async headers() {
     return [
       {

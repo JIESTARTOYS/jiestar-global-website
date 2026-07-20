@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Collection, ProductSummary } from "@/lib/data";
 import { getCollectionsWithProducts } from "@/lib/collection-utils";
-import { clampProductPage, normalizeProductPage, PRODUCT_PAGE_SIZE } from "@/lib/product-pagination";
+import { getPaginatedItems, normalizeProductPage } from "@/lib/product-pagination";
 import { DEFAULT_PRODUCT_SORT, priceNumber, sortProductsForCatalog } from "@/lib/product-sorting";
 import { subBrands } from "@/lib/sub-brands";
 import { BrandCollectionCarousel } from "@/components/product/BrandCollectionCarousel";
@@ -23,7 +23,7 @@ import {
 type ProductCatalogProps = {
   allProducts: ProductSummary[];
   collections: Collection[];
-  selectedPage?: string;
+  selectedPage?: string | string[];
   selectedFilters: {
     query?: string;
     category?: string;
@@ -139,7 +139,7 @@ function filterProducts(products: ProductSummary[], selectedFilters: ProductFilt
   );
 }
 
-function pageFromUrl(defaultPage?: string) {
+function pageFromUrl(defaultPage?: string | string[]) {
   if (typeof window === "undefined") {
     return normalizeProductPage(defaultPage);
   }
@@ -584,12 +584,11 @@ export function ProductCatalog(props: ProductCatalogProps) {
     [props.collections, allProducts],
   );
   const products = useMemo(() => filterProducts(allProducts, selectedFilters), [allProducts, selectedFilters]);
-  const totalPages = Math.max(1, Math.ceil(products.length / PRODUCT_PAGE_SIZE));
-  const safeCurrentPage = clampProductPage(currentPage, totalPages);
-  const paginatedProducts = products.slice(
-    (safeCurrentPage - 1) * PRODUCT_PAGE_SIZE,
-    safeCurrentPage * PRODUCT_PAGE_SIZE,
-  );
+  const {
+    currentPage: safeCurrentPage,
+    items: paginatedProducts,
+    totalPages,
+  } = getPaginatedItems(products, currentPage);
   const activeFilterCount = [
     selectedFilters.query,
     selectedFilters.category,
