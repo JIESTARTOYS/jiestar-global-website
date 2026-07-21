@@ -21,6 +21,8 @@ type ProductJsonLdOptions = {
 
 const quoteOnlyPrices = new Set(["999", "999.00", "999.0"]);
 
+export const retailShippingCountryCodes = ["US", "CA", "AU", "GB", "DE", "FR", "BE", "ES", "IT", "NL", "PL", "SE"] as const;
+
 function siteUrl() {
   return siteConfig.url.replace(/\/$/, "");
 }
@@ -38,6 +40,11 @@ export function absoluteUrl(path = "") {
 }
 
 const defaultOgImagePath = "/images/brand/jiestar-logo-color.png";
+const organizationId = absoluteUrl("/#organization");
+const shippingPolicyUrl = absoluteUrl("/policies/shipping-policy");
+const shippingServiceId = `${shippingPolicyUrl}#standard-shipping`;
+const returnPolicyUrl = absoluteUrl("/policies/refund-policy");
+const returnPolicyId = `${returnPolicyUrl}#return-policy`;
 
 export function createMetadata({ title, description, path = "", image }: SeoInput): Metadata {
   const canonical = absoluteUrl(path);
@@ -87,6 +94,7 @@ export function createOrganizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": organizationId,
     name: "JIESTAR",
     alternateName: [
       "Jie Star",
@@ -100,6 +108,71 @@ export function createOrganizationJsonLd() {
     logo: absoluteUrl("/images/brand/jiestar-logo-color.png"),
     description:
       "JIESTAR is an official building block brand supporting building block sets, wholesale supply, OEM/ODM customization, packaging, and long-term product partnerships.",
+  };
+}
+
+export function createShippingPolicyJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": organizationId,
+    url: absoluteUrl("/"),
+    hasShippingService: {
+      "@type": "ShippingService",
+      "@id": shippingServiceId,
+      name: "JIESTAR Standard International Shipping",
+      description:
+        "Retail orders are processed in 1–3 business days. Delivery typically takes 7–16 calendar days after dispatch.",
+      fulfillmentType: "https://schema.org/FulfillmentTypeDelivery",
+      handlingTime: {
+        "@type": "ServicePeriod",
+        duration: {
+          "@type": "QuantitativeValue",
+          minValue: 1,
+          maxValue: 3,
+          unitCode: "DAY",
+        },
+        businessDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      },
+      shippingConditions: {
+        "@type": "ShippingConditions",
+        shippingDestination: retailShippingCountryCodes.map((countryCode) => ({
+          "@type": "DefinedRegion",
+          addressCountry: countryCode,
+        })),
+        transitTime: {
+          "@type": "ServicePeriod",
+          duration: {
+            "@type": "QuantitativeValue",
+            minValue: 7,
+            maxValue: 16,
+            unitCode: "DAY",
+          },
+        },
+      },
+    },
+  };
+}
+
+export function createMerchantReturnPolicyJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": organizationId,
+    url: absoluteUrl("/"),
+    hasMerchantReturnPolicy: {
+      "@type": "MerchantReturnPolicy",
+      "@id": returnPolicyId,
+      name: "JIESTAR Retail Return Policy",
+      merchantReturnLink: returnPolicyUrl,
+      applicableCountry: [...retailShippingCountryCodes],
+      returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+      merchantReturnDays: 14,
+      returnMethod: "https://schema.org/ReturnByMail",
+      returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+      customerRemorseReturnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+      itemDefectReturnFees: "https://schema.org/FreeReturn",
+    },
   };
 }
 
@@ -196,6 +269,16 @@ export function createProductJsonLd(product: Product, options: ProductJsonLdOpti
         priceCurrency: "USD",
         price,
         availability: "https://schema.org/InStock",
+        itemCondition: "https://schema.org/NewCondition",
+        shippingDetails: {
+          "@type": "OfferShippingDetails",
+          hasShippingService: {
+            "@id": shippingServiceId,
+          },
+        },
+        hasMerchantReturnPolicy: {
+          "@id": returnPolicyId,
+        },
       };
     }
   }

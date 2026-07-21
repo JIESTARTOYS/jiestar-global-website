@@ -4,14 +4,17 @@ import type { Product } from "./data.ts";
 import {
   createBreadcrumbJsonLd,
   createBlogPostingJsonLd,
+  createMerchantReturnPolicyJsonLd,
   createMetadata,
   createOrganizationJsonLd,
   createProductJsonLd,
+  createShippingPolicyJsonLd,
   createWebSiteJsonLd,
   getDisplayPrice,
   getProductHighlights,
   getProductSeoDescription,
   isPlaceholderPrice,
+  retailShippingCountryCodes,
 } from "./seo.ts";
 
 const product: Product = {
@@ -62,6 +65,59 @@ test("createProductJsonLd excludes offers when price is a placeholder", () => {
   assert.equal("offers" in schema, false);
 });
 
+test("createProductJsonLd links valid offers to shipping and return policies", () => {
+  const schema = createProductJsonLd(
+    { ...product, price: "$89.00" },
+    {
+      description: "Sample crawlable product description.",
+      path: "/products/sample-train-set",
+    },
+  );
+  const offer = schema.offers as Record<string, unknown>;
+
+  assert.equal(offer.itemCondition, "https://schema.org/NewCondition");
+  assert.deepEqual(offer.shippingDetails, {
+    "@type": "OfferShippingDetails",
+    hasShippingService: {
+      "@id": "https://www.jiestartoys.com/policies/shipping-policy#standard-shipping",
+    },
+  });
+  assert.deepEqual(offer.hasMerchantReturnPolicy, {
+    "@id": "https://www.jiestartoys.com/policies/refund-policy#return-policy",
+  });
+});
+
+test("createShippingPolicyJsonLd exposes the supported markets and delivery periods", () => {
+  const schema = createShippingPolicyJsonLd();
+  const service = schema.hasShippingService;
+  const destinations = service.shippingConditions.shippingDestination;
+
+  assert.equal(schema["@id"], "https://www.jiestartoys.com/#organization");
+  assert.equal(service["@id"], "https://www.jiestartoys.com/policies/shipping-policy#standard-shipping");
+  assert.equal(service.handlingTime.duration.minValue, 1);
+  assert.equal(service.handlingTime.duration.maxValue, 3);
+  assert.equal(service.shippingConditions.transitTime.duration.minValue, 7);
+  assert.equal(service.shippingConditions.transitTime.duration.maxValue, 16);
+  assert.deepEqual(
+    destinations.map((destination) => destination.addressCountry),
+    [...retailShippingCountryCodes],
+  );
+  assert.equal("shippingRate" in service.shippingConditions, false);
+});
+
+test("createMerchantReturnPolicyJsonLd describes the 14-day fee responsibilities", () => {
+  const schema = createMerchantReturnPolicyJsonLd();
+  const policy = schema.hasMerchantReturnPolicy;
+
+  assert.equal(policy["@id"], "https://www.jiestartoys.com/policies/refund-policy#return-policy");
+  assert.equal(policy.merchantReturnLink, "https://www.jiestartoys.com/policies/refund-policy");
+  assert.equal(policy.merchantReturnDays, 14);
+  assert.equal(policy.returnMethod, "https://schema.org/ReturnByMail");
+  assert.equal(policy.customerRemorseReturnFees, "https://schema.org/ReturnFeesCustomerResponsibility");
+  assert.equal(policy.itemDefectReturnFees, "https://schema.org/FreeReturn");
+  assert.deepEqual(policy.applicableCountry, [...retailShippingCountryCodes]);
+});
+
 test("createMetadata emits absolute titles so the layout template does not double-append the brand", () => {
   const metadata = createMetadata({
     title: "Wholesale Building Blocks & Brick Sets | JIESTAR Factory Supply",
@@ -99,6 +155,7 @@ test("createOrganizationJsonLd uses the real onsite logo path", () => {
   const schema = createOrganizationJsonLd();
 
   assert.equal(schema["@type"], "Organization");
+  assert.equal(schema["@id"], "https://www.jiestartoys.com/#organization");
   assert.equal(schema.name, "JIESTAR");
   assert.equal(schema.logo, "https://www.jiestartoys.com/images/brand/jiestar-logo-color.png");
   assert.ok(schema.alternateName.includes("Guangdong Jiexing Toys Industrial Co., Ltd."));
