@@ -17,7 +17,7 @@ export const revalidate = 300;
 export const metadata = createMetadata({
   title: "JIESTAR Official | Building Block Sets, Wholesale & Custom OEM/ODM Solutions",
   description:
-    "JIESTAR is the official building block brand of Guangdong Jiexing Toys, supporting global buyers with building block sets, wholesale supply, OEM/ODM customization, packaging, and long-term product cooperation.",
+    "Shop JIESTAR building block sets and explore wholesale or OEM/ODM cooperation through the brand's authorized international website and sales operator.",
   path: "/",
 });
 

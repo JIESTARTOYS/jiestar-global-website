@@ -151,14 +151,18 @@ test("createBreadcrumbJsonLd builds clean absolute item URLs", () => {
   assert.equal(schema.itemListElement[1].item, "https://www.jiestartoys.com/wholesale");
 });
 
-test("createOrganizationJsonLd uses the real onsite logo path", () => {
+test("createOrganizationJsonLd identifies the Hong Kong online seller", () => {
   const schema = createOrganizationJsonLd();
 
   assert.equal(schema["@type"], "Organization");
   assert.equal(schema["@id"], "https://www.jiestartoys.com/#organization");
-  assert.equal(schema.name, "JIESTAR");
+  assert.equal(schema.name, "HONG KONG ZHILE TRADING CO., LIMITED");
+  assert.equal(schema.legalName, "HONG KONG ZHILE TRADING CO., LIMITED");
+  assert.equal(schema.telephone, "+8613710335072");
+  assert.equal(schema.address.addressCountry, "HK");
   assert.equal(schema.logo, "https://www.jiestartoys.com/images/brand/jiestar-logo-color.png");
-  assert.ok(schema.alternateName.includes("Guangdong Jiexing Toys Industrial Co., Ltd."));
+  assert.ok(schema.alternateName.includes("香港智樂貿易有限公司"));
+  assert.equal(schema.brand.name, "JIESTAR");
 });
 
 test("createBlogPostingJsonLd includes cover image and honest publication dates", () => {

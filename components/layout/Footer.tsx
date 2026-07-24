@@ -26,9 +26,11 @@ const supportLinks = [
 const companyLinks = [
   ["About Us", "/about"],
   ["Quality & Safety", "/quality-safety"],
+  ["Business Information", "/business-information"],
 ];
 
 const legalLinks = [
+  ["Business Information", "/business-information"],
   ["Privacy Policy", "/policies/privacy-policy"],
   ["Terms of Service", "/policies/terms-of-service"],
 ];
@@ -76,7 +78,13 @@ export function Footer() {
           </div>
         </div>
         <div className="flex flex-col gap-4 border-t border-white/10 px-5 py-5 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <p>© 2026 JIESTAR. Building dreams for creators, dreamers, and builders.</p>
+          <p>
+            © 2026 JIESTAR. Online sales operated by{" "}
+            <Link href="/business-information" className="transition hover:text-white">
+              HONG KONG ZHILE TRADING CO., LIMITED
+            </Link>
+            .
+          </p>
           <div className="flex flex-wrap gap-5">
             {legalLinks.map(([label, href]) => (
               <Link key={href} href={href} className="hover:text-white">

@@ -20,7 +20,7 @@ import { subBrands } from "@/lib/sub-brands";
 export const metadata = createMetadata({
   title: "About JIESTAR | Official Building Block Toy Manufacturer",
   description:
-    "Learn about JIESTAR, the official building block brand of Guangdong Jiexing Toys, supporting product development, wholesale supply, quality control, and OEM/ODM cooperation.",
+    "Learn about the JIESTAR brand and manufacturing base, together with the authorized Hong Kong company operating its international website and sales channel.",
   path: "/about",
 });
 
@@ -228,7 +228,7 @@ export default function AboutPage() {
               />
             </div>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
-              JIESTAR, also written as Jie Star or JIE-STAR, is the official building block brand of Guangdong Jiexing Toys Industrial Co., Ltd. Since 1998, JIESTAR has supported global building block partners with product development, injection molding, quality inspection, warehouse supply, wholesale cooperation, and OEM / ODM projects. The company exhibits at international toy fairs, including the Hong Kong Toys &amp; Games Fair, the China Toy Expo in Shanghai, and Mir Detstva in Moscow.
+              JIESTAR, also written as Jie Star or JIE-STAR, is the official building block brand of Guangdong Jiexing Toys Industrial Co., Ltd. Since 1998, the manufacturing company has supported global partners with product development, injection molding, quality inspection, warehouse supply, wholesale cooperation, and OEM / ODM projects. HONG KONG ZHILE TRADING CO., LIMITED is authorized to operate JIESTAR&apos;s international website and sales channels and serves as the seller and merchant of record for eligible retail orders placed through this website.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link

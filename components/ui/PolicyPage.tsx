@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BusinessIdentity } from "@/components/ui/BusinessIdentity";
 
 type PolicySection = {
   title: string;
@@ -58,6 +59,8 @@ export function PolicyPage({
             </section>
           ))}
         </div>
+
+        <BusinessIdentity className="mb-8" />
 
         {note ? (
           <aside className="rounded-lg border border-red-100 bg-red-50 p-6">
