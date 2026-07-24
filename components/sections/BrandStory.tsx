@@ -45,7 +45,7 @@ export function BrandStory() {
                 Global Brand, Builder-First Products
               </h2>
               <p className="mt-5 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
-                Founded in 1998, Guangdong Jiexing Toys Industrial Co., Ltd. has developed into an integrated toy company combining product development, production, and sales. Through continuous innovation and long-term cooperation with global partners, JIESTAR creates building block products with engaging building experiences, display value, and market potential.
+                Founded in 1998, Guangdong Jiexing Toys Industrial Co., Ltd. supports the JIESTAR brand through product development and manufacturing. HONG KONG ZHILE TRADING CO., LIMITED is authorized to operate the international website and sales channel, giving global shoppers and partners a clearly identified commercial contact.
               </p>
             </div>
 

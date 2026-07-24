@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Product } from "./data.ts";
 import { siteConfig } from "./data.ts";
+import { businessConfig } from "./business.ts";
 
 type SeoInput = {
   title: string;
@@ -95,19 +96,40 @@ export function createOrganizationJsonLd() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": organizationId,
-    name: "JIESTAR",
+    name: businessConfig.legalName,
     alternateName: [
+      businessConfig.legalNameChinese,
       "Jie Star",
       "JIE-STAR",
       "JIESTAR Toys",
-      "Guangdong Jiexing Toys",
-      "Guangdong Jiexing Toys Industrial Co., Ltd.",
     ],
-    legalName: "Guangdong Jiexing Toys Industrial Co., Ltd.",
+    legalName: businessConfig.legalName,
     url: absoluteUrl("/"),
     logo: absoluteUrl("/images/brand/jiestar-logo-color.png"),
+    email: businessConfig.businessEmail,
+    telephone: businessConfig.phoneNumber,
+    identifier: [
+      {
+        "@type": "PropertyValue",
+        name: "Hong Kong company registration number",
+        value: businessConfig.companyRegistrationNumber,
+      },
+      {
+        "@type": "PropertyValue",
+        name: "Hong Kong business registration certificate number",
+        value: businessConfig.businessRegistrationNumber,
+      },
+    ],
+    address: {
+      "@type": "PostalAddress",
+      ...businessConfig.registeredAddressStructured,
+    },
+    brand: {
+      "@type": "Brand",
+      name: businessConfig.tradeName,
+    },
     description:
-      "JIESTAR is an official building block brand supporting building block sets, wholesale supply, OEM/ODM customization, packaging, and long-term product partnerships.",
+      "Authorized international website operator, retail seller, and merchant of record for JIESTAR online sales.",
   };
 }
 

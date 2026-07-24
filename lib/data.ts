@@ -59,13 +59,15 @@ export type Collection = {
   imageAlt?: string;
 };
 
+import { businessConfig } from "./business.ts";
+
 export const siteConfig = {
   name: "JIESTAR",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.jiestartoys.com",
-  businessEmail: "info@jiestartoys.com",
-  supportEmail: "support@jiestartoys.com",
+  businessEmail: businessConfig.businessEmail,
+  supportEmail: businessConfig.supportEmail,
   description:
-    "JIESTAR is a global building block brand supporting retail customers, wholesale buyers, custom product development, and long-term brand partnerships.",
+    "JIESTAR is a global building block brand supporting retail customers, wholesale buyers, custom product development, and long-term brand partnerships through its authorized international sales operator.",
 };
 
 export const navigation = [

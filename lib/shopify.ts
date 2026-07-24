@@ -1,4 +1,5 @@
 import { collections, products, type Collection, type Product, type ProductSummary, type ProductVariant } from "./data";
+import { rewriteCheckoutUrl } from "./checkout-url";
 import { getLocalProductSpecifications } from "./product-specifications";
 import { isSubBrandCollectionHandle } from "./sub-brands";
 import { readShopifyConnectionPages } from "./shopify-pagination";
@@ -952,7 +953,7 @@ function assertCartUserErrors(errors: Array<{ message: string }>) {
 function mapShopifyCart(cart: ShopifyCartNode): Cart {
   return {
     id: cart.id,
-    checkoutUrl: cart.checkoutUrl,
+    checkoutUrl: rewriteCheckoutUrl(cart.checkoutUrl, process.env.SHOPIFY_CHECKOUT_DOMAIN),
     totalQuantity: cart.totalQuantity,
     subtotal: formatPrice(cart.cost.subtotalAmount),
     total: formatPrice(cart.cost.totalAmount),

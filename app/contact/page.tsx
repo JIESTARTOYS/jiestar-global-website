@@ -3,6 +3,7 @@ import Image from "next/image";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { ArrowRightIcon, FactoryIcon, PackageIcon, ShieldIcon, StoreIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
+import { BusinessIdentity } from "@/components/ui/BusinessIdentity";
 import { siteConfig } from "@/lib/data";
 import { createMetadata } from "@/lib/seo";
 
@@ -85,6 +86,8 @@ export default function ContactPage() {
             <InquiryForm type="contact" />
           </div>
         </section>
+
+        <BusinessIdentity className="mt-8" />
 
         <section className="mt-8 grid gap-4 lg:grid-cols-3">
           {contactPaths.map((item) => {
