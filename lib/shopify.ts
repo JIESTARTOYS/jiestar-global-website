@@ -1,11 +1,13 @@
 import { collections, products, type Collection, type Product, type ProductSummary, type ProductVariant } from "./data";
 import { getLocalProductSpecifications } from "./product-specifications";
 import { isSubBrandCollectionHandle } from "./sub-brands";
+import { applyShopifyCheckoutDomain } from "./shopify-checkout-url";
 import { readShopifyConnectionPages } from "./shopify-pagination";
 
 const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION ?? "2026-01";
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
 const SHOPIFY_STOREFRONT_ACCESS_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
+const SHOPIFY_CHECKOUT_DOMAIN = process.env.SHOPIFY_CHECKOUT_DOMAIN;
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const SHOPIFY_FETCH_ATTEMPTS = 3;
 const SHOPIFY_RETRY_DELAY_MS = 500;
@@ -952,7 +954,7 @@ function assertCartUserErrors(errors: Array<{ message: string }>) {
 function mapShopifyCart(cart: ShopifyCartNode): Cart {
   return {
     id: cart.id,
-    checkoutUrl: cart.checkoutUrl,
+    checkoutUrl: applyShopifyCheckoutDomain(cart.checkoutUrl, SHOPIFY_CHECKOUT_DOMAIN),
     totalQuantity: cart.totalQuantity,
     subtotal: formatPrice(cart.cost.subtotalAmount),
     total: formatPrice(cart.cost.totalAmount),
