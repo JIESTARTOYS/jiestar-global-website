@@ -953,7 +953,10 @@ function assertCartUserErrors(errors: Array<{ message: string }>) {
 function mapShopifyCart(cart: ShopifyCartNode): Cart {
   return {
     id: cart.id,
-    checkoutUrl: rewriteCheckoutUrl(cart.checkoutUrl, process.env.SHOPIFY_CHECKOUT_DOMAIN),
+    checkoutUrl: rewriteCheckoutUrl(
+      cart.checkoutUrl,
+      process.env.SHOPIFY_CHECKOUT_DOMAIN ?? "checkout.jiestartoys.com",
+    ),
     totalQuantity: cart.totalQuantity,
     subtotal: formatPrice(cart.cost.subtotalAmount),
     total: formatPrice(cart.cost.totalAmount),
