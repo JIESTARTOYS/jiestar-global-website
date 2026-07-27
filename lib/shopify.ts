@@ -1,8 +1,13 @@
 import { collections, products, type Collection, type Product, type ProductSummary, type ProductVariant } from "./data";
 import { rewriteCheckoutUrl } from "./checkout-url";
 import { getLocalProductSpecifications } from "./product-specifications";
+import {
+  getShopifyFetchCacheOptions,
+  type ShopifyFetchCacheMode,
+} from "./shopify-fetch-policy";
 import { isSubBrandCollectionHandle } from "./sub-brands";
 import { readShopifyConnectionPages } from "./shopify-pagination";
+import { StaleDataCache } from "./stale-data-cache";
 
 const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION ?? "2026-01";
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
@@ -10,10 +15,11 @@ const SHOPIFY_STOREFRONT_ACCESS_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TO
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const SHOPIFY_FETCH_ATTEMPTS = 3;
 const SHOPIFY_RETRY_DELAY_MS = 500;
+const SHOPIFY_CATALOG_CACHE_TTL_MS = 300_000;
 
-let cachedShopifyProducts: Product[] | undefined;
-let cachedShopifyProductSummaries: ProductSummary[] | undefined;
-let cachedShopifyCollections: Collection[] | undefined;
+const shopifyProductsCache = new StaleDataCache<Product[]>(SHOPIFY_CATALOG_CACHE_TTL_MS);
+const shopifyProductSummariesCache = new StaleDataCache<ProductSummary[]>(SHOPIFY_CATALOG_CACHE_TTL_MS);
+const shopifyCollectionsCache = new StaleDataCache<Collection[]>(SHOPIFY_CATALOG_CACHE_TTL_MS);
 
 const PRODUCT_TYPE_COLLECTION_HANDLES = new Set([
   "pirates",
@@ -451,7 +457,29 @@ function isRetriableStatus(status: number) {
   return status === 429 || status >= 500;
 }
 
-async function shopifyFetch<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+type ShopifyFetchOptions = {
+  operation: string;
+  cache: ShopifyFetchCacheMode;
+};
+
+function logShopifyRetry(
+  operation: string,
+  attempt: number,
+  details: { status?: number; message: string },
+) {
+  console.warn("[shopify:retry]", {
+    operation,
+    attempt,
+    maxAttempts: SHOPIFY_FETCH_ATTEMPTS,
+    ...details,
+  });
+}
+
+async function shopifyFetch<T>(
+  query: string,
+  variables: Record<string, unknown> | undefined,
+  options: ShopifyFetchOptions,
+): Promise<T> {
   if (!hasShopifyConfig()) {
     throw new Error("Shopify environment variables are not configured.");
   }
@@ -469,7 +497,7 @@ async function shopifyFetch<T>(query: string, variables?: Record<string, unknown
             "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_ACCESS_TOKEN ?? "",
           },
           body: JSON.stringify({ query, variables }),
-          next: { revalidate: 300 },
+          ...getShopifyFetchCacheOptions(options.cache),
         },
       );
 
@@ -478,6 +506,10 @@ async function shopifyFetch<T>(query: string, variables?: Record<string, unknown
 
         if (attempt < SHOPIFY_FETCH_ATTEMPTS && isRetriableStatus(response.status)) {
           lastError = error;
+          logShopifyRetry(options.operation, attempt, {
+            status: response.status,
+            message: error.message,
+          });
           await wait(SHOPIFY_RETRY_DELAY_MS * attempt);
           continue;
         }
@@ -500,6 +532,9 @@ async function shopifyFetch<T>(query: string, variables?: Record<string, unknown
       lastError = error;
 
       if (attempt < SHOPIFY_FETCH_ATTEMPTS) {
+        logShopifyRetry(options.operation, attempt, {
+          message: getErrorMessage(error, "Shopify request failed."),
+        });
         await wait(SHOPIFY_RETRY_DELAY_MS * attempt);
         continue;
       }
@@ -706,6 +741,9 @@ function getLocalCollectionProducts(handle: string) {
 }
 
 function getCachedCatalogCollection(handle: string) {
+  const cachedShopifyCollections = shopifyCollectionsCache.peek();
+  const cachedShopifyProducts = shopifyProductsCache.peek();
+
   if (!cachedShopifyCollections || !cachedShopifyProducts) {
     return undefined;
   }
@@ -723,6 +761,9 @@ function getCachedCatalogCollection(handle: string) {
 }
 
 function getCachedCatalogCollectionSummary(handle: string) {
+  const cachedShopifyCollections = shopifyCollectionsCache.peek();
+  const cachedShopifyProductSummaries = shopifyProductSummariesCache.peek();
+
   if (!cachedShopifyCollections || !cachedShopifyProductSummaries) {
     return undefined;
   }
@@ -740,7 +781,7 @@ function getCachedCatalogCollectionSummary(handle: string) {
 }
 
 function getCachedCatalogProduct(handle: string) {
-  return cachedShopifyProducts?.find((product) => product.handle === handle);
+  return shopifyProductsCache.peek()?.find((product) => product.handle === handle);
 }
 
 const productSummaryFragment = `
@@ -992,50 +1033,56 @@ export async function getShopifyProductSummaries(): Promise<ProductSummary[]> {
   }
 
   try {
-    const productNodes = await readShopifyConnectionPages(async (cursor) => {
-      const data = await shopifyFetch<ShopifyProductSummariesResponse>(
-        `
-          ${productSummaryFragment}
-          query ProductSummaries($cursor: String) {
-            products(first: 50, after: $cursor) {
-              pageInfo {
-                hasNextPage
-                endCursor
-              }
-              edges {
-                cursor
-                node {
-                  ...ProductSummaryFields
+    const result = await shopifyProductSummariesCache.get(async () => {
+      const productNodes = await readShopifyConnectionPages(async (cursor) => {
+        const data = await shopifyFetch<ShopifyProductSummariesResponse>(
+          `
+            ${productSummaryFragment}
+            query ProductSummaries($cursor: String) {
+              products(first: 50, after: $cursor) {
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
+                edges {
+                  cursor
+                  node {
+                    ...ProductSummaryFields
+                  }
                 }
               }
             }
-          }
-        `,
-        { cursor },
-      );
+          `,
+          { cursor },
+          { operation: "getShopifyProductSummaries", cache: "catalog" },
+        );
 
-      return {
-        nodes: data.products.edges.map(({ node }) => node),
-        hasNextPage: data.products.pageInfo.hasNextPage,
-        endCursor: data.products.pageInfo.endCursor,
-      };
+        return {
+          nodes: data.products.edges.map(({ node }) => node),
+          hasNextPage: data.products.pageInfo.hasNextPage,
+          endCursor: data.products.pageInfo.endCursor,
+        };
+      });
+
+      return productNodes.map((node) => mapShopifyProductSummary(node));
     });
 
-    const shopifyProducts = productNodes.map((node) => mapShopifyProductSummary(node));
-    cachedShopifyProductSummaries = shopifyProducts;
-    logShopifyDataSource("getShopifyProductSummaries", "shopify", { count: shopifyProducts.length });
+    if (result.source === "stale") {
+      getShopifyRequestError("getShopifyProductSummaries", result.error);
+    }
 
-    return shopifyProducts;
+    logShopifyDataSource(
+      "getShopifyProductSummaries",
+      result.source === "loaded" ? "shopify" : "cache",
+      {
+        count: result.value.length,
+        reason: result.source,
+      },
+    );
+
+    return result.value;
   } catch (error) {
     const shopifyError = getShopifyRequestError("getShopifyProductSummaries", error);
-
-    if (cachedShopifyProductSummaries?.length) {
-      logShopifyDataSource("getShopifyProductSummaries", "cache", {
-        count: cachedShopifyProductSummaries.length,
-        reason: "request_failed",
-      });
-      return cachedShopifyProductSummaries;
-    }
 
     if (shouldUseLocalFallback()) {
       return products;
@@ -1057,50 +1104,56 @@ export async function getShopifyProducts(): Promise<Product[]> {
   }
 
   try {
-    const productNodes = await readShopifyConnectionPages(async (cursor) => {
-      const data = await shopifyFetch<ShopifyProductsResponse>(
-        `
-          ${productFragment}
-          query Products($cursor: String) {
-            products(first: 50, after: $cursor) {
-              pageInfo {
-                hasNextPage
-                endCursor
-              }
-              edges {
-                cursor
-                node {
-                  ...ProductFields
+    const result = await shopifyProductsCache.get(async () => {
+      const productNodes = await readShopifyConnectionPages(async (cursor) => {
+        const data = await shopifyFetch<ShopifyProductsResponse>(
+          `
+            ${productFragment}
+            query Products($cursor: String) {
+              products(first: 50, after: $cursor) {
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
+                edges {
+                  cursor
+                  node {
+                    ...ProductFields
+                  }
                 }
               }
             }
-          }
-        `,
-        { cursor },
-      );
+          `,
+          { cursor },
+          { operation: "getShopifyProducts", cache: "catalog" },
+        );
 
-      return {
-        nodes: data.products.edges.map(({ node }) => node),
-        hasNextPage: data.products.pageInfo.hasNextPage,
-        endCursor: data.products.pageInfo.endCursor,
-      };
+        return {
+          nodes: data.products.edges.map(({ node }) => node),
+          hasNextPage: data.products.pageInfo.hasNextPage,
+          endCursor: data.products.pageInfo.endCursor,
+        };
+      });
+
+      return productNodes.map((node) => mapShopifyProduct(node));
     });
 
-    const shopifyProducts = productNodes.map((node) => mapShopifyProduct(node));
-    cachedShopifyProducts = shopifyProducts;
-    logShopifyDataSource("getShopifyProducts", "shopify", { count: shopifyProducts.length });
+    if (result.source === "stale") {
+      getShopifyRequestError("getShopifyProducts", result.error);
+    }
 
-    return shopifyProducts;
+    logShopifyDataSource(
+      "getShopifyProducts",
+      result.source === "loaded" ? "shopify" : "cache",
+      {
+        count: result.value.length,
+        reason: result.source,
+      },
+    );
+
+    return result.value;
   } catch (error) {
     const shopifyError = getShopifyRequestError("getShopifyProducts", error);
-
-    if (cachedShopifyProducts?.length) {
-      logShopifyDataSource("getShopifyProducts", "cache", {
-        count: cachedShopifyProducts.length,
-        reason: "request_failed",
-      });
-      return cachedShopifyProducts;
-    }
 
     if (shouldUseLocalFallback()) {
       return products;
@@ -1122,60 +1175,63 @@ export async function getShopifyCollections(): Promise<Collection[]> {
   }
 
   try {
-    const collectionNodes: ShopifyCollectionNode[] = [];
-    let cursor: string | undefined;
-    let hasNextPage = true;
+    const result = await shopifyCollectionsCache.get(async () => {
+      const collectionNodes: ShopifyCollectionNode[] = [];
+      let cursor: string | undefined;
+      let hasNextPage = true;
 
-    while (hasNextPage) {
-      const data = await shopifyFetch<ShopifyCollectionsResponse>(
-        `
-          ${collectionSummaryFragment}
-          query Collections($cursor: String) {
-            collections(first: 50, after: $cursor) {
-              pageInfo {
-                hasNextPage
-                endCursor
-              }
-              edges {
-                cursor
-                node {
-                  ...CollectionSummaryFields
+      while (hasNextPage) {
+        const data = await shopifyFetch<ShopifyCollectionsResponse>(
+          `
+            ${collectionSummaryFragment}
+            query Collections($cursor: String) {
+              collections(first: 50, after: $cursor) {
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
+                edges {
+                  cursor
+                  node {
+                    ...CollectionSummaryFields
+                  }
                 }
               }
             }
-          }
-        `,
-        { cursor },
-      );
+          `,
+          { cursor },
+          { operation: "getShopifyCollections", cache: "catalog" },
+        );
 
-      collectionNodes.push(...data.collections.edges.map(({ node }) => node));
-      hasNextPage = data.collections.pageInfo.hasNextPage;
-      cursor = data.collections.pageInfo.endCursor ?? undefined;
-    }
+        collectionNodes.push(...data.collections.edges.map(({ node }) => node));
+        hasNextPage = data.collections.pageInfo.hasNextPage;
+        cursor = data.collections.pageInfo.endCursor ?? undefined;
+      }
 
-    const mainCollectionNodes = collectionNodes.filter((node) => isMainCategoryCollection(node));
-    const filteredCollectionNodes = mainCollectionNodes.length
-      ? mainCollectionNodes
-      : collectionNodes.filter((node) => isLegacyProductTypeCollection(node));
-    const shopifyCollections = filteredCollectionNodes.map((node) => mapShopifyCollection(node));
-    cachedShopifyCollections = shopifyCollections;
-    logShopifyDataSource("getShopifyCollections", "shopify", {
-      count: shopifyCollections.length,
-      totalCount: collectionNodes.length,
-      filter: mainCollectionNodes.length ? "main_category" : "legacy_product_type",
+      const mainCollectionNodes = collectionNodes.filter((node) => isMainCategoryCollection(node));
+      const filteredCollectionNodes = mainCollectionNodes.length
+        ? mainCollectionNodes
+        : collectionNodes.filter((node) => isLegacyProductTypeCollection(node));
+
+      return filteredCollectionNodes.map((node) => mapShopifyCollection(node));
     });
 
-    return shopifyCollections;
+    if (result.source === "stale") {
+      getShopifyRequestError("getShopifyCollections", result.error);
+    }
+
+    logShopifyDataSource(
+      "getShopifyCollections",
+      result.source === "loaded" ? "shopify" : "cache",
+      {
+        count: result.value.length,
+        reason: result.source,
+      },
+    );
+
+    return result.value;
   } catch (error) {
     const shopifyError = getShopifyRequestError("getShopifyCollections", error);
-
-    if (cachedShopifyCollections?.length) {
-      logShopifyDataSource("getShopifyCollections", "cache", {
-        count: cachedShopifyCollections.length,
-        reason: "request_failed",
-      });
-      return cachedShopifyCollections;
-    }
 
     if (shouldUseLocalFallback()) {
       return collections;
@@ -1219,6 +1275,7 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
         }
       `,
       { handle },
+      { operation: "getShopifyProduct", cache: "catalog" },
     );
 
     const product = data.product ? mapShopifyProduct(data.product) : undefined;
@@ -1229,6 +1286,24 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
 
     return product;
   } catch (error) {
+    try {
+      const catalogProduct = (await getShopifyProducts()).find(
+        (product) => product.handle === handle,
+      );
+
+      if (catalogProduct) {
+        logShopifyDataSource("getShopifyProduct", "cache", {
+          found: true,
+          handle,
+          reason: "catalog_after_direct_failure",
+        });
+
+        return catalogProduct;
+      }
+    } catch {
+      // Preserve the direct-query error below when no catalog copy is available.
+    }
+
     const localProduct = products.find((product) => product.handle === handle);
 
     const shopifyError = getShopifyRequestError("getShopifyProduct", error);
@@ -1268,6 +1343,7 @@ async function fetchShopifyCollectionSummaryDirect(
         }
       `,
       { handle, cursor },
+      { operation: "getShopifyCollectionSummary", cache: "catalog" },
     );
 
     if (!data.collection) {
@@ -1324,6 +1400,7 @@ async function fetchShopifyCollectionDirect(
         }
       `,
       { handle, cursor },
+      { operation: "getShopifyCollection", cache: "catalog" },
     );
 
     if (!data.collection) {
@@ -1526,6 +1603,7 @@ export async function getCart(cartId: string): Promise<Cart | undefined> {
       }
     `,
     { cartId },
+    { operation: "getCart", cache: "no-store" },
   );
 
   return data.cart ? mapShopifyCart(data.cart) : undefined;
@@ -1549,6 +1627,7 @@ export async function createCart(variantId: string, quantity = 1): Promise<Cart>
     {
       lines: [{ merchandiseId: variantId, quantity }],
     },
+    { operation: "createCart", cache: "no-store" },
   );
 
   assertCartUserErrors(data.cartCreate.userErrors);
@@ -1579,6 +1658,7 @@ export async function addCartLine(cartId: string, variantId: string, quantity = 
       cartId,
       lines: [{ merchandiseId: variantId, quantity }],
     },
+    { operation: "addCartLine", cache: "no-store" },
   );
 
   assertCartUserErrors(data.cartLinesAdd.userErrors);
@@ -1609,6 +1689,7 @@ export async function updateCartLine(cartId: string, lineId: string, quantity: n
       cartId,
       lines: [{ id: lineId, quantity }],
     },
+    { operation: "updateCartLine", cache: "no-store" },
   );
 
   assertCartUserErrors(data.cartLinesUpdate.userErrors);
@@ -1639,6 +1720,7 @@ export async function removeCartLine(cartId: string, lineId: string): Promise<Ca
       cartId,
       lineIds: [lineId],
     },
+    { operation: "removeCartLine", cache: "no-store" },
   );
 
   assertCartUserErrors(data.cartLinesRemove.userErrors);

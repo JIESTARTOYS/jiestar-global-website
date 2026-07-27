@@ -21,8 +21,8 @@ const trustItems = [
     icon: TruckIcon,
   },
   {
-    title: "Secure Payments",
-    text: "Safe & trusted checkout",
+    title: "Secure Checkout",
+    text: "Shopify-hosted checkout",
     icon: PackageIcon,
   },
   {
