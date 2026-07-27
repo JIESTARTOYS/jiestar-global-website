@@ -13,6 +13,7 @@ import {
   getProductHighlights,
   getProductSeoDescription,
 } from "@/lib/seo";
+import { isValidProductHandle } from "@/lib/product-handle";
 import { sanitizeShopifyHtml } from "@/lib/sanitize-html";
 import { getShopifyCollectionSummary, getShopifyProduct, getShopifyProductSummaries } from "@/lib/shopify";
 
@@ -21,6 +22,7 @@ type PageProps = {
 };
 
 export const dynamicParams = true;
+export const revalidate = 300;
 
 function cleanDescriptionHtml(html: string) {
   let cleaned = html.trim();
@@ -67,6 +69,11 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps) {
   const { handle } = await params;
+
+  if (!isValidProductHandle(handle)) {
+    return {};
+  }
+
   const product = await getShopifyProduct(handle);
 
   if (!product) {
@@ -83,6 +90,11 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function ProductDetailPage({ params }: PageProps) {
   const { handle } = await params;
+
+  if (!isValidProductHandle(handle)) {
+    notFound();
+  }
+
   const product = await getShopifyProduct(handle);
 
   if (!product) {
