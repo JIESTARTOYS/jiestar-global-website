@@ -1,7 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formatBlogDate, getBlogPost, getBlogPosts, getRelatedBlogPosts, parseMarkdownBlocks, type MarkdownInline } from "@/lib/blog";
+import {
+  BLOG_SECTIONS,
+  formatBlogDate,
+  getBlogPost,
+  getBlogPosts,
+  getBlogSectionForPost,
+  getRelatedBlogPosts,
+  parseMarkdownBlocks,
+  type MarkdownInline,
+} from "@/lib/blog";
 import { createBlogPostingJsonLd, createBreadcrumbJsonLd, createJsonLdScript, createMetadata } from "@/lib/seo";
 
 type PageProps = {
@@ -37,9 +46,12 @@ export default async function BlogDetailPage({ params }: PageProps) {
   }
   const blocks = parseMarkdownBlocks(post.content);
   const relatedPosts = getRelatedBlogPosts(post, 3);
+  const sectionSlug = getBlogSectionForPost(post);
+  const section = sectionSlug ? BLOG_SECTIONS[sectionSlug] : undefined;
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", path: "/" },
     { name: "Blog", path: "/blog" },
+    ...(section ? [{ name: section.title, path: `/blog/category/${section.slug}` }] : []),
     { name: post.title, path: `/blog/${post.slug}` },
   ]);
   const blogPostingJsonLd = createBlogPostingJsonLd({
@@ -61,7 +73,13 @@ export default async function BlogDetailPage({ params }: PageProps) {
             <span aria-hidden="true">/</span>
             <Link href="/blog" className="transition hover:text-red-600">Blog</Link>
             <span aria-hidden="true">/</span>
-            <span className="truncate font-semibold text-slate-800">{post.category}</span>
+            {section ? (
+              <Link href={`/blog/category/${section.slug}`} className="truncate font-semibold text-slate-800 transition hover:text-red-600">
+                {section.title}
+              </Link>
+            ) : (
+              <span className="truncate font-semibold text-slate-800">{post.category}</span>
+            )}
           </nav>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-bold uppercase tracking-normal">
             <span className="rounded-full bg-red-50 px-3 py-1.5 text-red-700">{post.category}</span>
@@ -73,6 +91,22 @@ export default async function BlogDetailPage({ params }: PageProps) {
             {post.title}
           </h1>
           <p className="mt-6 max-w-3xl text-pretty text-lg leading-8 text-slate-600">{post.description}</p>
+          {post.eventStartDate && post.eventEndDate && post.eventLocation ? (
+            <dl className="mt-8 grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2 sm:p-6">
+              <div>
+                <dt className="text-xs font-bold uppercase tracking-normal text-red-600">Event dates</dt>
+                <dd className="mt-2 text-sm font-semibold leading-6 text-slate-900">
+                  <time dateTime={post.eventStartDate}>{formatBlogDate(post.eventStartDate)}</time>
+                  <span aria-hidden="true"> – </span>
+                  <time dateTime={post.eventEndDate}>{formatBlogDate(post.eventEndDate)}</time>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs font-bold uppercase tracking-normal text-red-600">Event location</dt>
+                <dd className="mt-2 text-sm font-semibold leading-6 text-slate-900">{post.eventLocation}</dd>
+              </div>
+            </dl>
+          ) : null}
           <div className="relative mt-10 aspect-[16/9] overflow-hidden rounded-lg bg-slate-200">
             <Image
               src={post.coverImage}
@@ -112,6 +146,27 @@ export default async function BlogDetailPage({ params }: PageProps) {
               );
             }
 
+            if (block.type === "image") {
+              return (
+                <figure key={`${block.src}-${index}`} className="py-3">
+                  <div className="relative aspect-[3/2] overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                    <Image
+                      src={block.src}
+                      alt={block.alt}
+                      fill
+                      sizes="(min-width: 768px) 768px, 100vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  {block.caption ? (
+                    <figcaption className="mt-3 text-center text-sm leading-6 text-slate-500">
+                      {block.caption}
+                    </figcaption>
+                  ) : null}
+                </figure>
+              );
+            }
+
             return (
               <p key={`paragraph-${index}`}>
                 {renderInlineMarkdown(block.children)}
@@ -140,7 +195,12 @@ export default async function BlogDetailPage({ params }: PageProps) {
               <p className="text-sm font-bold text-red-600">Continue reading</p>
               <h2 id="related-articles-heading" className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">Related articles</h2>
             </div>
-            <Link href="/blog" className="hidden text-sm font-bold text-slate-600 transition hover:text-red-600 sm:block">View all articles</Link>
+            <Link
+              href={section ? `/blog/category/${section.slug}` : "/blog"}
+              className="hidden text-sm font-bold text-slate-600 transition hover:text-red-600 sm:block"
+            >
+              {section ? `View all ${section.title}` : "View all articles"}
+            </Link>
           </div>
           <div className="mt-7 grid gap-5 md:grid-cols-3">
             {relatedPosts.map((relatedPost) => (
@@ -157,7 +217,11 @@ export default async function BlogDetailPage({ params }: PageProps) {
                 <div className="p-5">
                   <p className="text-xs font-bold text-red-600">{relatedPost.category}</p>
                   <h3 className="mt-2 text-lg font-black leading-6 text-slate-950 group-hover:text-red-700">{relatedPost.title}</h3>
-                  <p className="mt-3 text-xs font-semibold text-slate-400">{formatBlogDate(relatedPost.date)} · {relatedPost.readingMinutes} min read</p>
+                  <p className="mt-3 text-xs font-semibold text-slate-400">
+                    {relatedPost.eventStartDate ? `Event ${formatBlogDate(relatedPost.eventStartDate)}` : formatBlogDate(relatedPost.date)}
+                    {" · "}
+                    {relatedPost.readingMinutes} min read
+                  </p>
                 </div>
               </Link>
             ))}

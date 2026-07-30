@@ -8,10 +8,62 @@ export type BlogPost = {
   category: string;
   date: string;
   updatedAt?: string;
+  eventName?: string;
+  eventStartDate?: string;
+  eventEndDate?: string;
+  eventLocation?: string;
   coverImage: string;
   coverAlt: string;
   readingMinutes: number;
   content: string;
+};
+
+export const BLOG_SECTION_SLUGS = [
+  "jiestar-news",
+  "new-releases",
+  "build-and-collect",
+  "business-insights",
+] as const;
+
+export type BlogSectionSlug = (typeof BLOG_SECTION_SLUGS)[number];
+
+export type BlogSectionConfig = {
+  slug: BlogSectionSlug;
+  title: string;
+  navigationLabel: string;
+  description: string;
+  categories: readonly string[];
+};
+
+export const BLOG_SECTIONS: Record<BlogSectionSlug, BlogSectionConfig> = {
+  "jiestar-news": {
+    slug: "jiestar-news",
+    title: "JIESTAR News",
+    navigationLabel: "News",
+    description: "Company stories, international exhibitions, and field notes from the JIESTAR team.",
+    categories: ["Company News", "Exhibitions"],
+  },
+  "new-releases": {
+    slug: "new-releases",
+    title: "New Releases",
+    navigationLabel: "New Releases",
+    description: "Recently added building block sets, product families, and new directions across the JIESTAR portfolio.",
+    categories: ["New Releases"],
+  },
+  "build-and-collect": {
+    slug: "build-and-collect",
+    title: "Build & Collect",
+    navigationLabel: "Build & Collect",
+    description: "Practical guidance for choosing, building, displaying, and caring for building block models.",
+    categories: ["Building Guides"],
+  },
+  "business-insights": {
+    slug: "business-insights",
+    title: "Business Insights",
+    navigationLabel: "For Business",
+    description: "Wholesale sourcing, OEM / ODM development, packaging, and product-line planning for global partners.",
+    categories: ["Wholesale Tips", "Custom Solutions"],
+  },
 };
 
 export type MarkdownInline =
@@ -38,6 +90,12 @@ export type MarkdownBlock =
   | {
       type: "list";
       items: string[];
+    }
+  | {
+      type: "image";
+      src: string;
+      alt: string;
+      caption?: string;
     };
 
 const blogDirectory = path.join(process.cwd(), "content/blog");
@@ -74,6 +132,10 @@ function parsePost(fileContent: string, slug: string): BlogPost {
     category: fields.category ?? "Guides",
     date: fields.date ?? "",
     updatedAt: fields.updatedAt || undefined,
+    eventName: fields.eventName || undefined,
+    eventStartDate: fields.eventStartDate || undefined,
+    eventEndDate: fields.eventEndDate || undefined,
+    eventLocation: fields.eventLocation || undefined,
     coverImage: fields.coverImage ?? "",
     coverAlt: fields.coverAlt ?? "",
     readingMinutes: calculateReadingMinutes(content),
@@ -101,6 +163,38 @@ export function getBlogPost(slug: string) {
   return getBlogPosts().find((post) => post.slug === slug);
 }
 
+export function getBlogSection(slug: string) {
+  return BLOG_SECTION_SLUGS.includes(slug as BlogSectionSlug)
+    ? BLOG_SECTIONS[slug as BlogSectionSlug]
+    : undefined;
+}
+
+export function getBlogSectionForPost(post: BlogPost) {
+  return BLOG_SECTION_SLUGS.find((slug) => BLOG_SECTIONS[slug].categories.includes(post.category));
+}
+
+export function getBlogContentDate(post: BlogPost) {
+  return post.eventStartDate ?? post.date;
+}
+
+export function getBlogSectionPosts(slug: BlogSectionSlug) {
+  const section = BLOG_SECTIONS[slug];
+
+  return getBlogPosts()
+    .filter((post) => section.categories.includes(post.category))
+    .sort((a, b) => {
+      const dateComparison = getBlogContentDate(b).localeCompare(getBlogContentDate(a));
+
+      return dateComparison || a.title.localeCompare(b.title);
+    });
+}
+
+export function getExhibitionPosts() {
+  return getBlogPosts()
+    .filter((post) => post.category === "Exhibitions" && post.eventStartDate)
+    .sort((a, b) => (b.eventStartDate ?? "").localeCompare(a.eventStartDate ?? ""));
+}
+
 export function formatBlogDate(value: string) {
   if (!value) {
     return "";
@@ -115,17 +209,25 @@ export function formatBlogDate(value: string) {
 }
 
 export function getRelatedBlogPosts(post: BlogPost, limit = 3) {
+  const postSection = getBlogSectionForPost(post);
+
   return getBlogPosts()
     .filter((candidate) => candidate.slug !== post.slug)
     .sort((a, b) => {
       const aCategoryMatch = a.category === post.category ? 1 : 0;
       const bCategoryMatch = b.category === post.category ? 1 : 0;
+      const aSectionMatch = getBlogSectionForPost(a) === postSection ? 1 : 0;
+      const bSectionMatch = getBlogSectionForPost(b) === postSection ? 1 : 0;
+
+      if (aSectionMatch !== bSectionMatch) {
+        return bSectionMatch - aSectionMatch;
+      }
 
       if (aCategoryMatch !== bCategoryMatch) {
         return bCategoryMatch - aCategoryMatch;
       }
 
-      return b.date.localeCompare(a.date);
+      return getBlogContentDate(b).localeCompare(getBlogContentDate(a));
     })
     .slice(0, limit);
 }
@@ -200,6 +302,20 @@ export function parseMarkdownBlocks(markdown: string): MarkdownBlock[] {
         type: "heading",
         level: headingMatch[1].length as 2 | 3,
         text: headingMatch[2].trim(),
+      });
+      continue;
+    }
+
+    const imageMatch = line.match(/^!\[([^\]]+)\]\((\/images\/\S+?)(?:\s+"([^"]+)")?\)$/);
+
+    if (imageMatch) {
+      flushParagraph();
+      flushList();
+      blocks.push({
+        type: "image",
+        src: imageMatch[2],
+        alt: imageMatch[1].trim(),
+        caption: imageMatch[3]?.trim() || undefined,
       });
       continue;
     }
