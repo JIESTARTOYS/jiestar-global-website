@@ -1966,3 +1966,47 @@ Supported command-style aliases:
 
 Command entry files are registered under `.claude/commands/`, `.opencode/commands/`, and `.codex/commands/`. When a catalog or brochure command is used, read `skills/catalog-design/SKILL.md` first and follow its rules for missing data, image placeholders, B2B tone, overseas catalog design, and prohibited claims.
 
+
+
+\---
+
+
+
+\## 33. Project Blog Content Agent
+
+
+
+The reusable JIESTAR blog content agent lives at:
+
+
+
+\- `agents/blog-content-agent.md`
+
+
+
+Use this Agent whenever the project owner asks to write a blog, turn supplied images and rough content into a blog article, organize ideas into an article, rewrite a blog, or express the project owner's meaning clearly to website customers.
+
+
+
+Common trigger phrases include:
+
+
+
+\- 写博客
+
+\- 图片生成博客
+
+\- 整理成文章
+
+\- 博客改写
+
+\- 把这些内容写成英文博客
+
+
+
+Before creating or changing blog content or blog images, read `agents/blog-content-agent.md` completely and follow its rules for English website copy, Chinese review summaries, category selection, image handling, fact verification, SEO, prohibited claims, repository output, and validation.
+
+
+
+The Blog Content Agent may create or update `content/blog/*.md` and related optimized assets under `public/images/blog/` when requested. It must not commit, push, deploy, publish, or change the blog runtime unless the project owner explicitly requests that separate action.
+
