@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/data";
-import { getBlogPosts } from "@/lib/blog";
+import { BLOG_SECTION_SLUGS, getBlogPosts } from "@/lib/blog";
 import { getShopifyCollections, getShopifyProductSummaries } from "@/lib/shopify";
 import { getEnabledSubBrandCollectionHandles } from "@/lib/sub-brands";
 
@@ -31,6 +31,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticRoutes.map((route) => ({ url: `${siteConfig.url}${route}` })),
+    ...BLOG_SECTION_SLUGS.map((slug) => ({
+      url: `${siteConfig.url}/blog/category/${slug}`,
+    })),
     ...collectionHandles.map((handle) => ({
       url: `${siteConfig.url}/collections/${handle}`,
     })),
