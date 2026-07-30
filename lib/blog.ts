@@ -98,6 +98,15 @@ export type MarkdownBlock =
       caption?: string;
     };
 
+export type MarkdownImageBlock = Extract<MarkdownBlock, { type: "image" }>;
+
+export type MarkdownContentBlock =
+  | MarkdownBlock
+  | {
+      type: "imageGroup";
+      images: [MarkdownImageBlock, MarkdownImageBlock];
+    };
+
 const blogDirectory = path.join(process.cwd(), "content/blog");
 
 function calculateReadingMinutes(content: string) {
@@ -336,4 +345,26 @@ export function parseMarkdownBlocks(markdown: string): MarkdownBlock[] {
   flushList();
 
   return blocks;
+}
+
+export function groupConsecutiveMarkdownImages(blocks: MarkdownBlock[]): MarkdownContentBlock[] {
+  const groupedBlocks: MarkdownContentBlock[] = [];
+
+  for (let index = 0; index < blocks.length; index += 1) {
+    const block = blocks[index];
+    const nextBlock = blocks[index + 1];
+
+    if (block.type === "image" && nextBlock?.type === "image") {
+      groupedBlocks.push({
+        type: "imageGroup",
+        images: [block, nextBlock],
+      });
+      index += 1;
+      continue;
+    }
+
+    groupedBlocks.push(block);
+  }
+
+  return groupedBlocks;
 }

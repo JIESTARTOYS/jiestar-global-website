@@ -1,46 +1,44 @@
 ---
 title: "JIESTAR at Mir Detstva 2025 in Moscow"
-description: "Review JIESTAR's Mir Detstva 2025 appearance at booth 10A120, with official event details, real booth photography, and guidance for building block buyers."
+description: "JIESTAR returned to Mir Detstva in 2025 with a bright multi-series stand, finished models, and three days of face-to-face conversations in Moscow."
 category: "Exhibitions"
 date: "2026-07-30"
 eventName: "Mir Detstva 2025"
 eventStartDate: "2025-09-17"
 eventEndDate: "2025-09-19"
-eventLocation: "Moscow, Russia"
+eventLocation: "Crocus Expo International Exhibition Centre, Moscow, Russia"
 coverImage: "/images/blog/exhibitions/mir-detstva-2025-moscow-cover.avif"
-coverAlt: "JIESTAR booth 10A120 with building block product displays at Mir Detstva 2025 in Moscow"
+coverAlt: "Wide view of the JIESTAR building block stand at Mir Detstva 2025 in Moscow"
 ---
 
-JIESTAR returned to Mir Detstva in 2025 with a booth designed for direct product review. For buyers who need to assess a building block range as a retail proposition, a trade fair provides a useful bridge between catalogue discovery and the detailed work of specifications, samples, quotations, and market planning.
+Two years after our documented 2023 appearance, JIESTAR returned to Mir Detstva with another wide-ranging building block presentation. The 2025 fair ran from September 17 to 19 at Crocus Expo in Moscow, and our team welcomed visitors at official booth 10A120.
 
-The 2025 Moscow photographs are kept separate from the image that has been reassigned to Mir Detstva 2023. This article therefore documents the later appearance using material from the confirmed 2025 group and the official 2025 booth information.
+The clean, wide photograph of the stand shows the JIESTAR range ready for the opening of the show. Our company name spans the fascia, product images run along the upper wall, and finished models sit in front of their boxes across illuminated shelves. From the aisle, the booth reads as one continuous collection; inside, each shelf offers a different route into the brand.
 
-## Verified event information
+## Returning with a broader visual story
 
-Mir Detstva 2025 was held from September 17 to 19 in Moscow. The fair's [official visitor guide](https://www.cjf-expo.ru/common/img/uploaded/exhibitions/mir_detstva/2025/doc/guide_md_cjf25.pdf) lists JIESTAR at booth 10A120.
+The display brought together technical vehicles, architectural builds, flowers, characterful scenes, and other creative subjects. Large product artwork gave the wall a strong rhythm, while the assembled models added depth in front. This allowed us to present JIESTAR not as one narrow category, but as a building block brand with room for different interests, ages, and display styles.
 
-![JIESTAR product wall and finished models at Mir Detstva 2025 in Moscow](/images/blog/exhibitions/mir-detstva-2025-moscow-body.avif "A real view of the JIESTAR presentation at Mir Detstva 2025.")
+![JIESTAR product wall with boxed sets and finished models at Mir Detstva 2025](/images/blog/exhibitions/mir-detstva-2025-moscow-body.avif "The stand before the aisle became busy, with multiple JIESTAR series visible together.")
 
-## A booth organised for range review
+As visitors arrived, the booth changed from a showroom into a meeting place. The photographs show people gathering at the counter, looking across the shelves, and speaking with the team. We can see the practical flow of a fair: a visitor notices a model from the aisle, steps closer to examine it, and then turns toward the people behind the stand to continue the discussion.
 
-The event photography shows a professional display built around clear JIESTAR branding, product packaging, and assembled building block models. Boxes are grouped so a visitor can scan multiple directions, while the finished builds provide a more immediate sense of form and display value. This combination is especially relevant for products whose appeal depends on the completed model rather than on packaging alone.
+![Visitors meeting the JIESTAR team beside the 2025 Moscow display](/images/blog/exhibitions/mir-detstva-2025-moscow-body-02.avif "A visitor conversation at our Mir Detstva presentation; the visible 10A125 sign belongs to a neighbouring exhibitor.")
 
-The visual record helps explain what a visitor could examine, but it does not confirm current stock, piece counts, age grading, price, order quantity, or delivery availability. Those details belong in a current product sheet and commercial quotation.
+![JIESTAR staff and visitors surrounded by building block products in Moscow](/images/blog/exhibitions/mir-detstva-2025-moscow-body-03.avif "The booth in full trade-fair rhythm during Mir Detstva 2025.")
 
-## Questions for distributors and retailers
+These scenes matter because exhibitions are not only about how products look when perfectly arranged. They are about the moments when someone points to a box, compares two finished builds, or asks how a particular direction could work for their audience. We do not treat a photograph of a conversation as proof of a commercial outcome. It is valuable for a simpler reason: it records the human side of introducing JIESTAR in person.
 
-A distributor reviewing the booth could begin with assortment structure. Which items form a recognisable family? Which package formats suit the intended channel? Would the market benefit from a focused theme, or from a broader introduction spanning several product directions? A retailer could also consider the balance between finished-model impact and the shelf space required by each box.
+## Products at the centre of the conversation
 
-Regional requirements should be part of the conversation from the beginning. Packaging language, labelling, documentation, product selection, and after-sales expectations may vary by destination and channel. JIESTAR's [quality and safety information](/quality-safety) can help buyers frame their due-diligence questions, while details for any specific order must be verified separately.
+The physical models made it easier to move between different kinds of discussion. A vehicle can lead into its mechanical form and display presence. A flower or decorative build can open a conversation about colour and interior display. Architecture and small scenes can draw attention to storytelling and detail. With several series close together, visitors could follow their own interests while still understanding the breadth of the collection.
 
-## Wholesale or a custom project
+The [official 2025 visitor guide](https://www.cjf-expo.ru/common/img/uploaded/exhibitions/mir_detstva/2025/doc/guide_md_cjf25.pdf) lists Guangdong Jiexing Toys Industrial Co., Ltd. at booth 10A120. One photograph includes a 10A125 sign above a neighbouring space; that number is part of the surrounding exhibition hall, not JIESTAR's booth. Keeping that distinction clear is important to an accurate record of the event.
 
-Not every buyer needs the same cooperation route. Businesses choosing from current products can start with [wholesale supply](/wholesale) and share their market, sales channels, categories of interest, and approximate quantity range. Partners seeking custom branding, packaging changes, an original product concept, an exclusive SKU, or a planned series should use [Custom Solutions](/custom-solutions).
+Compared with our earlier Moscow appearance, the 2025 photographs show a stand with more open floor space and a stronger balance between product overview and conversation areas. The identity remains familiar, but the presentation continues to evolve with each fair.
 
-A useful project brief does not need to be final. It should, however, explain the target customer, target market, desired model direction, packaging expectations, timing, and any commercial constraints that could affect development. These facts allow the discussion to become specific without inventing commitments at the fair stage.
+## Until the next meeting
 
-## Follow up after Mir Detstva
+Thank you to everyone who visited us at Mir Detstva 2025 and helped bring the stand to life. We were pleased to return to Moscow, place our latest range in front of visitors, and spend three days sharing ideas around building blocks.
 
-Buyers can review the current [JIESTAR product selection](/products) before sending a message. Referencing “Mir Detstva 2025, booth 10A120” makes it easier to connect a new enquiry with the display shown here. The [contact page](/contact) supports both fair follow-up and remote introductions.
-
-For a broader view of JIESTAR's buyer-facing activities, visit the [international exhibition archive](/blog/jiestar-international-toy-fairs). It includes the earlier 2023 Moscow appearance and individual stories from Jakarta, Hong Kong, Shanghai, Ho Chi Minh City, Shenzhen, and Bangkok.
+Explore today's [JIESTAR products](/products), visit [Wholesale](/wholesale) for current-range cooperation, or introduce a new concept through [Custom Solutions](/custom-solutions).

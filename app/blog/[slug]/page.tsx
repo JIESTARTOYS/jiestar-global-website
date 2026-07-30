@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import {
   BLOG_SECTIONS,
   formatBlogDate,
+  groupConsecutiveMarkdownImages,
   getBlogPost,
   getBlogPosts,
   getBlogSectionForPost,
@@ -44,7 +45,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
   if (!post) {
     notFound();
   }
-  const blocks = parseMarkdownBlocks(post.content);
+  const blocks = groupConsecutiveMarkdownImages(parseMarkdownBlocks(post.content));
   const relatedPosts = getRelatedBlogPosts(post, 3);
   const sectionSlug = getBlogSectionForPost(post);
   const section = sectionSlug ? BLOG_SECTIONS[sectionSlug] : undefined;
@@ -149,7 +150,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
             if (block.type === "image") {
               return (
                 <figure key={`${block.src}-${index}`} className="py-3">
-                  <div className="relative aspect-[3/2] overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                     <Image
                       src={block.src}
                       alt={block.alt}
@@ -164,6 +165,31 @@ export default async function BlogDetailPage({ params }: PageProps) {
                     </figcaption>
                   ) : null}
                 </figure>
+              );
+            }
+
+            if (block.type === "imageGroup") {
+              return (
+                <div key={`image-group-${index}`} className="grid gap-5 py-3 md:grid-cols-2">
+                  {block.images.map((image) => (
+                    <figure key={image.src} className="min-w-0">
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                        <Image
+                          src={image.src}
+                          alt={image.alt}
+                          fill
+                          sizes="(min-width: 768px) 376px, 100vw"
+                          className="object-cover"
+                        />
+                      </div>
+                      {image.caption ? (
+                        <figcaption className="mt-3 text-center text-sm leading-6 text-slate-500">
+                          {image.caption}
+                        </figcaption>
+                      ) : null}
+                    </figure>
+                  ))}
+                </div>
               );
             }
 

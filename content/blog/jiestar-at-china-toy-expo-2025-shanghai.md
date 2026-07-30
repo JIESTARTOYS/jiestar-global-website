@@ -1,6 +1,6 @@
 ---
 title: "JIESTAR at China Toy Expo 2025 in Shanghai"
-description: "Step inside JIESTAR's China Toy Expo 2025 presentation at booth E7G32, with verified event details, real images, and practical sourcing guidance."
+description: "Inside JIESTAR booth E7G32 at China Toy Expo 2025: a large branded stand, hands-on product explanations, a central model installation, and a busy Shanghai show floor."
 category: "Exhibitions"
 date: "2026-07-30"
 eventName: "China Toy Expo 2025"
@@ -8,39 +8,37 @@ eventStartDate: "2025-10-15"
 eventEndDate: "2025-10-17"
 eventLocation: "Shanghai New International Expo Centre, Shanghai, China"
 coverImage: "/images/blog/exhibitions/china-toy-expo-2025-shanghai-cover.avif"
-coverAlt: "JIESTAR booth E7G32 and building block displays at China Toy Expo 2025 in Shanghai"
+coverAlt: "Large red and yellow JIESTAR booth E7G32 at China Toy Expo 2025 in Shanghai"
 ---
 
-China Toy Expo 2025 placed JIESTAR in one of the country's major professional toy-sourcing environments. At booth E7G32, visitors could move from an overview of the brand to closer inspection of packaged sets and completed building block models. For wholesale and product-development buyers, this kind of presentation makes it easier to compare visual directions before requesting detailed commercial information.
+China Toy Expo 2025 gave JIESTAR one of the largest stages in this exhibition series. From October 15 to 17, our team presented the brand at booth E7G32 inside the Shanghai New International Expo Centre. The red-and-yellow stand could be seen down the aisle, with the JIESTAR name rising above open product walls, display tables, and a steady flow of visitors.
 
-The photographs used here come from the Shanghai exhibition group and show the actual 2025 booth. They document what was displayed at the event without making claims about orders, customer reactions, or the current availability of every pictured set.
+The exterior photograph captures the scale immediately. A tall red frame carries product imagery overhead, a yellow façade creates a strong entrance, and shelves of completed models draw the eye inward. It was designed to feel recognisably JIESTAR from a distance while remaining open enough for people to enter, circulate, and discover the products at their own pace.
 
-## Verified event information
+## A stand designed for discovery
 
-China Toy Expo 2025 ran from October 15 to 17 at the Shanghai New International Expo Centre. The [official JIESTAR exhibitor page](https://www.china-toy-expo.com/exhibitor/Guangdong-JieXing-Toys-Industry-Co-Ltd-6726) lists Guangdong JieXing Toys Industry Co., Ltd. at booth E7G32.
+Inside, the display moved between broad range presentation and close product explanation. Vehicles, trains, flowers, architecture, and smaller creative models appeared across the walls and tables. Our team could take a model from the display, turn it in the light, and point out the details that are difficult to understand from packaging alone.
 
-![JIESTAR models and boxed ranges at China Toy Expo 2025 booth E7G32](/images/blog/exhibitions/china-toy-expo-2025-shanghai-body.avif "The JIESTAR trade display photographed in Shanghai in October 2025.")
+![A JIESTAR team member presenting a finished model to visitors at China Toy Expo 2025](/images/blog/exhibitions/china-toy-expo-2025-shanghai-body.avif "Hands-on product explanation was part of the experience inside booth E7G32.")
 
-## Product directions visible at the booth
+![Central brick-built installation surrounded by JIESTAR product displays in Shanghai](/images/blog/exhibitions/china-toy-expo-2025-shanghai-body-02.avif "The central installation created a visual pause between the surrounding product walls.")
 
-The Shanghai photography shows a broad display with JIESTAR branding, boxed products, and assembled models arranged for scanning from the aisle. Display-led directions are visible across the presentation, including floral forms, transport and engineering themes, and larger model-oriented builds. The variety helps a buyer understand that assortment planning is not limited to a single theme.
+One of the most distinctive features was the circular installation at the centre of the stand. Loose bricks formed rings of colour around a raised cylindrical model, creating a playful counterpoint to the orderly boxed ranges on the walls. It invited visitors to look more closely and reminded us that every finished display begins with individual pieces and the act of building.
 
-Finished models are particularly useful in this setting. They reveal silhouette, colour balance, and display presence in a way that a package front cannot fully communicate. Meanwhile, the boxes help buyers think about shelf dimensions, visual consistency, and how a series might be grouped in-store or online.
+The surrounding product walls gave that idea breadth. Larger technical and transport models sat beside expressive flowers and scene-based sets. Rather than presenting these as unrelated categories, the booth allowed them to share one visual world. The common thread was the pleasure of transforming parts into an object with form, detail, and display value.
 
-These observations are based on the photographs. Exact model numbers, piece counts, specifications, age recommendations, pricing, minimum order quantity, stock, and production timing must be confirmed for any current enquiry.
+## The show floor in motion
 
-## Value for domestic and international buyers
+As the day became busier, the long display tables filled with visitors examining models and speaking with the team. The Shanghai photographs capture this change in energy. The clean architecture of the stand remains visible, but people, products, and conversation become the real centre of the frame.
 
-For international buyers visiting China, the Shanghai fair offers an efficient starting point for comparing product strategies. A distributor may be looking for an opening assortment across several themes, while a specialist retailer may prefer a smaller collection with strong finished-model appeal. Ecommerce teams may focus on how well each build can be communicated through product photography and content.
+![Visitors exploring trains, vehicles, and display models inside JIESTAR booth E7G32](/images/blog/exhibitions/china-toy-expo-2025-shanghai-body-03.avif "The product tables and surrounding walls during a busy period at China Toy Expo.")
 
-The booth is also useful for separating two forms of cooperation. Existing JIESTAR ranges can be discussed through [wholesale supply](/wholesale). Buyers who need custom packaging, branding, an original concept, an exclusive SKU, or a planned product line can move toward [OEM / ODM and product co-development](/custom-solutions).
+These exchanges were grounded in the physical range. A visitor could follow the line of a train, compare vehicle shapes, study the colour of a floral build, or look across several boxes before speaking with us. Our team, in turn, could introduce the thinking behind a series and listen to the product directions that mattered to the people at the stand.
 
-## Turning visual interest into a sourcing brief
+The [official JIESTAR exhibitor page](https://www.china-toy-expo.com/exhibitor/Guangdong-JieXing-Toys-Industry-Co-Ltd-6726) records booth E7G32 and the show dates at the Shanghai New International Expo Centre. The event placed our brand in a major professional toy environment, but the photographs remain focused on what we can genuinely show: our stand, our products, our team at work, and visitors engaging with the display.
 
-A fair follow-up should name the market, channel, customer profile, preferred categories, expected quantity direction, packaging needs, and timing. Buyers should also request the product and compliance information appropriate to their destination. The [JIESTAR quality and safety overview](/quality-safety) provides context for that discussion but does not replace order-specific documents.
+## A memorable Shanghai presentation
 
-Before contacting the team, browse the current [product selection](/products) and note any relevant themes. In the enquiry, reference “China Toy Expo 2025, booth E7G32” so the team understands which presentation led to the conversation.
+Looking back, the Shanghai booth stands out for the way brand architecture, models, and people worked together. The bold exterior introduced JIESTAR at scale; the central installation added a playful landmark; and the open product tables made room for direct, detailed conversations.
 
-## Continue beyond Shanghai
-
-The [JIESTAR international toy fair archive](/blog/jiestar-international-toy-fairs) connects this Shanghai appearance with documented events in Moscow, Jakarta, Hong Kong, Ho Chi Minh City, Shenzhen, and Bangkok. Buyers who were unable to attend can begin the same structured discussion remotely through the [contact page](/contact).
+Thank you to everyone who stepped into booth E7G32. You can discover current [JIESTAR building block sets](/products), explore [wholesale cooperation](/wholesale), or [contact our team](/contact) about a future product or partnership.

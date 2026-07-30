@@ -1,6 +1,6 @@
 ---
 title: "JIESTAR at Mir Detstva 2023 in Moscow"
-description: "A closer look at JIESTAR's Mir Detstva 2023 appearance in Moscow, including verified event details, real booth photography, and practical points for building block buyers."
+description: "Looking back at JIESTAR's Mir Detstva 2023 booth in Moscow, where our building block collections came together in one of our earliest recorded international fair displays."
 category: "Exhibitions"
 date: "2026-07-30"
 eventName: "Mir Detstva 2023"
@@ -8,37 +8,29 @@ eventStartDate: "2023-09-26"
 eventEndDate: "2023-09-29"
 eventLocation: "EXPOCENTRE Fairgrounds, Moscow, Russia"
 coverImage: "/images/blog/exhibitions/mir-detstva-2023-moscow-cover.avif"
-coverAlt: "JIESTAR booth 23A81 with boxed building block sets at Mir Detstva 2023 in Moscow"
+coverAlt: "JIESTAR booth 23A81 filled with boxed building block sets at Mir Detstva 2023 in Moscow"
 ---
 
-JIESTAR took part in Mir Detstva 2023 in Moscow, presenting building block products in a setting designed for professional toy sourcing. The fair brought an opportunity to place packaged sets and assembled examples in front of buyers who wanted to judge product direction at close range rather than relying only on a digital catalogue.
+Mir Detstva 2023 is where this chapter of our international exhibition journey begins. From September 26 to 29, the JIESTAR team welcomed visitors to booth 23A81 at Moscow's EXPOCENTRE Fairgrounds, surrounding the stand with the products, packaging, and finished models that defined our building block range at the time.
 
-This article uses photography filed in the JIESTAR exhibition archive under a later Russian-event folder. The visible booth identity and the official exhibitor information align it with the 2023 event, so the material is presented here as Mir Detstva 2023 rather than as a separate 2025 appearance.
+The single photograph preserved from the show captures the booth almost as a complete panorama. Our company name runs across the top of the stand, while shelves wrap around the space below. The JIESTAR and iBlock identities are visible among a broad collection of boxed sets and assembled builds. It is a straightforward trade-fair scene, but it says a great deal about the way we wanted to introduce the brand: not through one hero product alone, but through the breadth of ideas that can be created with building blocks.
 
-## Verified event information
+## A wall built around the range
 
-Mir Detstva 2023 ran from September 26 to 29 at the EXPOCENTRE Fairgrounds in Moscow. The [official organiser report](https://www.cjf-expo.ru/en/media/press/index.php?id4=18508) confirms the dates and venue, while the official catalogue listed Guangdong Jiexing Toys Industrial Co., Ltd. at booth 23A81.
+Across the booth, vehicles, mechanical subjects, buildings, display pieces, and smaller creative sets appear side by side. Some models are placed directly in front of their packaging, giving visitors two views at once: the promise communicated by the box and the physical character of the completed build. Larger packages create strong visual anchors, while smaller sets fill out the shelves and show how different product directions can work together.
 
-![JIESTAR booth 23A81 and product wall at Mir Detstva 2023 in Moscow](/images/blog/exhibitions/mir-detstva-2023-moscow-body.avif "The JIESTAR display photographed at Mir Detstva 2023.")
+For our team, this kind of display was an opportunity to make the JIESTAR world tangible. A catalogue can introduce an item clearly, but an exhibition stand lets people step back, scan an entire range, and then move closer to the model that catches their attention. Details such as silhouette, colour, model scale, and shelf presence become immediate. The booth also created a natural place for conversations about the interests of different markets and retail channels.
 
-## What the booth photography shows
+## Meeting Moscow face to face
 
-The booth photograph gives buyers a useful view of JIESTAR's trade presentation. Branded wall graphics make the company identity clear, while boxed products are arranged in rows so visitors can compare several themes without losing sight of the overall range. Finished models and package fronts work together: the model communicates the building result, while the box helps a retailer consider shelf presence and category organisation.
+Mir Detstva has long brought together professionals from the children's goods and toy industries. The [official organiser report](https://www.cjf-expo.ru/en/media/press/index.php?id4=18508) confirms that the 2023 edition took place at EXPOCENTRE from September 26 to 29. For JIESTAR, being present at booth 23A81 meant putting our name, our products, and our approach in front of visitors in a focused industry setting.
 
-The image also shows the practical value of a physical fair. Scale, colour balance, box dimensions, and the relationship between assembled models and packaging are easier to assess in person. The photograph does not establish current availability or commercial terms, but it records the kind of product review buyers could begin at the booth.
+What remains most vivid in the photograph is the completeness of the stand. There is no empty showroom styling and no attempt to hide the working nature of the event. The shelves are full, the tables are ready for closer review, and the whole space is organised around seeing and discussing products. It reflects the practical energy of a fair where a first glance can lead naturally to a detailed conversation.
 
-## Why a Moscow meeting mattered for buyers
+This 2023 appearance also gives useful perspective to our later exhibition stories. In the years that followed, our stands became more varied in scale and presentation, and our travels continued through Jakarta, Hong Kong, Shanghai, Ho Chi Minh City, Shenzhen, Bangkok, and back to Moscow. The foundations, however, are already visible here: clear brand identification, real finished models, and a wide range presented in one place.
 
-For distributors and retailers serving Russia and nearby markets, Mir Detstva created a focused place to discuss how a building block range might fit local channels. A buyer could identify the visual themes most suitable for specialty toy stores, general retail, gifting, or ecommerce, then request more precise information after the show.
+## Thank you, Moscow
 
-Useful questions would include which items belong to the same product family, what packaging and language options can be discussed, how replacement-piece support works, and which sets are suitable for a trial assortment. Buyers interested in their own concepts could also distinguish between selecting from an existing wholesale range and starting a longer [custom building block project](/custom-solutions).
+We are grateful to everyone who stopped at our booth and spent time with the JIESTAR range during Mir Detstva 2023. The show remains an important early record of how we introduced our building block ideas in an international setting.
 
-## Preparing a follow-up
-
-A booth visit is the start of a sourcing process, not proof of an order or partnership. Before requesting a quotation, buyers should define the destination market, sales channel, preferred product direction, approximate quantity range, packaging expectations, and any target launch window. Current prices, minimum order quantities, lead times, and product specifications should then be confirmed directly.
-
-JIESTAR supports discussions covering [wholesale supply](/wholesale), OEM / ODM customization, product co-development, exclusive SKUs, and longer-term product-line cooperation. Buyers who first encountered the brand through Mir Detstva can review the current [product selection](/products) and use the [contact page](/contact) to reference “Mir Detstva 2023, booth 23A81” in their enquiry.
-
-## Explore the wider exhibition record
-
-This Moscow appearance is one entry in the [JIESTAR international toy fair archive](/blog/jiestar-international-toy-fairs). The archive links later events in Hong Kong, Jakarta, Shanghai, Ho Chi Minh City, Shenzhen, Bangkok, and Moscow, with each article tied to its own verified dates and real event photography.
+You can continue through our [international exhibition journey](/blog/jiestar-international-toy-fairs), explore current [JIESTAR products](/products), or [contact our team](/contact) to discuss wholesale supply and future building block projects.
