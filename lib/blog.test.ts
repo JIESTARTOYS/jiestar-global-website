@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   BLOG_SECTIONS,
   BLOG_SECTION_SLUGS,
+  groupConsecutiveMarkdownImages,
   getBlogContentDate,
   getBlogPost,
   getBlogPosts,
@@ -75,6 +76,62 @@ test("parseMarkdownBlocks leaves unsupported image sources as paragraph text", (
   assert.equal(blocks[0].type, "paragraph");
 });
 
+test("groupConsecutiveMarkdownImages pairs adjacent images and preserves their alt text and captions", () => {
+  const blocks = parseMarkdownBlocks(`
+![First exhibition view](/images/blog/exhibitions/first.avif "First caption")
+
+![Second exhibition view](/images/blog/exhibitions/second.avif "Second caption")
+
+The story continues after the gallery.
+`);
+  const groupedBlocks = groupConsecutiveMarkdownImages(blocks);
+
+  assert.equal(groupedBlocks.length, 2);
+  assert.deepEqual(groupedBlocks[0], {
+    type: "imageGroup",
+    images: [
+      {
+        type: "image",
+        src: "/images/blog/exhibitions/first.avif",
+        alt: "First exhibition view",
+        caption: "First caption",
+      },
+      {
+        type: "image",
+        src: "/images/blog/exhibitions/second.avif",
+        alt: "Second exhibition view",
+        caption: "Second caption",
+      },
+    ],
+  });
+  assert.equal(groupedBlocks[1].type, "paragraph");
+});
+
+test("groupConsecutiveMarkdownImages leaves one image full-width and keeps a third image in order", () => {
+  const singleImage = parseMarkdownBlocks(`
+![Single exhibition view](/images/blog/exhibitions/single.avif)
+
+Text separates the images.
+
+![Later exhibition view](/images/blog/exhibitions/later.avif)
+`);
+  const threeImages = parseMarkdownBlocks(`
+![First view](/images/blog/exhibitions/first.avif)
+![Second view](/images/blog/exhibitions/second.avif)
+![Third view](/images/blog/exhibitions/third.avif)
+`);
+
+  assert.deepEqual(
+    groupConsecutiveMarkdownImages(singleImage).map((block) => block.type),
+    ["image", "paragraph", "image"],
+  );
+
+  const groupedThreeImages = groupConsecutiveMarkdownImages(threeImages);
+  assert.deepEqual(groupedThreeImages.map((block) => block.type), ["imageGroup", "image"]);
+  assert.equal(groupedThreeImages[1].type, "image");
+  assert.equal(groupedThreeImages[1].type === "image" ? groupedThreeImages[1].src : "", "/images/blog/exhibitions/third.avif");
+});
+
 test("every blog post has valid dates, readable content, and a local cover image", () => {
   const posts = getBlogPosts();
 
@@ -115,12 +172,53 @@ test("exhibition posts have complete event metadata and are sorted newest first"
     assert.match(post.eventStartDate ?? "", /^\d{4}-\d{2}-\d{2}$/);
     assert.match(post.eventEndDate ?? "", /^\d{4}-\d{2}-\d{2}$/);
     assert.ok((post.eventStartDate ?? "") <= (post.eventEndDate ?? ""));
-    assert.ok(parseMarkdownBlocks(post.content).some((block) => block.type === "image"));
   }
 
   for (let index = 1; index < exhibitionPosts.length; index += 1) {
     assert.ok((exhibitionPosts[index - 1].eventStartDate ?? "") >= (exhibitionPosts[index].eventStartDate ?? ""));
   }
+});
+
+test("exhibition stories publish all 18 unique photographs with the intended event assignments", () => {
+  const exhibitionPosts = getExhibitionPosts();
+  const expectedInlineCounts: Record<string, number> = {
+    "jiestar-at-mir-detstva-2023-moscow": 0,
+    "jiestar-at-ibte-indonesia-2024": 1,
+    "jiestar-at-hong-kong-toys-games-fair-2025": 0,
+    "jiestar-at-mir-detstva-2025-moscow": 3,
+    "jiestar-at-china-toy-expo-2025-shanghai": 3,
+    "jiestar-at-ibte-vietnam-2025": 0,
+    "jiestar-at-toy-hobby-china-2026-shenzhen": 1,
+    "jiestar-at-mega-show-bangkok-2026": 2,
+  };
+  const publishedImagePaths = new Set<string>();
+
+  for (const post of exhibitionPosts) {
+    const inlineImages = parseMarkdownBlocks(post.content).filter((block) => block.type === "image");
+
+    assert.equal(inlineImages.length, expectedInlineCounts[post.slug]);
+    publishedImagePaths.add(post.coverImage);
+
+    for (const image of inlineImages) {
+      publishedImagePaths.add(image.src);
+    }
+  }
+
+  assert.equal(publishedImagePaths.size, 18);
+  assert.ok(publishedImagePaths.has("/images/blog/exhibitions/ibte-indonesia-2024-cover.avif"));
+  assert.ok(publishedImagePaths.has("/images/blog/exhibitions/ibte-vietnam-2025-cover.avif"));
+});
+
+test("exhibition facts keep the corrected Moscow booth and Bangkok sector name", () => {
+  const moscow = getBlogPost("jiestar-at-mir-detstva-2025-moscow");
+  const bangkok = getBlogPost("jiestar-at-mega-show-bangkok-2026");
+
+  assert.ok(moscow);
+  assert.ok(bangkok);
+  assert.ok(moscow.content.includes("booth 10A120"));
+  assert.ok(moscow.content.includes("10A125 sign belongs to a neighbouring exhibitor"));
+  assert.equal(bangkok.title, "JIESTAR at MEGA SHOW Bangkok 2026: Asia Art Toy & IP Show");
+  assert.equal(bangkok.eventName, "MEGA SHOW Bangkok 2026 — Asia Art Toy & IP Show");
 });
 
 test("related blog posts prioritize the same category and exclude the current post", () => {
