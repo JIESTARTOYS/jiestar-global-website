@@ -1,6 +1,6 @@
 ---
 title: "JIESTAR at Toy & Hobby China 2026 in Shenzhen"
-description: "Review JIESTAR's Toy & Hobby China 2026 display in Shenzhen, with official event facts, real booth photography, and buyer-focused sourcing guidance."
+description: "JIESTAR and iBlock at Toy & Hobby China 2026, where our Shenzhen stand brought finished models, product ranges, and visible OEM/ODM capabilities together."
 category: "Exhibitions"
 date: "2026-07-30"
 eventName: "Toy & Hobby China 2026"
@@ -8,39 +8,35 @@ eventStartDate: "2026-04-09"
 eventEndDate: "2026-04-11"
 eventLocation: "Shenzhen World Exhibition & Convention Center, Shenzhen, China"
 coverImage: "/images/blog/exhibitions/toy-hobby-china-2026-shenzhen-cover.avif"
-coverAlt: "JIESTAR building block display at Toy and Hobby China 2026 in Shenzhen"
+coverAlt: "Red and white JIESTAR OEM and ODM exhibition stand at Toy and Hobby China 2026 in Shenzhen"
 ---
 
-Toy & Hobby China 2026 brought JIESTAR's building block presentation to Shenzhen, giving professional visitors a direct view of boxed ranges and assembled display models. The fair setting allowed buyers to move quickly from brand discovery to practical questions about assortment, channel fit, packaging, and the type of cooperation required.
+Toy & Hobby China 2026 brought JIESTAR to Shenzhen with a stand that connected brand presentation, finished products, and our broader product-development capabilities. From April 9 to 11 at the Shenzhen World Exhibition & Convention Center, visitors could see JIESTAR and iBlock ranges within a space visibly framed by OEM/ODM messaging.
 
-This article uses an authentic photograph from the Shenzhen event group. It records the visible presentation while keeping commercial claims appropriately limited: a booth image can show range and display direction, but it cannot prove current stock, orders, sales performance, or market exclusivity.
+The exterior photograph shows a confident red-and-white structure with a house-like roofline. “OEM/ODM” appears prominently above the entrance, while JIESTAR and iBlock branding sit across the façade. Display screens and products draw visitors inward. The stand made a clear first statement: we were there to show building block products, but also to represent the work behind developing and presenting them.
 
-## Verified event information
+## Two brand expressions inside one space
 
-Toy & Hobby China 2026 took place from April 9 to 11 at the Shenzhen World Exhibition & Convention Center. The dates and venue are listed in the organiser's [official 2026 fair fact sheet](https://shenzhen-international-toy-and-hobby-fair.hk.messefrankfurt.com/content/dam/messefrankfurt-redaktion/toyfair_gz/sztoy26/factsheet/ToyHobbyChina_2026_FactSheet.pdf).
+The view from inside the stand shifts the emphasis from architecture to product. A circular orange iBlock display sits at the centre, with compact models arranged around it. Along the walls, boxed sets and finished builds extend through the booth in long, organised rows. The curved centrepiece gives the room a focal point without interrupting the sightlines to the surrounding ranges.
 
-![JIESTAR product wall and models at Toy and Hobby China 2026 in Shenzhen](/images/blog/exhibitions/toy-hobby-china-2026-shenzhen-body.avif "The JIESTAR trade-fair presentation photographed in Shenzhen in April 2026.")
+![iBlock centre display and JIESTAR product walls at Toy and Hobby China 2026](/images/blog/exhibitions/toy-hobby-china-2026-shenzhen-body.avif "The open interior connected the circular iBlock presentation with wider JIESTAR ranges.")
 
-## What buyers could examine
+JIESTAR and iBlock have distinct visual roles in the photographs. The larger booth identity carries JIESTAR's familiar red, while the orange centre display introduces iBlock with a more focused showcase. Together, they communicate that a building block company can present multiple product voices without losing a coherent exhibition experience.
 
-The photograph shows a structured booth with clear branding, product boxes arranged across the walls, and completed models positioned for closer viewing. That pairing supports two different decisions. Packaging helps a buyer judge retail communication and range consistency, while the physical models help communicate shape, colour, scale, and display impact.
+Completed models were central to that experience. Vehicles, buildings, decorative subjects, and other creative builds could be viewed apart from the box image. Visitors could move around the centre, approach the wall displays, and see how individual items belonged to wider product families. The open plan kept the stand welcoming even with many products on view.
 
-A broad wall presentation also makes it easier to identify product families. Buyers can look for themes that work together, compare package sizes, and consider whether a launch should be narrow and focused or span multiple directions. Any exact item details still require confirmation through a current catalogue, specification sheet, sample process, or quotation.
+## Products and development under one roof
 
-## Why Shenzhen is a practical meeting point
+The visible OEM/ODM wording was not added as an abstract promise after the event; it was part of the physical booth design. It signalled that our conversations in Shenzhen could extend beyond selecting an existing product. JIESTAR's work can also include OEM/ODM customization, packaging and brand application, product co-development, exclusive directions, and longer-term product-line planning, subject to the requirements and review of each project.
 
-Shenzhen is accessible to many domestic and international businesses operating across the Greater Bay Area. A professional toy fair there can support an efficient first review before a buyer decides whether to request samples, plan a deeper supplier conversation, or prepare a custom project brief.
+At the same time, the stand remained product-led. The shelves, models, and packaging gave every conversation a concrete starting point. A visitor could respond to something already built, compare several categories, or use a visible model as a reference when introducing a different idea. That relationship between real products and future development is an important part of how we present ourselves to business partners.
 
-Retailers and ecommerce operators may focus on how each set will be discovered and presented to consumers. Distributors must also consider assortment architecture, packaging, documentation, order quantities, replenishment, and destination-market requirements. Buyers can use the [quality and safety overview](/quality-safety) to structure due-diligence topics while requesting order-specific information separately.
+The organiser's [official 2026 fact sheet](https://shenzhen-international-toy-and-hobby-fair.hk.messefrankfurt.com/content/dam/messefrankfurt-redaktion/toyfair_gz/sztoy26/factsheet/ToyHobbyChina_2026_FactSheet.pdf) confirms the fair dates and venue. Being in Shenzhen also gave the presentation a fitting context: a city known for product, design, manufacturing, and international business connections.
 
-## Existing ranges and custom development
+That combination made the fair feel closely connected to the work represented inside our stand.
 
-JIESTAR supports more than one cooperation model. Buyers selecting from current products should use the [wholesale cooperation route](/wholesale), sharing their market, channel, product interests, approximate quantity direction, and target timing. Current terms remain subject to confirmation.
+## Thank you for stepping inside
 
-Projects involving an original model idea, packaging and brand customization, product co-development, exclusive SKUs, or longer-term product-line planning belong under [Custom Solutions](/custom-solutions). Even an early brief should explain the intended customer, core concept, desired scale or function, packaging direction, target market, and expected volume range.
+We appreciate everyone who visited our stand and explored the JIESTAR and iBlock displays during Toy & Hobby China 2026. The event gave us room to show both the products already on the shelves and the development capabilities represented above them.
 
-## Continue the Shenzhen conversation
-
-Browse current [JIESTAR products](/products) and note which themes relate to the fair display. When contacting the team, mention “Toy & Hobby China 2026 in Shenzhen” and describe what you want to evaluate. The [contact page](/contact) can be used whether the initial meeting took place at the booth or entirely online.
-
-For more event stories, visit the [JIESTAR international toy fair archive](/blog/jiestar-international-toy-fairs). It connects Shenzhen with documented appearances in Moscow, Jakarta, Hong Kong, Shanghai, Ho Chi Minh City, and Bangkok, each with independent event metadata and real photography.
+Browse current [JIESTAR products](/products), learn about [wholesale supply](/wholesale), or bring a product idea to our [Custom Solutions team](/custom-solutions).
