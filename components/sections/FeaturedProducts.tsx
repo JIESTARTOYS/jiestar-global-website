@@ -4,6 +4,7 @@ import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 import type { ProductSummary } from "@/lib/data";
 import { selectLatestHomeProducts } from "@/lib/home-products";
 import { getDisplayPrice } from "@/lib/seo";
+import { UsWarehouseBadge } from "@/components/product/UsWarehouseBadge";
 
 export function FeaturedProducts({ products }: { products: ProductSummary[] }) {
   const latestProducts = selectLatestHomeProducts(products);
@@ -45,9 +46,13 @@ function HomeProductCard({ product }: { product: ProductSummary }) {
       <div className="relative">
         <Link href={`/products/${product.handle}`} className="block" aria-label={`View ${product.title}`}>
           <div className="relative">
-            <span className="absolute left-2 top-2 z-10 rounded-md bg-slate-950 px-1.5 py-1 text-[10px] font-black text-white sm:left-3 sm:top-3 sm:px-2 sm:text-[11px]">
-              New
-            </span>
+            {product.usWarehouseEligible ? (
+              <UsWarehouseBadge className="absolute left-2 top-2 z-10 bg-white/95 shadow-sm sm:left-3 sm:top-3" />
+            ) : (
+              <span className="absolute left-2 top-2 z-10 rounded-md bg-slate-950 px-1.5 py-1 text-[10px] font-black text-white sm:left-3 sm:top-3 sm:px-2 sm:text-[11px]">
+                New
+              </span>
+            )}
             <ProductImageSwap
               product={product}
               sizes="(min-width: 1280px) 24vw, (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"

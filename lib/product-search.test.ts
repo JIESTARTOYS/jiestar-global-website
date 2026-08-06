@@ -16,6 +16,7 @@ const products: ProductSummary[] = [
     sku: "JQ1102",
     pieceCount: "1723 pcs",
     recommendedAge: "14+",
+    usWarehouseEligible: false,
     createdAt: "2026-06-15T07:51:55Z",
   },
   {
@@ -30,6 +31,7 @@ const products: ProductSummary[] = [
     sku: "JQ1149",
     pieceCount: "1107 pcs",
     recommendedAge: "14+",
+    usWarehouseEligible: false,
     createdAt: "2026-06-15T07:41:16Z",
   },
 ];

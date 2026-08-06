@@ -1,4 +1,5 @@
 import { collections, products, type Collection, type Product, type ProductSummary, type ProductVariant } from "./data";
+import { excludeUsWarehouseCollection, isUsWarehouseEligible } from "./us-warehouse";
 import { getLocalProductSpecifications } from "./product-specifications";
 import { isSubBrandCollectionHandle } from "./sub-brands";
 import { applyShopifyCheckoutDomain } from "./shopify-checkout-url";
@@ -535,7 +536,9 @@ function formatPieceCount(value?: string) {
 
 function pickPrimaryCollection(node: Pick<ShopifyProductSummaryNode, "collections">) {
   const shopifyCollections = node.collections.edges.map(({ node: collection }) => collection);
-  const catalogCollections = shopifyCollections.filter((collection) => !isSubBrandCollectionHandle(collection.handle));
+  const catalogCollections = excludeUsWarehouseCollection(
+    shopifyCollections.filter((collection) => !isSubBrandCollectionHandle(collection.handle)),
+  );
   const mainCategoryCollection = catalogCollections.find(
     (collection) =>
       getWebsiteCollectionType(collection) === "main_category" ||
@@ -589,6 +592,7 @@ function mapShopifyProductSummary(node: ShopifyProductSummaryNode): ProductSumma
     sku: variant?.sku ?? "Contact for SKU",
     pieceCount: formatPieceCount(pieceCount),
     recommendedAge: recommendedAge ?? "See product package",
+    usWarehouseEligible: isUsWarehouseEligible(node.collections.edges.map(({ node: collection }) => collection)),
     series: localSpecs?.series,
     releaseDate: localSpecs?.releaseDate,
     createdAt: node.createdAt,
@@ -653,6 +657,7 @@ function mapShopifyProduct(node: ShopifyProductNode): Product {
     variants,
     pieceCount: formatPieceCount(pieceCount),
     recommendedAge: recommendedAge ?? "See product package",
+    usWarehouseEligible: isUsWarehouseEligible(node.collections.edges.map(({ node: collection }) => collection)),
     difficulty: difficultyLevel ?? "See product package",
     finishedSize: finishedSize ?? "See product package",
     packageSize: packageSize ?? "See product package",

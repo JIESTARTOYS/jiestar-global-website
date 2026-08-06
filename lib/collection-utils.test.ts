@@ -16,6 +16,7 @@ function product(overrides: Partial<ProductSummary> = {}): ProductSummary {
     sku: "SKU-1",
     pieceCount: "100 pcs",
     recommendedAge: "8+",
+    usWarehouseEligible: false,
     ...overrides,
   };
 }

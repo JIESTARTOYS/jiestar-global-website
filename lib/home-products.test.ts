@@ -16,6 +16,7 @@ function product(id: string, createdAt: string): ProductSummary {
     sku: id,
     pieceCount: "",
     recommendedAge: "",
+    usWarehouseEligible: false,
     createdAt,
   };
 }

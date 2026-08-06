@@ -31,6 +31,7 @@ export type ProductSummary = {
   sku: string;
   pieceCount: string;
   recommendedAge: string;
+  usWarehouseEligible: boolean;
   images?: ProductImage[];
   series?: string;
   releaseDate?: string;
@@ -71,6 +72,7 @@ export const siteConfig = {
 export const navigation = [
   { label: "Home", href: "/" },
   { label: "Products", href: "/products" },
+  { label: "U.S. Warehouse", href: "/us-warehouse" },
   { label: "Wholesale", href: "/wholesale" },
   { label: "Custom Solutions", href: "/custom-solutions" },
   { label: "Blog", href: "/blog" },
@@ -154,6 +156,7 @@ export const products: Product[] = [
     sku: "JS-SC-001",
     pieceCount: "1,286 pcs",
     recommendedAge: "14+",
+    usWarehouseEligible: false,
     difficulty: "Advanced",
     finishedSize: "48 x 22 x 13 cm",
     packageSize: "54 x 35 x 9 cm",
@@ -176,6 +179,7 @@ export const products: Product[] = [
     sku: "JS-TR-002",
     pieceCount: "968 pcs",
     recommendedAge: "12+",
+    usWarehouseEligible: false,
     difficulty: "Intermediate",
     finishedSize: "42 x 8 x 12 cm",
     packageSize: "48 x 32 x 8 cm",
@@ -198,6 +202,7 @@ export const products: Product[] = [
     sku: "JS-PS-003",
     pieceCount: "1,642 pcs",
     recommendedAge: "14+",
+    usWarehouseEligible: false,
     difficulty: "Advanced",
     finishedSize: "61 x 18 x 48 cm",
     packageSize: "58 x 38 x 11 cm",
@@ -220,6 +225,7 @@ export const products: Product[] = [
     sku: "JS-AR-004",
     pieceCount: "812 pcs",
     recommendedAge: "12+",
+    usWarehouseEligible: false,
     difficulty: "Intermediate",
     finishedSize: "28 x 22 x 24 cm",
     packageSize: "42 x 29 x 8 cm",

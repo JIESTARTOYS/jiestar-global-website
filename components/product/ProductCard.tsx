@@ -3,6 +3,7 @@ import type { ProductSummary } from "@/lib/data";
 import { StarIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 import { getDisplayPrice } from "@/lib/seo";
+import { UsWarehouseBadge } from "@/components/product/UsWarehouseBadge";
 
 export function ProductCard({ product }: { product: ProductSummary }) {
   const displayPrice = getDisplayPrice(product.price);
@@ -11,9 +12,13 @@ export function ProductCard({ product }: { product: ProductSummary }) {
     <article className="group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
       <Link href={`/products/${product.handle}`} className="block">
         <div className="relative">
-          <span className="absolute left-3 top-3 z-10 rounded-md bg-slate-950 px-2 py-1 text-[11px] font-black text-white">
-            New
-          </span>
+          {product.usWarehouseEligible ? (
+            <UsWarehouseBadge className="absolute left-3 top-3 z-10 bg-white/95 shadow-sm" />
+          ) : (
+            <span className="absolute left-3 top-3 z-10 rounded-md bg-slate-950 px-2 py-1 text-[11px] font-black text-white">
+              New
+            </span>
+          )}
           <ProductImageSwap
             product={product}
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"

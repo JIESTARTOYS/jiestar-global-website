@@ -6,6 +6,7 @@ import { ProductVariantPurchase } from "@/components/product/ProductVariantPurch
 import { ArrowRightIcon, PackageIcon, ShieldIcon, TruckIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
 import type { Product } from "@/lib/data";
+import { UsWarehouseBadge } from "@/components/product/UsWarehouseBadge";
 
 export function ProductDetailTop({ product }: { product: Product }) {
   const variants = useMemo(() => product.variants ?? [], [product.variants]);
@@ -28,7 +29,10 @@ export function ProductDetailTop({ product }: { product: Product }) {
       />
 
       <div className="lg:sticky lg:top-24">
-        <p className="text-sm font-black uppercase text-red-600">{product.category}</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm font-black uppercase text-red-600">{product.category}</p>
+          {product.usWarehouseEligible ? <UsWarehouseBadge /> : null}
+        </div>
         <h1 className="mt-3 text-3xl font-black leading-tight tracking-normal text-slate-950 sm:text-4xl">
           {product.title}
         </h1>
@@ -39,6 +43,15 @@ export function ProductDetailTop({ product }: { product: Product }) {
           selectedVariantId={selectedVariantId}
           onVariantChange={setSelectedVariantId}
         />
+
+        {product.usWarehouseEligible ? (
+          <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">
+            <p className="font-black">U.S. warehouse eligible</p>
+            <p className="mt-1 leading-6 text-blue-900/80">
+              Available for delivery to eligible U.S. addresses. The final shipping option and charge are shown at checkout.
+            </p>
+          </div>
+        ) : null}
 
         <div className="mt-6 grid gap-3 text-sm text-slate-700 sm:grid-cols-3">
           {[

@@ -14,7 +14,7 @@ export default function ShippingPolicyPage() {
       <PolicyPage
         title="Shipping Policy"
         description="This policy explains processing times, delivery estimates, shipping charges, tracking, and delivery support for JIESTAR retail orders. Wholesale and custom orders follow their confirmed commercial terms."
-        updatedLabel="Last updated July 21, 2026"
+        updatedLabel="Last updated August 1, 2026"
         sections={[
           {
             title: "Order processing",
@@ -41,6 +41,15 @@ export default function ShippingPolicyPage() {
               "The checkout total and order confirmation show the shipping charge collected by JIESTAR.",
               "Import duties, taxes, or local handling fees may apply where they are not collected at checkout and are determined by the destination authorities or carrier.",
               "Any destination-specific checkout terms shown before payment form part of the order information.",
+            ],
+          },
+          {
+            title: "U.S. warehouse eligible products",
+            body: "Products marked “Ships from U.S.” are eligible for fulfillment through our U.S. warehouse program to eligible United States addresses. This label does not represent a live inventory count or guarantee a specific delivery date.",
+            items: [
+              "The final available shipping option and charge are shown at checkout before payment.",
+              "When a cart includes products fulfilled from more than one location, Shopify may combine shipping charges or split the order into separate shipments.",
+              "Warehouse eligibility can change. If an eligible item cannot be fulfilled through the U.S. warehouse program, the available checkout options may reflect another fulfillment route.",
             ],
           },
           {

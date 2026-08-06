@@ -232,7 +232,7 @@ export function HeaderMobileSearch() {
   return (
     <div
       ref={containerRef}
-      className="relative lg:hidden"
+      className="relative xl:hidden"
       onKeyDown={(event) => {
         if (event.key === "Escape") {
           setIsOpen(false);

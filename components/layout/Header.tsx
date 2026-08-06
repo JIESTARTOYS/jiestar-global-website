@@ -9,12 +9,12 @@ import { HeaderMobileNav } from "@/components/layout/HeaderMobileNav";
 export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center gap-5 px-5 py-4 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center gap-4 px-5 py-4 lg:px-8">
         <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="JIESTAR home">
           <SiteLogo className="size-16" priority />
         </Link>
 
-        <nav className="hidden flex-1 items-center justify-center gap-8 lg:flex" aria-label="Main navigation">
+        <nav className="hidden flex-1 items-center justify-center gap-5 xl:flex 2xl:gap-7" aria-label="Main navigation">
           {navigation.map((item) => (
             <Link
               key={item.href}
@@ -26,8 +26,8 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
-          <HeaderSearch />
+        <div className="hidden items-center gap-2 xl:flex">
+          <HeaderSearch className="h-11 w-52 2xl:w-64" />
           <Link href="/account" className="flex h-11 items-center gap-2 rounded-md px-2 text-sm font-bold text-slate-700 hover:text-red-600">
             <UserIcon className="h-5 w-5" />
             <span>Account</span>
@@ -35,7 +35,7 @@ export function Header() {
           <CartHeaderButton />
         </div>
 
-        <div className="ml-auto flex items-center gap-2 lg:hidden">
+        <div className="ml-auto flex items-center gap-2 xl:hidden">
           <HeaderMobileSearch />
           <CartHeaderButton compact />
         </div>

@@ -29,7 +29,7 @@ export function HeaderMobileNav({ navigation }: HeaderMobileNavProps) {
   }, [pathname]);
 
   return (
-    <details ref={detailsRef} className="group lg:hidden">
+    <details ref={detailsRef} className="group xl:hidden">
       <summary
         aria-label="Toggle mobile navigation"
         className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md border border-slate-200 bg-white text-slate-900 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"

@@ -3,6 +3,7 @@ import type { ProductSummary } from "@/lib/data";
 import { ArrowRightIcon } from "@/components/ui/Icons";
 import { ProductImageSwap } from "@/components/product/ProductImageSwap";
 import { getDisplayPrice } from "@/lib/seo";
+import { UsWarehouseBadge } from "@/components/product/UsWarehouseBadge";
 
 export function CatalogProductCard({ product }: { product: ProductSummary }) {
   const displayPrice = getDisplayPrice(product.price);
@@ -10,6 +11,9 @@ export function CatalogProductCard({ product }: { product: ProductSummary }) {
   return (
     <article className="group rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06]">
       <div className="relative">
+        {product.usWarehouseEligible ? (
+          <UsWarehouseBadge className="absolute left-3 top-3 z-10 bg-white/95 shadow-sm" />
+        ) : null}
         <Link href={`/products/${product.handle}`} className="block" aria-label={`View ${product.title}`}>
           <ProductImageSwap
             product={product}

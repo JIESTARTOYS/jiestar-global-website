@@ -6,6 +6,7 @@ import { SiteLogo } from "@/components/layout/SiteLogo";
 const exploreLinks = [
   ["Home", "/"],
   ["Products", "/products"],
+  ["U.S. Warehouse", "/us-warehouse"],
   ["Blog", "/blog"],
   ["Contact", "/contact"],
 ];
