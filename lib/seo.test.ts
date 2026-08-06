@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { Product } from "./data.ts";
 import {
+  createBrandCollectionJsonLd,
   createBreadcrumbJsonLd,
   createBlogPostingJsonLd,
   createMerchantReturnPolicyJsonLd,
@@ -149,6 +150,51 @@ test("createBreadcrumbJsonLd builds clean absolute item URLs", () => {
 
   assert.equal(schema["@type"], "BreadcrumbList");
   assert.equal(schema.itemListElement[1].item, "https://www.jiestartoys.com/wholesale");
+});
+
+test("createBrandCollectionJsonLd connects a brand page to its paginated product list", () => {
+  const secondProduct: Product = {
+    ...product,
+    id: "gid://shopify/Product/2",
+    handle: "second-train-set",
+    title: "Second Train Building Block Set",
+    sku: "JS-TR-200",
+  };
+  const schema = createBrandCollectionJsonLd({
+    brandName: "GULY",
+    description: "GULY mechanical building block model kits.",
+    logo: "/images/sub-brands/guly-logo.png",
+    brandPath: "/collections/guly",
+    pagePath: "/collections/guly?page=2",
+    products: [product, secondProduct],
+    positionOffset: 12,
+  });
+  const brand = schema.about;
+  const itemList = schema.mainEntity;
+
+  assert.equal(schema["@type"], "CollectionPage");
+  assert.equal(schema.url, "https://www.jiestartoys.com/collections/guly?page=2");
+  assert.equal(brand["@type"], "Brand");
+  assert.equal(brand.name, "GULY");
+  assert.equal(brand.url, "https://www.jiestartoys.com/collections/guly");
+  assert.equal(brand.logo, "https://www.jiestartoys.com/images/sub-brands/guly-logo.png");
+  assert.equal(itemList["@type"], "ItemList");
+  assert.equal(itemList.numberOfItems, 2);
+  assert.deepEqual(
+    itemList.itemListElement.map((item) => ({ position: item.position, name: item.name, url: item.url })),
+    [
+      {
+        position: 13,
+        name: "Sample Train Building Block Set",
+        url: "https://www.jiestartoys.com/products/sample-train-set",
+      },
+      {
+        position: 14,
+        name: "Second Train Building Block Set",
+        url: "https://www.jiestartoys.com/products/second-train-set",
+      },
+    ],
+  );
 });
 
 test("createOrganizationJsonLd uses the real onsite logo path", () => {

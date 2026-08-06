@@ -4,9 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import type { MouseEvent, PointerEvent } from "react";
-import type { SubBrand } from "@/components/sections/SubBrandCarousel";
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/Icons";
-import { isSubBrandCollectionEnabled } from "@/lib/sub-brands";
+import { isSubBrandCollectionEnabled, type SubBrand } from "@/lib/sub-brands";
 
 const DRAG_THRESHOLD = 8;
 

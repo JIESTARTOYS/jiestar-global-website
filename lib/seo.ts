@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import type { Product } from "./data.ts";
+import type { Product, ProductSummary } from "./data.ts";
 import { siteConfig } from "./data.ts";
 
 type SeoInput = {
@@ -17,6 +17,16 @@ type BreadcrumbItem = {
 type ProductJsonLdOptions = {
   description: string;
   path: string;
+};
+
+type BrandCollectionJsonLdInput = {
+  brandName: string;
+  description: string;
+  logo: string;
+  brandPath: string;
+  pagePath: string;
+  products: ProductSummary[];
+  positionOffset?: number;
 };
 
 const quoteOnlyPrices = new Set(["999", "999.00", "999.0"]);
@@ -242,6 +252,50 @@ export function createBreadcrumbJsonLd(items: BreadcrumbItem[]) {
       name: item.name,
       item: absoluteUrl(item.path),
     })),
+  };
+}
+
+export function createBrandCollectionJsonLd({
+  brandName,
+  description,
+  logo,
+  brandPath,
+  pagePath,
+  products,
+  positionOffset = 0,
+}: BrandCollectionJsonLdInput) {
+  const brandUrl = absoluteUrl(brandPath);
+  const pageUrl = absoluteUrl(pagePath);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${pageUrl}#collection`,
+    name: brandName,
+    description,
+    url: pageUrl,
+    publisher: {
+      "@id": organizationId,
+    },
+    about: {
+      "@type": "Brand",
+      "@id": `${brandUrl}#brand`,
+      name: brandName,
+      url: brandUrl,
+      logo: absoluteUrl(logo),
+      description,
+    },
+    mainEntity: {
+      "@type": "ItemList",
+      itemListOrder: "https://schema.org/ItemListOrderAscending",
+      numberOfItems: products.length,
+      itemListElement: products.map((product, index) => ({
+        "@type": "ListItem",
+        position: positionOffset + index + 1,
+        name: product.title,
+        url: absoluteUrl(`/products/${product.handle}`),
+      })),
+    },
   };
 }
 

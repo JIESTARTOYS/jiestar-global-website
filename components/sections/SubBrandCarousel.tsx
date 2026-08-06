@@ -4,19 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MouseEvent, PointerEvent } from "react";
+import type { SubBrand } from "@/lib/sub-brands";
 
 const DRAG_THRESHOLD = 8;
-
-export type SubBrand = {
-  name: string;
-  description: string;
-  collectionDescription?: string;
-  image: string;
-  width: number;
-  height: number;
-  collectionHandle?: string;
-  isCollectionEnabled?: boolean;
-};
 
 type SubBrandCarouselProps = {
   brands: SubBrand[];
