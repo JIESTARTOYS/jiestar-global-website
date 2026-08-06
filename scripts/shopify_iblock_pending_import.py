@@ -360,11 +360,21 @@ def image_buckets(folder: Path, group: dict[str, str], variant_skus: list[str]) 
     white = [path for path in primary_files if is_white(path) and not is_detail(path)]
     main = [path for path in primary_files if is_numbered_main(path)]
     detail = sorted([path for path in files if is_detail(path)], key=detail_image_key)
-    sku_images = [
+    explicit_sku_images = [
         path
         for path in files
-        if file_prefix(path) in variant_set and (is_sku_image(path) or is_white(path))
+        if file_prefix(path) in variant_set and is_sku_image(path)
     ]
+    explicit_sku_prefixes = {file_prefix(path) for path in explicit_sku_images}
+    white_fallback_images = [
+        path
+        for path in files
+        if file_prefix(path) in variant_set
+        and file_prefix(path) not in explicit_sku_prefixes
+        and is_white(path)
+        and not is_detail(path)
+    ]
+    sku_images = explicit_sku_images + white_fallback_images
 
     return {
         "white": sorted(white, key=lambda path: natural_image_key(path.name)),
@@ -378,6 +388,8 @@ def validate_source_tables(
     readiness_rows: list[dict[str, str]],
     groups: list[dict[str, str]],
     integrity_rows: list[dict[str, str]],
+    *,
+    strict_counts: bool = True,
 ) -> list[str]:
     issues: list[str] = []
     source_skus = {normalize_sku(row.get("sku")) for row in readiness_rows if normalize_sku(row.get("sku"))}
@@ -388,14 +400,24 @@ def validate_source_tables(
     }
     parent_skus = {normalize_sku(group.get("parent_sku")) for group in groups if normalize_sku(group.get("parent_sku"))}
 
-    if len(groups) != EXPECTED_PRODUCT_GROUPS:
-        issues.append(f"product_group_count:{len(groups)}")
-    if len(source_skus) != EXPECTED_SOURCE_SKUS:
-        issues.append(f"source_sku_count:{len(source_skus)}")
-    if len(variant_skus) != EXPECTED_VARIANT_SKUS:
-        issues.append(f"variant_sku_count:{len(variant_skus)}")
-    if source_skus - variant_skus != PARENT_ONLY_SKUS:
-        issues.append(f"parent_only_skus:{','.join(sorted(source_skus - variant_skus))}")
+    if strict_counts:
+        if len(groups) != EXPECTED_PRODUCT_GROUPS:
+            issues.append(f"product_group_count:{len(groups)}")
+        if len(source_skus) != EXPECTED_SOURCE_SKUS:
+            issues.append(f"source_sku_count:{len(source_skus)}")
+        if len(variant_skus) != EXPECTED_VARIANT_SKUS:
+            issues.append(f"variant_sku_count:{len(variant_skus)}")
+        if source_skus - variant_skus != PARENT_ONLY_SKUS:
+            issues.append(f"parent_only_skus:{','.join(sorted(source_skus - variant_skus))}")
+    else:
+        if not groups:
+            issues.append("product_group_count:0")
+        missing_variant_rows = sorted(variant_skus - source_skus)
+        if missing_variant_rows:
+            issues.append(f"missing_variant_rows:{','.join(missing_variant_rows)}")
+        unexpected_source_rows = sorted(source_skus - variant_skus - parent_skus)
+        if unexpected_source_rows:
+            issues.append(f"unexpected_source_rows:{','.join(unexpected_source_rows)}")
     if EXCLUDED_FAKE_SKUS & source_skus:
         issues.append(f"fake_skus_present:{','.join(sorted(EXCLUDED_FAKE_SKUS & source_skus))}")
 
@@ -413,14 +435,50 @@ def validate_source_tables(
     if missing_parent_rows:
         issues.append(f"missing_parent_rows:{','.join(missing_parent_rows)}")
 
+    group_names = {clean(group.get("upload_group")) for group in groups if clean(group.get("upload_group"))}
+    integrity_names = {clean(row.get("upload_group")) for row in integrity_rows if clean(row.get("upload_group"))}
+    missing_integrity = sorted(group_names - integrity_names)
+    if missing_integrity:
+        issues.append(f"missing_integrity_rows:{','.join(missing_integrity)}")
+
     return issues
 
 
-def build_manifest() -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, str]]]:
+def build_manifest(
+    *,
+    strict_counts: bool = True,
+    sku_filter: set[str] | None = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, str]]]:
     readiness_rows = read_csv(READINESS_CSV)
     groups = read_csv(GROUPS_CSV)
     integrity_rows = read_csv(INTEGRITY_CSV)
-    source_issues = validate_source_tables(readiness_rows, groups, integrity_rows)
+    requested_skus = {normalize_sku(sku) for sku in (sku_filter or set()) if normalize_sku(sku)}
+    if requested_skus:
+        groups = [
+            group
+            for group in groups
+            if requested_skus
+            & (set(sku_list(group.get("variant_skus", ""))) | {normalize_sku(group.get("parent_sku"))})
+        ]
+        selected_groups = {clean(group.get("upload_group")) for group in groups}
+        selected_skus = {
+            sku
+            for group in groups
+            for sku in (sku_list(group.get("variant_skus", "")) + [normalize_sku(group.get("parent_sku"))])
+            if sku
+        }
+        missing_requested = sorted(requested_skus - selected_skus)
+        if missing_requested:
+            raise RuntimeError(f"Requested SKU not found in staging reports: {', '.join(missing_requested)}")
+        readiness_rows = [row for row in readiness_rows if normalize_sku(row.get("sku")) in selected_skus]
+        integrity_rows = [row for row in integrity_rows if clean(row.get("upload_group")) in selected_groups]
+
+    source_issues = validate_source_tables(
+        readiness_rows,
+        groups,
+        integrity_rows,
+        strict_counts=strict_counts,
+    )
     integrity_by_group = {clean(row.get("upload_group")): row for row in integrity_rows}
     rows_by_sku = {normalize_sku(row.get("sku")): row for row in readiness_rows}
     manifest: list[dict[str, Any]] = []
@@ -1141,11 +1199,13 @@ def source_summary(
     existing_skipped: list[dict[str, Any]],
     todo: list[dict[str, Any]],
     piece_count_gaps: list[dict[str, Any]],
+    sku_filter: set[str] | None = None,
 ) -> dict[str, Any]:
     source_skus = {
         normalize_sku(row.get("sku"))
         for row in read_csv(READINESS_CSV)
         if normalize_sku(row.get("sku"))
+        and (not sku_filter or normalize_sku(row.get("sku")) in sku_filter)
     }
     variant_skus = {
         variant["sku"]
@@ -1174,13 +1234,16 @@ def source_summary(
     }
 
 
-def run_apply(batch_size: int) -> dict[str, Any]:
+def run_apply(batch_size: int, *, strict_counts: bool = True, sku_filter: set[str] | None = None) -> dict[str, Any]:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     runs: list[dict[str, Any]] = []
     started_at = time.strftime("%Y%m%d-%H%M%S")
 
     while True:
-        manifest, local_skipped, piece_count_gaps, product_type_plan = build_manifest()
+        manifest, local_skipped, piece_count_gaps, product_type_plan = build_manifest(
+            strict_counts=strict_counts,
+            sku_filter=sku_filter,
+        )
         admin = ShopifyAdmin()
         product_type_plan = enrich_product_type_plan(admin, product_type_plan, apply=True)
         apply_product_type_plan_to_manifest(manifest, product_type_plan)
@@ -1212,9 +1275,17 @@ def run_apply(batch_size: int) -> dict[str, Any]:
     return summary
 
 
-def post_upload_audit(admin: ShopifyAdmin | None = None) -> dict[str, Any]:
+def post_upload_audit(
+    admin: ShopifyAdmin | None = None,
+    *,
+    strict_counts: bool = True,
+    sku_filter: set[str] | None = None,
+) -> dict[str, Any]:
     admin = admin or ShopifyAdmin()
-    manifest, local_skipped, piece_count_gaps, product_type_plan = build_manifest()
+    manifest, local_skipped, piece_count_gaps, product_type_plan = build_manifest(
+        strict_counts=strict_counts,
+        sku_filter=sku_filter,
+    )
     product_type_plan = enrich_product_type_plan(admin, product_type_plan, apply=False)
     apply_product_type_plan_to_manifest(manifest, product_type_plan)
     expected_by_sku = {
@@ -1277,6 +1348,8 @@ def post_upload_audit(admin: ShopifyAdmin | None = None) -> dict[str, Any]:
 
 
 def main() -> int:
+    global STAGING_ROOT, READINESS_CSV, GROUPS_CSV, INTEGRITY_CSV, UPLOAD_READY_ROOT, OUT_DIR
+
     parser = argparse.ArgumentParser(description="Import prepared iBlock products to Shopify.")
     parser.add_argument("--dry-run", action="store_true", help="Generate manifest and skip existing Shopify products.")
     parser.add_argument("--apply", action="store_true", help="Create all pending iBlock products in batches.")
@@ -1284,28 +1357,46 @@ def main() -> int:
     parser.add_argument("--post-upload-audit", action="store_true", help="Run read-only post-upload Shopify audit.")
     parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--staging-root", type=Path, default=STAGING_ROOT, help="Prepared iBlock staging directory.")
+    parser.add_argument("--out-dir", type=Path, default=OUT_DIR, help="Directory for manifests and upload reports.")
+    parser.add_argument("--scoped", action="store_true", help="Allow a deliberately small staging batch instead of the full catalog counts.")
+    parser.add_argument("--sku", action="append", default=[], help="Limit the run to an explicit SKU; may be repeated.")
     args = parser.parse_args()
 
     if not (args.dry_run or args.apply or args.create_batch or args.post_upload_audit):
         parser.error("Choose --dry-run, --apply, --create-batch, or --post-upload-audit")
     if args.batch_size < 1 or args.batch_size > 20:
         parser.error("--batch-size must be between 1 and 20")
+    if args.scoped and not args.sku:
+        parser.error("--scoped requires at least one explicit --sku")
+
+    STAGING_ROOT = args.staging_root.resolve()
+    READINESS_CSV = STAGING_ROOT / "reports" / "iblock-shopify-readiness.csv"
+    GROUPS_CSV = STAGING_ROOT / "reports" / "iblock-product-groups.csv"
+    INTEGRITY_CSV = STAGING_ROOT / "reports" / "iblock-upload-ready-integrity.csv"
+    UPLOAD_READY_ROOT = STAGING_ROOT / "shopify-products-upload-ready"
+    OUT_DIR = args.out_dir.resolve()
+    sku_filter = {normalize_sku(sku) for sku in args.sku if normalize_sku(sku)}
+    strict_counts = not args.scoped
 
     if args.apply:
-        print(json.dumps(run_apply(args.batch_size), ensure_ascii=False, indent=2))
+        print(json.dumps(run_apply(args.batch_size, strict_counts=strict_counts, sku_filter=sku_filter), ensure_ascii=False, indent=2))
         return 0
     if args.post_upload_audit:
-        print(json.dumps(post_upload_audit(), ensure_ascii=False, indent=2))
+        print(json.dumps(post_upload_audit(strict_counts=strict_counts, sku_filter=sku_filter), ensure_ascii=False, indent=2))
         return 0
 
-    manifest, local_skipped, piece_count_gaps, product_type_plan = build_manifest()
+    manifest, local_skipped, piece_count_gaps, product_type_plan = build_manifest(
+        strict_counts=strict_counts,
+        sku_filter=sku_filter,
+    )
     write_manifest(manifest, local_skipped, piece_count_gaps, product_type_plan, name="iblock-source")
     admin = ShopifyAdmin()
     product_type_plan = enrich_product_type_plan(admin, product_type_plan, apply=False)
     apply_product_type_plan_to_manifest(manifest, product_type_plan)
     todo, existing_skipped = filter_existing(admin, manifest)
     write_manifest(todo, local_skipped + existing_skipped, piece_count_gaps, product_type_plan)
-    summary = source_summary(manifest, local_skipped, existing_skipped, todo, piece_count_gaps)
+    summary = source_summary(manifest, local_skipped, existing_skipped, todo, piece_count_gaps, sku_filter)
     (OUT_DIR / "iblock-upload-dry-run.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 

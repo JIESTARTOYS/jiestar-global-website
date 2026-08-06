@@ -2,6 +2,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -10,6 +11,74 @@ import shopify_guly_pending_import as guly
 
 
 class GulyPendingImportTests(unittest.TestCase):
+    def test_detail_upload_reuses_ready_shopify_files(self) -> None:
+        class FakeAdmin:
+            def __init__(self):
+                self.created = []
+
+            def existing_detail_urls(self, _item):
+                return {"GULY W16 Engine Model Kit 60556 details 1": "https://cdn.example/1.jpg"}
+
+            def file_create(self, path, alt):
+                self.created.append((path.name, alt))
+                return "https://cdn.example/2.jpg"
+
+        admin = FakeAdmin()
+        item = {
+            "base": "60556",
+            "title": "GULY W16 Engine Model Kit 60556",
+            "detail_images": ["/tmp/1.jpg", "/tmp/2.jpg"],
+        }
+
+        with patch(
+            "shopify_guly_pending_import.detail_image_paths",
+            side_effect=lambda path, _sku: [path],
+        ):
+            urls = guly.upload_detail_images_for_item(admin, item)
+
+        self.assertEqual(
+            urls,
+            ["https://cdn.example/1.jpg", "https://cdn.example/2.jpg"],
+        )
+        self.assertEqual(
+            admin.created,
+            [("2.jpg", "GULY W16 Engine Model Kit 60556 details 2")],
+        )
+
+    def test_manifest_scoped_existing_check_uses_exact_handle_and_sku_terms(self) -> None:
+        admin = object.__new__(guly.ShopifyAdmin)
+        calls = []
+
+        def graphql(_query, variables):
+            calls.append(variables)
+            return {
+                "products": {
+                    "nodes": [
+                        {
+                            "handle": "guly-w16-engine-model-kit-60556",
+                            "variants": {"nodes": [{"sku": "60556"}]},
+                        }
+                    ]
+                }
+            }
+
+        admin.graphql = graphql
+        handles, skus = admin.products_index_for_manifest(
+            [
+                {
+                    "handle": "guly-w16-engine-model-kit-60556",
+                    "variants": [{"sku": "60556"}],
+                }
+            ]
+        )
+
+        self.assertEqual(handles, {"guly-w16-engine-model-kit-60556"})
+        self.assertEqual(skus, {"60556"})
+        self.assertEqual(
+            calls,
+            [{"query": "handle:guly-w16-engine-model-kit-60556 OR sku:60556"}],
+        )
+
     def test_80508_single_sku_root_uses_metadata_and_preferred_image_buckets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "80508-中英推广图"

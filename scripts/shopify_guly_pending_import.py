@@ -1065,6 +1065,75 @@ def write_reports(manifest: list[dict[str, Any]], skipped: list[dict[str, Any]],
 
 
 class ShopifyAdmin(BaseShopifyAdmin):
+    def existing_detail_urls(self, item: dict[str, Any]) -> dict[str, str]:
+        data = self.graphql(
+            """
+            query ExistingDetailFiles($query: String!) {
+              files(first: 250, query: $query) {
+                nodes {
+                  fileStatus
+                  alt
+                  ... on MediaImage {
+                    image {
+                      url
+                    }
+                  }
+                }
+              }
+            }
+            """,
+            {"query": f"filename:{item['base']}*"},
+        )
+        urls: dict[str, str] = {}
+        detail_prefix = f"{item['title']} details "
+
+        for node in data["files"]["nodes"]:
+            alt = (node.get("alt") or "").strip()
+            url = (node.get("image") or {}).get("url")
+            if node.get("fileStatus") == "READY" and alt.startswith(detail_prefix) and url:
+                urls.setdefault(alt, url)
+
+        return urls
+
+    def products_index_for_manifest(self, manifest: list[dict[str, Any]]) -> tuple[set[str], set[str]]:
+        handles: set[str] = set()
+        skus: set[str] = set()
+        terms: list[str] = []
+
+        for item in manifest:
+            terms.append(f"handle:{item['handle']}")
+            terms.extend(f"sku:{variant['sku']}" for variant in item["variants"])
+
+        if not terms:
+            return handles, skus
+
+        data = self.graphql(
+            """
+            query ProductsIndexForManifest($query: String!) {
+              products(first: 50, query: $query) {
+                nodes {
+                  handle
+                  variants(first: 50) {
+                    nodes {
+                      sku
+                    }
+                  }
+                }
+              }
+            }
+            """,
+            {"query": " OR ".join(terms)},
+        )
+        for product in data["products"]["nodes"]:
+            if product.get("handle"):
+                handles.add(product["handle"])
+            for variant in product["variants"]["nodes"]:
+                sku = (variant.get("sku") or "").strip().upper()
+                if sku:
+                    skus.add(sku)
+
+        return handles, skus
+
     def product_set(self, item: dict[str, Any], description_html: str) -> dict[str, Any]:
         variants = [
             {
@@ -1257,11 +1326,14 @@ def detail_image_paths(path: Path, sku: str) -> list[Path]:
 
 def upload_detail_images_for_item(admin: ShopifyAdmin, item: dict[str, Any]) -> list[str]:
     urls: list[str] = []
+    existing_urls = admin.existing_detail_urls(item)
+
     for detail_index, source in enumerate(item["detail_images"], start=1):
         path = Path(source)
         for part_index, upload_path in enumerate(detail_image_paths(path, item["base"]), start=1):
             part = f" part {part_index}" if part_index > 1 else ""
-            urls.append(admin.file_create(upload_path, f"{item['title']} details {detail_index}{part}"))
+            alt = f"{item['title']} details {detail_index}{part}"
+            urls.append(existing_urls.get(alt) or admin.file_create(upload_path, alt))
     return urls
 
 
@@ -1273,7 +1345,7 @@ def description_html(item: dict[str, Any], detail_urls: list[str]) -> str:
 
 
 def filter_existing(admin: ShopifyAdmin, manifest: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    existing_handles, existing_skus = admin.products_index()
+    existing_handles, existing_skus = admin.products_index_for_manifest(manifest)
     todo: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
 
@@ -1299,7 +1371,7 @@ def filter_existing(admin: ShopifyAdmin, manifest: list[dict[str, Any]]) -> tupl
 
 def check_shopify_conflicts(manifest: list[dict[str, Any]]) -> list[dict[str, Any]]:
     admin = ShopifyAdmin()
-    existing_handles, existing_skus = admin.products_index()
+    existing_handles, existing_skus = admin.products_index_for_manifest(manifest)
     conflicts: list[dict[str, Any]] = []
 
     for item in manifest:

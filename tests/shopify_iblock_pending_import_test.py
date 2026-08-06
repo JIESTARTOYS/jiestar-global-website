@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -81,6 +82,90 @@ class ShopifyIblockPendingImportTest(unittest.TestCase):
         ]
 
         self.assertEqual(module.validate_source_tables(readiness, groups, integrity), [])
+
+    def test_validate_source_tables_accepts_explicit_scoped_batch(self) -> None:
+        module = load_module()
+        readiness = [{"sku": "LL001"}, {"sku": "LL002"}]
+        groups = [
+            {"upload_group": "LL001", "variant_skus": "LL001", "parent_sku": ""},
+            {"upload_group": "LL002", "variant_skus": "LL002", "parent_sku": ""},
+        ]
+        integrity = [
+            {"upload_group": sku, "unreadable_count": "0", "white_count": "1", "detail_count": "1"}
+            for sku in ["LL001", "LL002"]
+        ]
+
+        self.assertEqual(
+            module.validate_source_tables(readiness, groups, integrity, strict_counts=False),
+            [],
+        )
+
+    def test_build_manifest_filters_to_explicit_scoped_sku(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            reports = root / "reports"
+            reports.mkdir()
+            (reports / "iblock-shopify-readiness.csv").write_text(
+                "sku,vendor,category,shopify_price,shopify_title_safe,product_series,specs_piece_count,specs_recommended_age,specs_finished_model_size,specs_package_size\n"
+                "LL001,iBlock,Interlocking Blocks,999,iBlock Galactic Tower Crane Base and Rover Building Set,Space,1000,8+,27.6x29.1x16.3 cm,30x7.5x23.5 cm\n"
+                "LL002,iBlock,Interlocking Blocks,999,iBlock Robotic Arm Rover Building Set,Space,643,8+,24x14x14 cm,30x6x22 cm\n",
+                encoding="utf-8",
+            )
+            (reports / "iblock-product-groups.csv").write_text(
+                "upload_group,upload_mode,parent_sku,variant_skus\n"
+                "LL001,SINGLE_SKU_PRODUCT,,LL001\n"
+                "LL002,SINGLE_SKU_PRODUCT,,LL002\n",
+                encoding="utf-8",
+            )
+            (reports / "iblock-upload-ready-integrity.csv").write_text(
+                "upload_group,unreadable_count,white_count,main_count,detail_count\n"
+                "LL001,0,1,1,1\n"
+                "LL002,0,1,1,1\n",
+                encoding="utf-8",
+            )
+            for sku in ["LL001", "LL002"]:
+                images = root / "shopify-products-upload-ready" / sku / "images"
+                images.mkdir(parents=True)
+                for name in [f"{sku}__{sku}-白底.jpg", f"{sku}__{sku}-1.jpg", f"{sku}__{sku}-sku.jpg", f"{sku}__{sku}-详情-01.jpg"]:
+                    (images / name).write_bytes(b"test")
+
+            module.READINESS_CSV = reports / "iblock-shopify-readiness.csv"
+            module.GROUPS_CSV = reports / "iblock-product-groups.csv"
+            module.INTEGRITY_CSV = reports / "iblock-upload-ready-integrity.csv"
+            module.UPLOAD_READY_ROOT = root / "shopify-products-upload-ready"
+            module.OUT_DIR = root / "out"
+            manifest, skipped, gaps, _plan = module.build_manifest(
+                strict_counts=False,
+                sku_filter={"LL002"},
+            )
+
+            self.assertEqual([item["folder"] for item in manifest], ["LL002"])
+            self.assertEqual(skipped, [])
+            self.assertEqual(gaps, [])
+
+    def test_image_buckets_uses_white_as_variant_fallback_only(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            images = Path(tmp)
+            for name in [
+                "LL001__LL001-白底.jpg",
+                "LL001__LL001-1.jpg",
+                "LL001__LL001-sku.jpg",
+                "LL002__LL002-白底.jpg",
+            ]:
+                (images / name).write_bytes(b"test")
+
+            buckets = module.image_buckets(
+                images,
+                {"upload_group": "LL-BATCH", "parent_sku": ""},
+                ["LL001", "LL002"],
+            )
+
+            self.assertEqual(
+                [path.name for path in buckets["sku"]],
+                ["LL001__LL001-sku.jpg", "LL002__LL002-白底.jpg"],
+            )
 
 
 if __name__ == "__main__":
