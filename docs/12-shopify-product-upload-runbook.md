@@ -334,6 +334,20 @@ PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_shippin
 
 写入后必须再次 dry-run，确认 Active 运费未匹配为 `0`、所有权重为 `noop`、`JIESTAR Manual Shipping Review` 没有可用费率。当前已知超过 10kg SKU 仍需人工向货代询价或手动报价。
 
+### iBlock 局部重量更新（不改运费价格表）
+
+iBlock 2026-07 重量更新使用独立模板，并同时限制 vendor 与 rate sync：
+
+```bash
+PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_shipping_update_from_template.py \
+  --template-workbook outputs/iblock-shipping-20260713/Shopify运费模板_iBlock重量更新_20260713.xlsx \
+  --out-dir /private/tmp/jiestar-shopify-iblock-shipping-update \
+  --vendor iBlock \
+  --skip-rate-sync
+```
+
+`--skip-rate-sync` 只允许更新匹配变体重量并把这些变体关联到已存在的目标 profile；不得删除或重建 zone、rate，也不得移除 profile 中其它商品。apply 仍必须提供本次相同 vendor / skip-rate-sync 范围生成的签名 summary。
+
 ## 6. Dry-run 检查
 
 每次上传前先跑：
