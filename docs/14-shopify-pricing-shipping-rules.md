@@ -125,10 +125,12 @@ PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_draft_u
 
 ## 5. Shopify 运费规则
 
-当前补全运费模板：
+当前运费与重量工作簿：
 
 ```text
-/Users/chensen/jiestar/定价参考/Shopify运费模板_体积重_Shopify盒规补全_缺失SKU补全_20260701.xlsx
+outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify普货空运结算模板_20260731.xlsx
+outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify普货海运结算模板_20260731.xlsx
+outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify商品计费重量主表_20260731.xlsx
 ```
 
 运费更新脚本：
@@ -140,42 +142,62 @@ scripts/shopify_shipping_update_from_template.py
 计费重量规则：
 
 - 计费重量 = `max(实际重量, 体积重)`。
-- 体积重 = `(彩盒长 + 包装容错) * (彩盒宽 + 包装容错) * (彩盒高 + 包装容错) / 5000`。
-- 彩盒尺寸优先；外箱尺寸是装箱尺寸，不能当单个产品尺寸。
-- 只有缺彩盒尺寸时，才允许用 `外箱尺寸 / 装箱量` 兜底，并标记复核。
+- 实际重量优先使用单品毛重；没有时使用 `外箱毛重 / 装箱量`。净重不能作为运输实际重量。
+- 体积重 = `彩盒长 * 彩盒宽 * 彩盒高 / 5000`，不再增加 2cm。
+- 彩盒尺寸是自动运费的必要证据；外箱尺寸不能代替单个彩盒尺寸。
 - 没有重量但有彩盒尺寸时，按体积重保守计算。
 - 体积重大于实际重量时，按体积重计费。
+- Shopify 重量 = `CEILING(计费重量 * 1000)` 克。
+- Active 商品没有可靠彩盒尺寸或重量来源时，整个 Shopify 产品转 Draft，不写猜测重量。
 - 超过 10kg 的 SKU 不开放普通结账，进入人工运费复核。
+- Shopify 默认结账包装重量必须设为 0g，避免商品重量已含包装后再次叠加。
 
 Shopify profile 规则：
 
-- `JIESTAR Standard goods`：普通可收费商品。
-- `JIESTAR Battery/electric goods`：带电、电机、遥控、灯光风险商品。
+- `JIESTAR Standard goods` 的澄海仓 location group：承载普通货空运 240 条和美澳海运 31 条，共 271 条。
+- `JIESTAR Standard goods` 的美国仓 location group：只承载美国仓商品、美国 zone 和 `U.S. Warehouse Shipping`；不得与澄海仓 271 条费率互相覆盖。
 - `JIESTAR Manual Shipping Review`：超过 10kg 或模板标记 `Review` 的重货；该 profile 不配置费率。
+- `JIESTAR Battery/electric goods` 是待删除的旧 profile。其商品迁移完成并回读为 0 后，必须删除该 profile、zone 和全部旧带电费率。
+- 商品带电信息只可保留为内部资料，不参与运费、profile 或结账方式分流。
+- 客户结账名称固定为 `Air Shipping` 和 `Sea Shipping`。
+- 美国、澳大利亚同时显示空运和海运；其余 10 个国家只显示空运。
 
 写入边界：
 
-- 只读取模板里的 `Shopify运费配置` 和 `Shopify商品重量导入`。
+- 分别读取 `--air-rate-workbook`、`--sea-rate-workbook` 和 `--weight-workbook`。
+- 空运模板必须恰好 240 条；海运模板必须恰好 31 条；不接受任何带电费率或带电 profile 分流。
 - 只写模板覆盖的 12 个国家：`US / CA / AU / GB / DE / FR / BE / ES / IT / NL / PL / SE`。
-- 只管理 `JIESTAR ...` 命名的 shipping profiles。
+- 普通空运 / 海运同步只管理 `JIESTAR Chenghai Warehouse` 所在 location group；即使同一 profile 存在其它地点组，也不得删除或覆盖。
 - 不覆盖 Shopify 后台已有非 `JIESTAR ...` profile、zone 或 rate。
-- Active 但未匹配模板的 SKU 不自动补重量、不自动分配 profile，只输出复核报告。
+- Active 但未匹配重量主表、缺 SKU、缺可靠彩盒尺寸或重量无效时，输出整个产品转 Draft 的审批报告。
+- 当前 Draft 变体只输出待补资料清单，不写重量、不改 profile。
+- 局部品牌更新必须使用 `--vendor <exact vendor>`；该范围会写入审批签名。
+- 只更新重量且不调整国家运费表时必须使用 `--skip-rate-sync`。此模式只关联本次匹配变体到已存在 profile，不删除 zone、rate、其它品牌商品或未在本次模板中的变体。
+- 完整 271 条费率同步禁止配合 `--vendor` 使用。
+- 旧审批报告禁止写入；每次 apply 前必须用当前 token、当前 Shopify 状态和三份当前工作簿重新生成审批签名。
 
-运费 dry-run 必须显式使用当前补全模板：
+运费 dry-run：
 
 ```bash
 PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_shipping_update_from_template.py \
-  --template-workbook /Users/chensen/jiestar/定价参考/Shopify运费模板_体积重_Shopify盒规补全_缺失SKU补全_20260701.xlsx
+  --air-rate-workbook outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify普货空运结算模板_20260731.xlsx \
+  --sea-rate-workbook outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify普货海运结算模板_20260731.xlsx \
+  --weight-workbook outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify商品计费重量主表_20260731.xlsx \
+  --default-package-zero-verified
 ```
 
 报告位置：
 
 ```text
 /private/tmp/jiestar-shopify-shipping-update/shipping-update-summary.json
-/private/tmp/jiestar-shopify-shipping-update/shipping-rate-plan.csv
+/private/tmp/jiestar-shopify-shipping-update/shipping-air-rate-plan.csv
+/private/tmp/jiestar-shopify-shipping-update/shipping-sea-rate-plan.csv
 /private/tmp/jiestar-shopify-shipping-update/shipping-weight-updates.csv
 /private/tmp/jiestar-shopify-shipping-update/shipping-profile-assignments.csv
 /private/tmp/jiestar-shopify-shipping-update/shipping-blocked-heavy.csv
+/private/tmp/jiestar-shopify-shipping-update/shipping-active-to-draft.csv
+/private/tmp/jiestar-shopify-shipping-update/shipping-draft-backlog.csv
+/private/tmp/jiestar-shopify-shipping-update/shipping-legacy-battery-migration.csv
 /private/tmp/jiestar-shopify-shipping-update/shipping-unmatched-active.csv
 /private/tmp/jiestar-shopify-shipping-update/shipping-api-diff.csv
 ```
@@ -184,7 +206,10 @@ PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_shippin
 
 ```bash
 PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_shipping_update_from_template.py \
-  --template-workbook /Users/chensen/jiestar/定价参考/Shopify运费模板_体积重_Shopify盒规补全_缺失SKU补全_20260701.xlsx \
+  --air-rate-workbook outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify普货空运结算模板_20260731.xlsx \
+  --sea-rate-workbook outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify普货海运结算模板_20260731.xlsx \
+  --weight-workbook outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify商品计费重量主表_20260731.xlsx \
+  --default-package-zero-verified \
   --apply \
   --yes \
   --input-approved-report /private/tmp/jiestar-shopify-shipping-update/shipping-update-summary.json
@@ -213,10 +238,14 @@ Shopify App 权限要求：
 
 - `unmatched_active_variant_count = 0`。
 - `weight_action_counts = {"noop": active_variant_count}`。
-- `JIESTAR Standard goods` 和 `JIESTAR Battery/electric goods` 有目标费率。
+- `template_air_rate_row_count = 240`、`template_sea_rate_row_count = 31`、`template_rate_row_count = 271`。
+- `JIESTAR Standard goods` 的澄海仓 location group 恰好有 271 条目标费率；美国仓组的费率不计入该数量。
+- `JIESTAR Battery/electric goods` 不存在。
 - `JIESTAR Manual Shipping Review` 没有可用运费费率。
 - 超过 10kg 的 SKU 仍在 `JIESTAR Manual Shipping Review`，不能普通结账。
-- 抽查美国、澳大利亚、英国、德国各一个普通 SKU；美国、澳大利亚各一个带电 / 电机 SKU；一个超过 10kg SKU 应显示无可用结账运费。
+- X88058 为 1058g，进入 1.5kg 档；美国空运 `$31.99`，美国海运 `$26.99`。
+- 抽查美国、澳大利亚商品同时显示 `Air Shipping` 和 `Sea Shipping`；英国、德国等其余国家只显示 `Air Shipping`。
+- 再次 dry-run 的实时费率差异为 0，所有已更新重量为 `noop`。
 
 回读 Active `$999.00`：
 
@@ -237,13 +266,47 @@ PY
 
 ```bash
 PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_shipping_update_from_template.py \
-  --template-workbook /Users/chensen/jiestar/定价参考/Shopify运费模板_体积重_Shopify盒规补全_缺失SKU补全_20260701.xlsx \
+  --air-rate-workbook outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify普货空运结算模板_20260731.xlsx \
+  --sea-rate-workbook outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify普货海运结算模板_20260731.xlsx \
+  --weight-workbook outputs/019fb5f3-8f25-7f02-9403-727aefd39ceb/Shopify商品计费重量主表_20260731.xlsx \
+  --default-package-zero-verified \
   --out-dir /private/tmp/jiestar-shopify-shipping-current-check
 ```
 
-当前已知重货人工复核 SKU：
+## 7. 美国仓专题与独立 location group
 
-- GULY：`10618`, `10620`, `10627`, `10625`
-- JIESTAR：`57014`, `89121`, `58144`, `89112`
+美国仓使用手动履约，不安装 Amazon MCF 或实时运费应用。公开资格的唯一数据源是 Shopify 手动 Collection：
 
-这些 SKU 运费未按普通规则确定，需要单独向货代询价或人工报价。
+- title：`U.S. Warehouse`
+- handle：`us-warehouse`
+- 前台只显示 `Ships from U.S.` / `U.S. warehouse eligible`，不显示库存数量、仓库地址或未经确认的送达天数。
+- 商品继续保持 `inventoryItem.tracked = false`。售罄时必须人工同时从 Collection 移除商品，并在美国仓地点停用对应 SKU。
+
+店主先在 Shopify 后台创建内部地点 `Amazon U.S. Warehouse` 并填写真实地址；地址不得写入代码、审批报告或聊天。地点创建后先运行 dry-run：
+
+```bash
+PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_us_warehouse_setup.py
+```
+
+审批文件：
+
+```text
+/private/tmp/jiestar-us-warehouse-approval/us-warehouse-approval-summary.json
+/private/tmp/jiestar-us-warehouse-approval/us-warehouse-sku-audit.csv
+/private/tmp/jiestar-us-warehouse-approval/us-warehouse-rate-plan.csv
+/private/tmp/jiestar-us-warehouse-approval/us-warehouse-shopify-diff.csv
+```
+
+费率按 Shopify 当前重量枚举 0–10kg 内所有可达的单件、多件和混合 SKU 组合。每 0.5kg 档取最高来源成本，按 `(成本 × 1.05 + $1.19) ÷ 0.8901` 计算并向上取到 `$x.99`，同时保证随重量不下降。
+
+只有审批报告 `ready_for_apply = true`、人工确认 hash 和 publication 后，才能执行一次受监控写入：
+
+```bash
+PYTHONPYCACHEPREFIX=/private/tmp/jiestar-pycache python3 scripts/shopify_us_warehouse_setup.py \
+  --apply \
+  --yes \
+  --approved-report /private/tmp/jiestar-us-warehouse-approval/us-warehouse-approval-summary.json \
+  --publication-id gid://shopify/Publication/REPLACE_WITH_APPROVED_ID
+```
+
+写入前脚本保存完整 locations / delivery profiles / collection 快照，写入后立即重新读取。美国仓 location group 只允许美国 zone 和 `U.S. Warehouse Shipping`；不得触碰澄海仓的 271 条 `Air Shipping` / `Sea Shipping`。地点优先级和真实地址仍由店主在 Shopify 后台确认。
