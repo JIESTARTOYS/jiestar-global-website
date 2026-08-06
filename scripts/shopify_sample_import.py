@@ -9,6 +9,7 @@ import json
 import mimetypes
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.error
@@ -394,7 +395,11 @@ class ShopifyAdmin:
                 body = response.read().decode("utf-8")
         except urllib.error.HTTPError as error:
             body = error.read().decode("utf-8", errors="ignore")
-            raise RuntimeError(f"Shopify HTTP {error.code}: {body[:1200]}") from error
+            if error.code not in {404, 429, 500, 502, 503, 504}:
+                raise RuntimeError(f"Shopify HTTP {error.code}: {body[:1200]}") from error
+            body = self._graphql_via_curl(payload)
+        except (urllib.error.URLError, TimeoutError, OSError, http.client.RemoteDisconnected):
+            body = self._graphql_via_curl(payload)
 
         data = json.loads(body)
 
@@ -402,6 +407,41 @@ class ShopifyAdmin:
             raise RuntimeError(json.dumps(data["errors"], ensure_ascii=False, indent=2))
 
         return data["data"]
+
+    def _graphql_via_curl(self, payload: bytes) -> str:
+        result = subprocess.run(
+            [
+                "curl",
+                "--silent",
+                "--show-error",
+                "--fail-with-body",
+                "--http1.1",
+                "--connect-timeout",
+                "20",
+                "--max-time",
+                "120",
+                "--retry",
+                "6",
+                "--retry-all-errors",
+                "--request",
+                "POST",
+                "--header",
+                "Content-Type: application/json",
+                "--header",
+                f"X-Shopify-Access-Token: {self.token}",
+                "--data-binary",
+                "@-",
+                self.endpoint,
+            ],
+            input=payload,
+            capture_output=True,
+            timeout=180,
+        )
+        body = result.stdout.decode("utf-8", errors="ignore")
+        if result.returncode:
+            message = result.stderr.decode("utf-8", errors="ignore")
+            raise RuntimeError(f"Shopify curl request failed: {(message or body)[:1200]}")
+        return body
 
     def preflight(self) -> dict[str, Any]:
         return self.graphql(
@@ -881,29 +921,85 @@ def upload_multipart(url: str, parameters: list[dict[str, str]], path: Path, mim
         },
     )
 
-    try:
-        with urlopen_with_retries(request, timeout=120) as response:
-            response.read()
-    except urllib.error.HTTPError as error:
-        body = error.read().decode("utf-8", errors="ignore")
-        raise RuntimeError(f"Staged upload failed with HTTP {error.code}: {body[:1200]}") from error
+    retryable_statuses = {404, 429, 500, 502, 503, 504}
 
-
-def urlopen_with_retries(request: urllib.request.Request, timeout: int, attempts: int = 3):
     last_error: Exception | None = None
+    for attempt in range(1, 4):
+        try:
+            with urlopen_with_retries(request, timeout=120) as response:
+                response.read()
+            return
+        except urllib.error.HTTPError as error:
+            response_body = error.read().decode("utf-8", errors="ignore")
+
+            if error.code == 400:
+                last_error = error
+                break
+
+            if error.code in retryable_statuses and attempt < 3:
+                last_error = error
+                time.sleep(2 * attempt)
+                continue
+
+            if error.code not in retryable_statuses:
+                raise RuntimeError(
+                    f"Staged upload failed with HTTP {error.code}: {response_body[:1200]}"
+                ) from error
+            last_error = error
+        except (urllib.error.URLError, TimeoutError, OSError, http.client.RemoteDisconnected) as error:
+            last_error = error
+            if attempt < 3:
+                time.sleep(2 * attempt)
+                continue
+
+    command = [
+        "curl",
+        "--silent",
+        "--show-error",
+        "--fail-with-body",
+        "--http1.1",
+        "--connect-timeout",
+        "20",
+        "--max-time",
+        "300",
+        "--retry",
+        "6",
+        "--retry-all-errors",
+    ]
+    for parameter in parameters:
+        command.extend(["--form-string", f'{parameter["name"]}={parameter["value"]}'])
+    command.extend(["--form", f"file=@{path};type={mime_type}", url])
+
+    result = subprocess.run(command, capture_output=True, timeout=360)
+    if result.returncode:
+        message = result.stderr.decode("utf-8", errors="ignore")
+        response_body = result.stdout.decode("utf-8", errors="ignore")
+        raise RuntimeError(
+            f"Staged upload failed via curl: {(message or response_body or str(last_error))[:1200]}"
+        )
+
+
+def urlopen_with_retries(request: urllib.request.Request, timeout: int, attempts: int = 6):
+    last_error: Exception | None = None
+    retryable_statuses = {404, 429, 500, 502, 503, 504}
 
     for attempt in range(1, attempts + 1):
         try:
             return urllib.request.urlopen(request, timeout=timeout)
-        except urllib.error.HTTPError:
-            raise
+        except urllib.error.HTTPError as error:
+            if error.code not in retryable_statuses or attempt == attempts:
+                raise
+
+            error.read()
+            error.close()
+            last_error = error
         except (urllib.error.URLError, TimeoutError, OSError, http.client.RemoteDisconnected) as error:
             last_error = error
 
-            if attempt == attempts:
-                break
+        if attempt == attempts:
+            break
 
-            time.sleep(2 * attempt)
+        time.sleep(2 * attempt)
 
     assert last_error is not None
     raise last_error

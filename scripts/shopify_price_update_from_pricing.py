@@ -5,6 +5,7 @@ import argparse
 import csv
 import json
 import os
+import subprocess
 import sys
 import time
 import urllib.error
@@ -193,7 +194,12 @@ class ShopifyAdmin:
                 if error.code in {429, 500, 502, 503, 504} and attempt < 5:
                     time.sleep(min(30, 2**attempt))
                     continue
-                raise RuntimeError(f"Shopify HTTP {error.code}: {error_body[:1200]}") from error
+                if error.code == 404:
+                    payload = self._graphql_via_curl(body)
+                else:
+                    raise RuntimeError(f"Shopify HTTP {error.code}: {error_body[:1200]}") from error
+            except (urllib.error.URLError, TimeoutError, OSError):
+                payload = self._graphql_via_curl(body)
 
             errors = payload.get("errors")
             if errors:
@@ -211,6 +217,41 @@ class ShopifyAdmin:
                 raise RuntimeError(f"Shopify GraphQL errors: {error_text}")
             return payload["data"]
         raise RuntimeError("Shopify GraphQL retry limit exceeded")
+
+    def _graphql_via_curl(self, body: bytes) -> dict[str, Any]:
+        result = subprocess.run(
+            [
+                "curl",
+                "--silent",
+                "--show-error",
+                "--fail-with-body",
+                "--http1.1",
+                "--connect-timeout",
+                "20",
+                "--max-time",
+                "120",
+                "--retry",
+                "6",
+                "--retry-all-errors",
+                "--request",
+                "POST",
+                "--header",
+                "Content-Type: application/json",
+                "--header",
+                f"X-Shopify-Access-Token: {self.token}",
+                "--data-binary",
+                "@-",
+                self.endpoint,
+            ],
+            input=body,
+            capture_output=True,
+            timeout=180,
+        )
+        response_body = result.stdout.decode("utf-8", errors="ignore")
+        if result.returncode:
+            message = result.stderr.decode("utf-8", errors="ignore")
+            raise RuntimeError(f"Shopify curl request failed: {(message or response_body)[:1200]}")
+        return json.loads(response_body)
 
     def active_variants(self) -> list[ShopifyVariant]:
         query = """
