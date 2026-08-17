@@ -10,7 +10,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center gap-5 px-5 py-4 lg:px-8">
-        <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="JIESTAR home">
+        <Link href="/" prefetch={false} className="flex shrink-0 items-center gap-3" aria-label="JIESTAR home">
           <SiteLogo className="size-16" priority />
         </Link>
 
@@ -19,6 +19,7 @@ export function Header() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className="relative text-sm font-bold text-slate-700 transition hover:text-red-600"
             >
               {item.label}
@@ -28,7 +29,7 @@ export function Header() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <HeaderSearch />
-          <Link href="/account" className="flex h-11 items-center gap-2 rounded-md px-2 text-sm font-bold text-slate-700 hover:text-red-600">
+          <Link href="/account" prefetch={false} className="flex h-11 items-center gap-2 rounded-md px-2 text-sm font-bold text-slate-700 hover:text-red-600">
             <UserIcon className="h-5 w-5" />
             <span>Account</span>
           </Link>

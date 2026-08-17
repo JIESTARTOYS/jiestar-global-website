@@ -13,7 +13,7 @@ export function FeaturedProducts({ products }: { products: ProductSummary[] }) {
       <div className="mx-auto max-w-7xl">
         <div className="mb-4 flex items-end justify-between gap-4">
           <h2 className="text-2xl font-black text-slate-950">Latest Products</h2>
-          <Link href="/products" className="hidden items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-red-600 sm:flex">
+          <Link href="/products" prefetch={false} className="hidden items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-red-600 sm:flex">
             View all products
             <ArrowRightIcon className="h-4 w-4" />
           </Link>
@@ -43,7 +43,12 @@ function HomeProductCard({ product }: { product: ProductSummary }) {
   return (
     <article className="group w-[56vw] max-w-56 shrink-0 snap-start overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06] sm:w-auto sm:max-w-none">
       <div className="relative">
-        <Link href={`/products/${product.handle}`} className="block" aria-label={`View ${product.title}`}>
+        <Link
+          href={`/products/${product.handle}`}
+          prefetch={false}
+          className="block"
+          aria-label={`View ${product.title}`}
+        >
           <div className="relative">
             <span className="absolute left-2 top-2 z-10 rounded-md bg-slate-950 px-1.5 py-1 text-[10px] font-black text-white sm:left-3 sm:top-3 sm:px-2 sm:text-[11px]">
               New
@@ -58,7 +63,7 @@ function HomeProductCard({ product }: { product: ProductSummary }) {
         </Link>
       </div>
       <div className="p-3 sm:p-4">
-        <Link href={`/products/${product.handle}`} className="block">
+        <Link href={`/products/${product.handle}`} prefetch={false} className="block">
           <h3 className="line-clamp-2 min-h-9 text-xs font-black leading-4.5 text-slate-950 transition group-hover:text-red-600 sm:min-h-10 sm:text-sm sm:leading-5">
             {product.title}
           </h3>
@@ -73,6 +78,7 @@ function HomeProductCard({ product }: { product: ProductSummary }) {
         ) : null}
         <Link
           href={`/products/${product.handle}`}
+          prefetch={false}
           className="mt-3 flex h-9 w-full items-center justify-center gap-1.5 rounded-md bg-red-600 px-2 text-xs font-black text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:mt-4 sm:h-10 sm:gap-2 sm:px-3 sm:text-sm"
           aria-label={`View ${product.title} before adding to cart`}
         >

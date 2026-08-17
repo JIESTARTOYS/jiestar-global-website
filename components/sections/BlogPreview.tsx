@@ -26,14 +26,14 @@ export function BlogPreview() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 className="text-2xl font-black text-slate-950">From the JIESTAR Journal</h2>
-          <Link href="/blog" className="hidden items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-red-600 sm:flex">
+          <Link href="/blog" prefetch={false} className="hidden items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-red-600 sm:flex">
             View all articles
             <ArrowRightIcon className="h-4 w-4" />
           </Link>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {posts.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.slug}`} className="grid overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:grid-cols-[0.8fr_1fr] md:grid-cols-1">
+            <Link key={post.slug} href={`/blog/${post.slug}`} prefetch={false} className="grid overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:grid-cols-[0.8fr_1fr] md:grid-cols-1">
               <div className="relative min-h-40 bg-slate-100">
                 <Image
                   src={post.coverImage}

@@ -14,7 +14,7 @@ export function HomeBrandPortfolio() {
               Explore the JIESTAR flagship brand and focused sub-brands built for different product categories and market positions.
             </p>
           </div>
-          <Link href="/about" className="hidden items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-red-600 sm:flex">
+          <Link href="/about" prefetch={false} className="hidden items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-red-600 sm:flex">
             Learn about brands
             <ArrowRightIcon className="h-4 w-4" />
           </Link>

@@ -38,7 +38,7 @@ export function B2BCooperation() {
                 From concept to shelf, complete solutions to grow your brand.
               </p>
             </div>
-            <LinkButton href="/custom-solutions" className="shrink-0">
+            <LinkButton href="/custom-solutions" prefetch={false} className="shrink-0">
               Learn More
               <ArrowRightIcon className="ml-2 h-4 w-4" />
             </LinkButton>

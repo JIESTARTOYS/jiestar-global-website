@@ -36,7 +36,7 @@ export function QualitySafety() {
               JIESTAR focuses on reliable materials, stable production, and detailed quality control to deliver safe, durable, and enjoyable building experiences.
             </p>
           </div>
-          <LinkButton href="/quality-safety" className="w-full px-5 lg:mt-2 lg:w-auto lg:min-w-72">
+          <LinkButton href="/quality-safety" prefetch={false} className="w-full px-5 lg:mt-2 lg:w-auto lg:min-w-72">
             Learn Our Quality Standard
           </LinkButton>
         </div>

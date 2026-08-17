@@ -227,6 +227,7 @@ function BrandCard({
     return (
       <Link
         href={`/collections/${brand.collectionHandle}`}
+        prefetch={false}
         draggable={false}
         aria-hidden={!isPrimarySegment}
         tabIndex={isPrimarySegment ? undefined : -1}

@@ -10,7 +10,7 @@ export function CatalogProductCard({ product }: { product: ProductSummary }) {
   return (
     <article className="group rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06]">
       <div className="relative">
-        <Link href={`/products/${product.handle}`} className="block" aria-label={`View ${product.title}`}>
+        <Link href={`/products/${product.handle}`} prefetch={false} className="block" aria-label={`View ${product.title}`}>
           <ProductImageSwap
             product={product}
             sizes="(min-width: 1280px) 24vw, (min-width: 1024px) 32vw, 50vw"
@@ -21,7 +21,7 @@ export function CatalogProductCard({ product }: { product: ProductSummary }) {
       </div>
 
       <div className="px-3 pb-3 pt-3 sm:px-4 sm:pb-4 sm:pt-4">
-        <Link href={`/products/${product.handle}`} className="block">
+        <Link href={`/products/${product.handle}`} prefetch={false} className="block">
           <h2 className="line-clamp-2 min-h-10 text-[13px] font-black leading-5 text-slate-950 transition group-hover:text-red-600 sm:text-base sm:leading-6">
             {product.title}
           </h2>
@@ -36,6 +36,7 @@ export function CatalogProductCard({ product }: { product: ProductSummary }) {
         ) : null}
         <Link
           href={`/products/${product.handle}`}
+          prefetch={false}
           className="mt-3 flex min-h-9 w-full items-center justify-center gap-2 rounded-md bg-red-600 px-3 py-2 text-xs font-black text-white shadow-sm shadow-red-600/20 transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:min-h-10 sm:text-sm"
           aria-label={`View ${product.title} details`}
         >

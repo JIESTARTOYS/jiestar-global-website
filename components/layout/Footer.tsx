@@ -79,7 +79,7 @@ export function Footer() {
           <p>© 2026 JIESTAR. Building dreams for creators, dreamers, and builders.</p>
           <div className="flex flex-wrap gap-5">
             {legalLinks.map(([label, href]) => (
-              <Link key={href} href={href} className="hover:text-white">
+              <Link key={href} href={href} prefetch={false} className="hover:text-white">
                 {label}
               </Link>
             ))}
@@ -97,7 +97,7 @@ function FooterColumn({ title, links }: { title: string; links: string[][] }) {
       <ul className="mt-4 grid gap-3">
         {links.map(([label, href]) => (
           <li key={href + label}>
-            <Link href={href} className="block text-sm leading-6 text-slate-300 transition hover:text-white">
+            <Link href={href} prefetch={false} className="block text-sm leading-6 text-slate-300 transition hover:text-white">
               {label}
             </Link>
           </li>

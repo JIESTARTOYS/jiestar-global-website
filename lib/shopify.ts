@@ -1,5 +1,17 @@
+import { unstable_cache } from "next/cache";
+
 import { collections, products, type Collection, type Product, type ProductSummary, type ProductVariant } from "./data";
 import { getLocalProductSpecifications } from "./product-specifications";
+import {
+  getShopifyCatalogCacheKeyParts,
+  getShopifyCatalogCacheOptions,
+  getShopifyMaxAttempts,
+  getShopifyOriginFetchOptions,
+  hasShopifyGraphQLErrors,
+  shouldRetryShopifyFailure,
+  type ShopifyFetchCacheMode,
+  type ShopifyRequestKind,
+} from "./shopify-fetch-policy";
 import { isSubBrandCollectionHandle } from "./sub-brands";
 import { applyShopifyCheckoutDomain } from "./shopify-checkout-url";
 import { readShopifyConnectionPages } from "./shopify-pagination";
@@ -9,12 +21,7 @@ const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
 const SHOPIFY_STOREFRONT_ACCESS_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 const SHOPIFY_CHECKOUT_DOMAIN = process.env.SHOPIFY_CHECKOUT_DOMAIN ?? "checkout.jiestartoys.com";
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
-const SHOPIFY_FETCH_ATTEMPTS = 3;
 const SHOPIFY_RETRY_DELAY_MS = 500;
-
-let cachedShopifyProducts: Product[] | undefined;
-let cachedShopifyProductSummaries: ProductSummary[] | undefined;
-let cachedShopifyCollections: Collection[] | undefined;
 
 const PRODUCT_TYPE_COLLECTION_HANDLES = new Set([
   "pirates",
@@ -448,20 +455,42 @@ function wait(ms: number) {
   });
 }
 
-function isRetriableStatus(status: number) {
-  return status === 429 || status >= 500;
+type ShopifyFetchOptions = {
+  operation: string;
+  cache: ShopifyFetchCacheMode;
+  requestKind: ShopifyRequestKind;
+};
+
+function logShopifyRetry(
+  operation: string,
+  attempt: number,
+  maxAttempts: number,
+  details: { status?: number; message: string },
+) {
+  console.warn("[shopify:retry]", {
+    operation,
+    attempt,
+    maxAttempts,
+    ...details,
+  });
 }
 
-async function shopifyFetch<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+async function shopifyFetchFromOrigin<T>(
+  query: string,
+  variables: Record<string, unknown> | undefined,
+  options: ShopifyFetchOptions,
+): Promise<T> {
   if (!hasShopifyConfig()) {
     throw new Error("Shopify environment variables are not configured.");
   }
 
-  let lastError: unknown;
+  const maxAttempts = getShopifyMaxAttempts(options.requestKind);
 
-  for (let attempt = 1; attempt <= SHOPIFY_FETCH_ATTEMPTS; attempt += 1) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    let response: Response;
+
     try {
-      const response = await fetch(
+      response = await fetch(
         `https://${SHOPIFY_STORE_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`,
         {
           method: "POST",
@@ -470,44 +499,79 @@ async function shopifyFetch<T>(query: string, variables?: Record<string, unknown
             "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_ACCESS_TOKEN ?? "",
           },
           body: JSON.stringify({ query, variables }),
-          next: { revalidate: 300 },
+          ...getShopifyOriginFetchOptions(),
         },
       );
-
-      if (!response.ok) {
-        const error = new Error(`Shopify request failed with status ${response.status}`);
-
-        if (attempt < SHOPIFY_FETCH_ATTEMPTS && isRetriableStatus(response.status)) {
-          lastError = error;
-          await wait(SHOPIFY_RETRY_DELAY_MS * attempt);
-          continue;
-        }
-
-        throw error;
-      }
-
-      const json = (await response.json()) as { data?: T; errors?: Array<{ message: string }> };
-
-      if (json.errors?.length) {
-        throw new Error(json.errors.map((error) => error.message).join(", "));
-      }
-
-      if (!json.data) {
-        throw new Error("Shopify response did not include data.");
-      }
-
-      return json.data;
     } catch (error) {
-      lastError = error;
-
-      if (attempt < SHOPIFY_FETCH_ATTEMPTS) {
+      if (shouldRetryShopifyFailure(options.requestKind, attempt, { type: "network" })) {
+        logShopifyRetry(options.operation, attempt, maxAttempts, {
+          message: getErrorMessage(error, "Shopify network request failed."),
+        });
         await wait(SHOPIFY_RETRY_DELAY_MS * attempt);
         continue;
       }
+
+      throw error;
     }
+
+    if (!response.ok) {
+      const error = new Error(`Shopify request failed with status ${response.status}`);
+
+      if (
+        shouldRetryShopifyFailure(options.requestKind, attempt, {
+          type: "http",
+          status: response.status,
+        })
+      ) {
+        logShopifyRetry(options.operation, attempt, maxAttempts, {
+          status: response.status,
+          message: error.message,
+        });
+        await wait(SHOPIFY_RETRY_DELAY_MS * attempt);
+        continue;
+      }
+
+      throw error;
+    }
+
+    const json = (await response.json()) as { data?: T; errors?: Array<{ message: string }> };
+
+    if (hasShopifyGraphQLErrors(json.errors)) {
+      throw new Error(json.errors?.map((error) => error.message).join(", ") || "Shopify GraphQL request failed.");
+    }
+
+    if (!json.data) {
+      throw new Error("Shopify response did not include data.");
+    }
+
+    return json.data;
   }
 
-  throw lastError instanceof Error ? lastError : new Error("Shopify request failed.");
+  throw new Error("Shopify request failed.");
+}
+
+async function shopifyFetch<T>(
+  query: string,
+  variables: Record<string, unknown> | undefined,
+  options: ShopifyFetchOptions,
+): Promise<T> {
+  if (options.cache === "no-store") {
+    return shopifyFetchFromOrigin<T>(query, variables, options);
+  }
+
+  const cachedFetch = unstable_cache(
+    () => shopifyFetchFromOrigin<T>(query, variables, options),
+    getShopifyCatalogCacheKeyParts({
+      storeDomain: SHOPIFY_STORE_DOMAIN ?? "",
+      apiVersion: SHOPIFY_API_VERSION,
+      operation: options.operation,
+      query,
+      variables,
+    }),
+    getShopifyCatalogCacheOptions(),
+  );
+
+  return cachedFetch();
 }
 
 function formatPrice(money: ShopifyMoney) {
@@ -704,44 +768,6 @@ function getLocalCollectionProducts(handle: string) {
     collection,
     products: products.filter((product) => product.collectionHandle === handle),
   };
-}
-
-function getCachedCatalogCollection(handle: string) {
-  if (!cachedShopifyCollections || !cachedShopifyProducts) {
-    return undefined;
-  }
-
-  const collection = cachedShopifyCollections.find((item) => item.handle === handle);
-
-  if (!collection) {
-    return undefined;
-  }
-
-  return {
-    collection,
-    products: cachedShopifyProducts.filter((product) => product.collectionHandle === handle),
-  };
-}
-
-function getCachedCatalogCollectionSummary(handle: string) {
-  if (!cachedShopifyCollections || !cachedShopifyProductSummaries) {
-    return undefined;
-  }
-
-  const collection = cachedShopifyCollections.find((item) => item.handle === handle);
-
-  if (!collection) {
-    return undefined;
-  }
-
-  return {
-    collection,
-    products: cachedShopifyProductSummaries.filter((product) => product.collectionHandle === handle),
-  };
-}
-
-function getCachedCatalogProduct(handle: string) {
-  return cachedShopifyProducts?.find((product) => product.handle === handle);
 }
 
 const productSummaryFragment = `
@@ -1010,6 +1036,7 @@ export async function getShopifyProductSummaries(): Promise<ProductSummary[]> {
           }
         `,
         { cursor },
+        { operation: "getShopifyProductSummaries", cache: "catalog", requestKind: "query" },
       );
 
       return {
@@ -1020,20 +1047,15 @@ export async function getShopifyProductSummaries(): Promise<ProductSummary[]> {
     });
 
     const shopifyProducts = productNodes.map((node) => mapShopifyProductSummary(node));
-    cachedShopifyProductSummaries = shopifyProducts;
-    logShopifyDataSource("getShopifyProductSummaries", "shopify", { count: shopifyProducts.length });
+
+    logShopifyDataSource("getShopifyProductSummaries", "cache", {
+      count: shopifyProducts.length,
+      reason: "next_data_cache_boundary",
+    });
 
     return shopifyProducts;
   } catch (error) {
     const shopifyError = getShopifyRequestError("getShopifyProductSummaries", error);
-
-    if (cachedShopifyProductSummaries?.length) {
-      logShopifyDataSource("getShopifyProductSummaries", "cache", {
-        count: cachedShopifyProductSummaries.length,
-        reason: "request_failed",
-      });
-      return cachedShopifyProductSummaries;
-    }
 
     if (shouldUseLocalFallback()) {
       return products;
@@ -1075,6 +1097,7 @@ export async function getShopifyProducts(): Promise<Product[]> {
           }
         `,
         { cursor },
+        { operation: "getShopifyProducts", cache: "catalog", requestKind: "query" },
       );
 
       return {
@@ -1085,20 +1108,15 @@ export async function getShopifyProducts(): Promise<Product[]> {
     });
 
     const shopifyProducts = productNodes.map((node) => mapShopifyProduct(node));
-    cachedShopifyProducts = shopifyProducts;
-    logShopifyDataSource("getShopifyProducts", "shopify", { count: shopifyProducts.length });
+
+    logShopifyDataSource("getShopifyProducts", "cache", {
+      count: shopifyProducts.length,
+      reason: "next_data_cache_boundary",
+    });
 
     return shopifyProducts;
   } catch (error) {
     const shopifyError = getShopifyRequestError("getShopifyProducts", error);
-
-    if (cachedShopifyProducts?.length) {
-      logShopifyDataSource("getShopifyProducts", "cache", {
-        count: cachedShopifyProducts.length,
-        reason: "request_failed",
-      });
-      return cachedShopifyProducts;
-    }
 
     if (shouldUseLocalFallback()) {
       return products;
@@ -1144,6 +1162,7 @@ export async function getShopifyCollections(): Promise<Collection[]> {
           }
         `,
         { cursor },
+        { operation: "getShopifyCollections", cache: "catalog", requestKind: "query" },
       );
 
       collectionNodes.push(...data.collections.edges.map(({ node }) => node));
@@ -1156,24 +1175,17 @@ export async function getShopifyCollections(): Promise<Collection[]> {
       ? mainCollectionNodes
       : collectionNodes.filter((node) => isLegacyProductTypeCollection(node));
     const shopifyCollections = filteredCollectionNodes.map((node) => mapShopifyCollection(node));
-    cachedShopifyCollections = shopifyCollections;
-    logShopifyDataSource("getShopifyCollections", "shopify", {
+
+    logShopifyDataSource("getShopifyCollections", "cache", {
       count: shopifyCollections.length,
       totalCount: collectionNodes.length,
       filter: mainCollectionNodes.length ? "main_category" : "legacy_product_type",
+      reason: "next_data_cache_boundary",
     });
 
     return shopifyCollections;
   } catch (error) {
     const shopifyError = getShopifyRequestError("getShopifyCollections", error);
-
-    if (cachedShopifyCollections?.length) {
-      logShopifyDataSource("getShopifyCollections", "cache", {
-        count: cachedShopifyCollections.length,
-        reason: "request_failed",
-      });
-      return cachedShopifyCollections;
-    }
 
     if (shouldUseLocalFallback()) {
       return collections;
@@ -1194,18 +1206,6 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
     throw error;
   }
 
-  const cachedProduct = getCachedCatalogProduct(handle);
-
-  if (cachedProduct) {
-    logShopifyDataSource("getShopifyProduct", "cache", {
-      found: true,
-      handle,
-      reason: "memory_catalog",
-    });
-
-    return cachedProduct;
-  }
-
   try {
     const data = await shopifyFetch<ShopifyProductResponse>(
       `
@@ -1217,16 +1217,36 @@ export async function getShopifyProduct(handle: string): Promise<Product | undef
         }
       `,
       { handle },
+      { operation: "getShopifyProduct", cache: "catalog", requestKind: "query" },
     );
 
     const product = data.product ? mapShopifyProduct(data.product) : undefined;
-    logShopifyDataSource("getShopifyProduct", "shopify", {
+    logShopifyDataSource("getShopifyProduct", "cache", {
       found: Boolean(product),
       handle,
+      reason: "next_data_cache_boundary",
     });
 
     return product;
   } catch (error) {
+    try {
+      const catalogProduct = (await getShopifyProducts()).find(
+        (product) => product.handle === handle,
+      );
+
+      if (catalogProduct) {
+        logShopifyDataSource("getShopifyProduct", "cache", {
+          found: true,
+          handle,
+          reason: "catalog_after_direct_failure",
+        });
+
+        return catalogProduct;
+      }
+    } catch {
+      // Preserve the direct-query error below when no catalog copy is available.
+    }
+
     const localProduct = products.find((product) => product.handle === handle);
 
     const shopifyError = getShopifyRequestError("getShopifyProduct", error);
@@ -1266,6 +1286,7 @@ async function fetchShopifyCollectionSummaryDirect(
         }
       `,
       { handle, cursor },
+      { operation: "getShopifyCollectionSummary", cache: "catalog", requestKind: "query" },
     );
 
     if (!data.collection) {
@@ -1322,6 +1343,7 @@ async function fetchShopifyCollectionDirect(
         }
       `,
       { handle, cursor },
+      { operation: "getShopifyCollection", cache: "catalog", requestKind: "query" },
     );
 
     if (!data.collection) {
@@ -1364,19 +1386,6 @@ export async function getShopifyCollectionSummary(
     throw error;
   }
 
-  const cachedCatalogCollection = getCachedCatalogCollectionSummary(handle);
-
-  if (cachedCatalogCollection) {
-    logShopifyDataSource("getShopifyCollectionSummary", "cache", {
-      found: true,
-      handle,
-      productCount: cachedCatalogCollection.products.length,
-      reason: "memory_catalog",
-    });
-
-    return cachedCatalogCollection;
-  }
-
   try {
     const [shopifyCollections, shopifyProducts] = await Promise.all([
       getShopifyCollections(),
@@ -1406,14 +1415,19 @@ export async function getShopifyCollectionSummary(
     const directCollection = await fetchShopifyCollectionSummaryDirect(handle);
 
     if (!directCollection) {
-      logShopifyDataSource("getShopifyCollectionSummary", "shopify", { found: false, handle });
+      logShopifyDataSource("getShopifyCollectionSummary", "cache", {
+        found: false,
+        handle,
+        reason: "next_data_cache_boundary",
+      });
       return shouldUseLocalFallback() ? getLocalCollectionProducts(handle) : undefined;
     }
 
-    logShopifyDataSource("getShopifyCollectionSummary", "shopify", {
+    logShopifyDataSource("getShopifyCollectionSummary", "cache", {
       found: true,
       handle,
       productCount: directCollection.products.length,
+      reason: "next_data_cache_boundary",
     });
 
     return directCollection;
@@ -1445,19 +1459,6 @@ export async function getShopifyCollection(
     throw error;
   }
 
-  const cachedCatalogCollection = getCachedCatalogCollection(handle);
-
-  if (cachedCatalogCollection) {
-    logShopifyDataSource("getShopifyCollection", "cache", {
-      found: true,
-      handle,
-      productCount: cachedCatalogCollection.products.length,
-      reason: "memory_catalog",
-    });
-
-    return cachedCatalogCollection;
-  }
-
   try {
     const [shopifyCollections, shopifyProducts] = await Promise.all([
       getShopifyCollections(),
@@ -1487,14 +1488,19 @@ export async function getShopifyCollection(
     const directCollection = await fetchShopifyCollectionDirect(handle);
 
     if (!directCollection) {
-      logShopifyDataSource("getShopifyCollection", "shopify", { found: false, handle });
+      logShopifyDataSource("getShopifyCollection", "cache", {
+        found: false,
+        handle,
+        reason: "next_data_cache_boundary",
+      });
       return shouldUseLocalFallback() ? getLocalCollectionProducts(handle) : undefined;
     }
 
-    logShopifyDataSource("getShopifyCollection", "shopify", {
+    logShopifyDataSource("getShopifyCollection", "cache", {
       found: true,
       handle,
       productCount: directCollection.products.length,
+      reason: "next_data_cache_boundary",
     });
 
     return directCollection;
@@ -1524,6 +1530,7 @@ export async function getCart(cartId: string): Promise<Cart | undefined> {
       }
     `,
     { cartId },
+    { operation: "getCart", cache: "no-store", requestKind: "query" },
   );
 
   return data.cart ? mapShopifyCart(data.cart) : undefined;
@@ -1547,6 +1554,7 @@ export async function createCart(variantId: string, quantity = 1): Promise<Cart>
     {
       lines: [{ merchandiseId: variantId, quantity }],
     },
+    { operation: "createCart", cache: "no-store", requestKind: "mutation" },
   );
 
   assertCartUserErrors(data.cartCreate.userErrors);
@@ -1577,6 +1585,7 @@ export async function addCartLine(cartId: string, variantId: string, quantity = 
       cartId,
       lines: [{ merchandiseId: variantId, quantity }],
     },
+    { operation: "addCartLine", cache: "no-store", requestKind: "mutation" },
   );
 
   assertCartUserErrors(data.cartLinesAdd.userErrors);
@@ -1607,6 +1616,7 @@ export async function updateCartLine(cartId: string, lineId: string, quantity: n
       cartId,
       lines: [{ id: lineId, quantity }],
     },
+    { operation: "updateCartLine", cache: "no-store", requestKind: "mutation" },
   );
 
   assertCartUserErrors(data.cartLinesUpdate.userErrors);
@@ -1637,6 +1647,7 @@ export async function removeCartLine(cartId: string, lineId: string): Promise<Ca
       cartId,
       lineIds: [lineId],
     },
+    { operation: "removeCartLine", cache: "no-store", requestKind: "mutation" },
   );
 
   assertCartUserErrors(data.cartLinesRemove.userErrors);

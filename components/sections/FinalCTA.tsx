@@ -38,10 +38,10 @@ export function FinalCTA() {
               JIESTAR supports direct shoppers, wholesale buyers, and long-term product partners through one global brand website.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <HeroBannerButton href="/products" className="min-w-44">
+              <HeroBannerButton href="/products" prefetch={false} className="min-w-44">
                 Explore Products
               </HeroBannerButton>
-              <HeroBannerButton href="/contact" variant="secondary" className="min-w-52">
+              <HeroBannerButton href="/contact" prefetch={false} variant="secondary" className="min-w-52">
                 Start a Business Inquiry
               </HeroBannerButton>
             </div>
@@ -54,6 +54,7 @@ export function FinalCTA() {
                   <Link
                     key={item.title}
                     href={item.href}
+                    prefetch={false}
                     className="group rounded-lg border border-white/10 bg-white/[0.04] p-4 transition hover:border-red-300 hover:bg-white/[0.08]"
                   >
                     <div className="flex items-center justify-between gap-3">

@@ -45,10 +45,10 @@ export function HomeHero() {
               Factory-direct building block sets and custom product solutions for global retailers, brand partners, collectors and builders.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <LinkButton href="/products" className="min-w-32">
+              <LinkButton href="/products" prefetch={false} className="min-w-32">
                 Explore Products
               </LinkButton>
-              <LinkButton href="/custom-solutions" variant="secondary" className="min-w-44">
+              <LinkButton href="/custom-solutions" prefetch={false} variant="secondary" className="min-w-44">
                 Start a Project
               </LinkButton>
             </div>

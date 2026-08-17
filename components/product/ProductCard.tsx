@@ -9,7 +9,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
 
   return (
     <article className="group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
-      <Link href={`/products/${product.handle}`} className="block">
+      <Link href={`/products/${product.handle}`} prefetch={false} className="block">
         <div className="relative">
           <span className="absolute left-3 top-3 z-10 rounded-md bg-slate-950 px-2 py-1 text-[11px] font-black text-white">
             New

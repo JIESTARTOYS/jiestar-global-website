@@ -171,6 +171,7 @@ export function BrandCollectionCarousel({ brands }: BrandCollectionCarouselProps
             <Link
               key={brand.name}
               href={`/collections/${brand.collectionHandle}`}
+              prefetch={false}
               draggable={false}
               className="group w-[11rem] shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-950/[0.03] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-950/[0.06] sm:w-[12rem] lg:w-[13rem]"
             >

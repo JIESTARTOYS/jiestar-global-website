@@ -42,6 +42,7 @@ export function HeaderMobileNav({ navigation }: HeaderMobileNavProps) {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               onClick={closeMenu}
               className="rounded-md px-3 py-3 text-base font-bold text-slate-800 hover:bg-slate-50"
             >
@@ -50,6 +51,7 @@ export function HeaderMobileNav({ navigation }: HeaderMobileNavProps) {
           ))}
           <Link
             href="/account"
+            prefetch={false}
             onClick={closeMenu}
             className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-bold text-slate-800 hover:bg-slate-50"
           >

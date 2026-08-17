@@ -79,6 +79,7 @@ export function BrandStrength() {
                 </ul>
                 <Link
                   href={item.href}
+                  prefetch={false}
                   className="mt-6 inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-slate-200 px-4 py-2 text-sm font-black text-slate-950 transition group-hover:border-red-600 group-hover:bg-red-600 group-hover:text-white"
                 >
                   {item.linkLabel}

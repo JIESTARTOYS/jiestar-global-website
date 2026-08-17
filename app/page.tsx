@@ -9,6 +9,7 @@ import { HomeBrandPortfolio } from "@/components/sections/HomeBrandPortfolio";
 import { HomeHero } from "@/components/sections/HomeHero";
 import { ProductCategories } from "@/components/sections/ProductCategories";
 import { QualitySafety } from "@/components/sections/QualitySafety";
+import { getCollectionProductCount, getCollectionsWithProducts } from "@/lib/collection-utils";
 import { createMetadata } from "@/lib/seo";
 import { getShopifyCollections, getShopifyProductSummaries } from "@/lib/shopify";
 
@@ -22,13 +23,22 @@ export const metadata = createMetadata({
 });
 
 export default async function Home() {
-  const products = await getShopifyProductSummaries();
-  const collections = await getShopifyCollections();
+  const [products, collections] = await Promise.all([
+    getShopifyProductSummaries(),
+    getShopifyCollections(),
+  ]);
+  const productCategories = getCollectionsWithProducts(collections, products).map((collection) => ({
+    handle: collection.handle,
+    title: collection.title,
+    image: collection.image,
+    imageAlt: collection.imageAlt,
+    productCount: getCollectionProductCount(collection, products),
+  }));
 
   return (
     <>
       <HomeHero />
-      <ProductCategories collections={collections} products={products} />
+      <ProductCategories categories={productCategories} />
       <FeaturedProducts products={products} />
       <HomeBrandPortfolio />
       <B2BCooperation />
