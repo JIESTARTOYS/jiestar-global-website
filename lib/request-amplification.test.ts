@@ -13,7 +13,7 @@ function openingTags(component: string, tagName: "Link" | "LinkButton" | "HeroBa
 const prefetchDisabled = /prefetch\s*=\s*\{\s*false\s*\}/;
 
 test("homepage passes lightweight category cards to ProductCategories", () => {
-  const page = source("../app/page.tsx");
+  const page = source("../app/(default)/page.tsx");
   const categoryMapping = page.match(
     /const\s+productCategories\s*=\s*getCollectionsWithProducts\([\s\S]*?\)\.map\(\s*\(collection\)\s*=>\s*\(\{([\s\S]*?)\}\)\s*\);/,
   );

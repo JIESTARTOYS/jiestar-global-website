@@ -3,6 +3,8 @@ import { siteConfig } from "@/lib/data";
 import { BLOG_SECTION_SLUGS, getBlogPosts } from "@/lib/blog";
 import { getShopifyCollections, getShopifyProductSummaries } from "@/lib/shopify";
 import { getEnabledSubBrandCollectionHandles } from "@/lib/sub-brands";
+import { translatedPaths, localizedHref } from "@/lib/i18n/routing";
+import { absoluteUrl } from "@/lib/seo";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [collections, products] = await Promise.all([getShopifyCollections(), getShopifyProductSummaries()]);
@@ -27,9 +29,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/policies/terms-of-service",
     "/support/replacement-parts",
   ];
+  const translatedPathSet = new Set<string>(translatedPaths);
+
+  function languageAlternates(path: string) {
+    const englishPath = localizedHref("en", path);
+    const spanishPath = localizedHref("es", path);
+
+    return {
+      languages: {
+        en: absoluteUrl(englishPath),
+        es: absoluteUrl(spanishPath),
+        "x-default": absoluteUrl(englishPath),
+      },
+    };
+  }
 
   return [
-    ...staticRoutes.map((route) => ({ url: `${siteConfig.url}${route}` })),
+    ...staticRoutes.map((route) => {
+      const path = route || "/";
+
+      return {
+        url: absoluteUrl(path),
+        ...(translatedPathSet.has(path) ? { alternates: languageAlternates(path) } : {}),
+      };
+    }),
+    ...translatedPaths.map((path) => ({
+      url: absoluteUrl(localizedHref("es", path)),
+      alternates: languageAlternates(path),
+    })),
     ...BLOG_SECTION_SLUGS.map((slug) => ({
       url: `${siteConfig.url}/blog/category/${slug}`,
     })),

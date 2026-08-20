@@ -143,14 +143,15 @@ export function ProductVariantPurchase({
             This product is available for business inquiry. Request catalog pricing, MOQ discussion, and shipping options before ordering.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <LinkButton href="/wholesale" className="px-4">Request Wholesale Quote</LinkButton>
-            <LinkButton href="/custom-solutions" variant="secondary" className="px-4">Discuss Custom Packaging</LinkButton>
+            <LinkButton href={`/wholesale?product=${product.handle}`} className="px-4">Request Wholesale Quote</LinkButton>
+            <LinkButton href={`/custom-solutions?product=${product.handle}`} variant="secondary" className="px-4">Discuss Custom Packaging</LinkButton>
           </div>
         </div>
       ) : (
         <div className="mt-6">
           <ProductActions
             productTitle={product.title}
+            productHandle={product.handle}
             variantId={selectedVariant?.id ?? product.variantId}
             variantLabel={currentVariantLabel}
             availableForSale={selectedVariant?.availableForSale}

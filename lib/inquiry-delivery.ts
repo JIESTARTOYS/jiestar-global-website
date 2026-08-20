@@ -18,7 +18,7 @@ export type ResendEmailRequest = {
   html: string;
 };
 
-type DeliveryResult =
+export type DeliveryResult =
   | {
       ok: true;
       deliveryConfigured: boolean;
@@ -26,10 +26,28 @@ type DeliveryResult =
     }
   | {
       ok: false;
-      deliveryConfigured: true;
+      deliveryConfigured: boolean;
       contactEmail: string;
       error: string;
+      logError:
+        | "delivery_not_configured"
+        | "resend_request_timed_out"
+        | "resend_request_failed"
+        | `resend_response_${number}`;
     };
+
+export type InquiryDeliveryLog = {
+  level: "info" | "error";
+  message: "Inquiry delivery completed" | "Inquiry delivery failed";
+  route: "/api/inquiry";
+  requestId: string;
+  inquiryType: NormalizedInquiryPayload["type"];
+  locale?: string;
+  deliveryConfigured: boolean;
+  outcome: "delivered" | "delivery_not_configured" | "failed";
+  durationMs: number;
+  error?: string;
+};
 
 type FetchLike = typeof fetch;
 
@@ -38,6 +56,9 @@ const defaultDeliveryTimeoutMs = 10_000;
 
 const labels: Record<string, string> = {
   type: "Inquiry Type",
+  locale: "Language / Locale",
+  sourcePath: "Source Page",
+  productHandle: "Product Handle",
   name: "Name",
   company: "Company",
   country: "Country / Region",
@@ -61,6 +82,9 @@ const labels: Record<string, string> = {
 
 const preferredFieldOrder = [
   "type",
+  "locale",
+  "sourcePath",
+  "productHandle",
   "name",
   "company",
   "country",
@@ -127,9 +151,11 @@ export async function deliverInquiry(
 
   if (!config.resendApiKey) {
     return {
-      ok: true,
+      ok: false,
       deliveryConfigured: false,
       contactEmail,
+      error: "Email delivery is not configured.",
+      logError: "delivery_not_configured",
     };
   }
 
@@ -153,6 +179,7 @@ export async function deliverInquiry(
       deliveryConfigured: true,
       contactEmail,
       error: `Email delivery failed: ${getDeliveryErrorMessage(error)}`,
+      logError: getDeliveryLogError(error),
     };
   } finally {
     clearTimeout(timeout);
@@ -164,6 +191,7 @@ export async function deliverInquiry(
       deliveryConfigured: true,
       contactEmail,
       error: `Email delivery failed: ${await readResendError(response)}`,
+      logError: `resend_response_${response.status}`,
     };
   }
 
@@ -171,6 +199,38 @@ export async function deliverInquiry(
     ok: true,
     deliveryConfigured: true,
     contactEmail,
+  };
+}
+
+export function createInquiryDeliveryLog(
+  payload: NormalizedInquiryPayload,
+  delivery: DeliveryResult,
+  context: { requestId: string; durationMs: number },
+): InquiryDeliveryLog {
+  const shared = {
+    route: "/api/inquiry" as const,
+    requestId: context.requestId,
+    inquiryType: payload.type,
+    ...(payload.locale ? { locale: payload.locale } : {}),
+    deliveryConfigured: delivery.deliveryConfigured,
+    durationMs: Math.max(0, Math.round(context.durationMs)),
+  };
+
+  if (!delivery.ok) {
+    return {
+      level: "error",
+      message: "Inquiry delivery failed",
+      ...shared,
+      outcome: "failed",
+      error: delivery.logError,
+    };
+  }
+
+  return {
+    level: "info",
+    message: "Inquiry delivery completed",
+    ...shared,
+    outcome: delivery.deliveryConfigured ? "delivered" : "delivery_not_configured",
   };
 }
 
@@ -191,9 +251,10 @@ function getInquiryTitle(type: NormalizedInquiryPayload["type"]) {
 }
 
 function buildRows(payload: NormalizedInquiryPayload): Array<[string, string]> {
-  return preferredFieldOrder
-    .filter((field) => payload[field])
-    .map((field) => [labels[field] ?? field, payload[field]]);
+  return preferredFieldOrder.flatMap((field) => {
+    const value = payload[field];
+    return value ? [[labels[field] ?? field, value]] : [];
+  });
 }
 
 function escapeHtml(value: string) {
@@ -230,6 +291,12 @@ function getDeliveryErrorMessage(error: unknown) {
   }
 
   return "Unknown delivery error";
+}
+
+function getDeliveryLogError(error: unknown): "resend_request_timed_out" | "resend_request_failed" {
+  return error instanceof Error && error.name === "AbortError"
+    ? "resend_request_timed_out"
+    : "resend_request_failed";
 }
 
 async function readResendError(response: Response) {

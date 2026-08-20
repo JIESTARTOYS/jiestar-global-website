@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { deliverInquiry } from "@/lib/inquiry-delivery";
+import { createInquiryDeliveryLog, deliverInquiry } from "@/lib/inquiry-delivery";
+import { createInquiryDeliveryFailureResponse } from "@/lib/inquiry-api-response";
 import { createRateLimiter, getRequestIp } from "@/lib/rate-limit";
 import { normalizeInquiryPayload } from "@/lib/request-validation";
 
@@ -35,13 +36,24 @@ export async function POST(request: Request) {
     );
   }
 
-  console.info("JIESTAR inquiry received", normalized.payload);
+  const requestId = crypto.randomUUID();
+  const deliveryStartedAt = Date.now();
   const delivery = await deliverInquiry(normalized.payload);
+  const deliveryLog = createInquiryDeliveryLog(normalized.payload, delivery, {
+    requestId,
+    durationMs: Date.now() - deliveryStartedAt,
+  });
+
+  if (deliveryLog.level === "error") {
+    console.error(JSON.stringify(deliveryLog));
+  } else {
+    console.info(JSON.stringify(deliveryLog));
+  }
 
   if (!delivery.ok) {
     return NextResponse.json(
-      { error: delivery.error, deliveryConfigured: delivery.deliveryConfigured, contactEmail: delivery.contactEmail },
-      { status: 502 },
+      createInquiryDeliveryFailureResponse(delivery),
+      { status: delivery.deliveryConfigured ? 502 : 503 },
     );
   }
 

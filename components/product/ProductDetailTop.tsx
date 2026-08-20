@@ -71,8 +71,8 @@ export function ProductDetailTop({ product }: { product: Product }) {
             Interested in wholesale supply, exclusive SKUs, packaging customization, or a custom product line based on this direction?
           </p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-            <LinkButton href="/contact" className="px-4">Contact JIESTAR</LinkButton>
-            <LinkButton href="/custom-solutions" variant="secondary" className="px-4">
+            <LinkButton href={`/contact?product=${product.handle}`} className="px-4">Contact JIESTAR</LinkButton>
+            <LinkButton href={`/custom-solutions?product=${product.handle}`} variant="secondary" className="px-4">
               Custom Solutions
               <ArrowRightIcon className="ml-2 h-4 w-4" />
             </LinkButton>

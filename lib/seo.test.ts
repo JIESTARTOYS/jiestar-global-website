@@ -133,6 +133,31 @@ test("createMetadata emits absolute titles so the layout template does not doubl
     (metadata.alternates as { canonical: string }).canonical,
     "https://www.jiestartoys.com/wholesale",
   );
+  assert.deepEqual(
+    (metadata.alternates as { languages: Record<string, string> }).languages,
+    {
+      en: "https://www.jiestartoys.com/wholesale",
+      es: "https://www.jiestartoys.com/es/wholesale",
+      "x-default": "https://www.jiestartoys.com/wholesale",
+    },
+  );
+});
+
+test("createMetadata does not advertise untranslated Spanish counterparts", () => {
+  const metadata = createMetadata({
+    title: "Products | JIESTAR Toys",
+    description: "Sample description.",
+    path: "/products",
+  });
+
+  assert.equal(
+    (metadata.alternates as { canonical: string }).canonical,
+    "https://www.jiestartoys.com/products",
+  );
+  assert.equal(
+    "languages" in (metadata.alternates as Record<string, unknown>),
+    false,
+  );
 });
 
 test("createWebSiteJsonLd exposes brand alternate names on the site entity", () => {

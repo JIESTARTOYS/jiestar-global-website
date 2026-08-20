@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
 import { CartIcon, ShieldIcon } from "@/components/ui/Icons";
+import { getBrowserPathname, trackCommerceEvent } from "@/lib/analytics";
 
 type ProductActionsProps = {
   productTitle: string;
+  productHandle: string;
   variantId?: string;
   variantLabel?: string;
   availableForSale?: boolean;
@@ -13,6 +15,7 @@ type ProductActionsProps = {
 
 export function ProductActions({
   productTitle,
+  productHandle,
   variantId,
   variantLabel,
   availableForSale = true,
@@ -39,6 +42,10 @@ export function ProductActions({
 
     try {
       await addItem(variantId);
+      trackCommerceEvent("Add to Cart", {
+        sourcePath: getBrowserPathname(),
+        productHandle,
+      });
       setStatus("Added to cart. Review your cart drawer or continue browsing.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Unable to add product to cart.");
@@ -76,6 +83,12 @@ export function ProductActions({
         throw new Error(data.error ?? "Unable to create Shopify checkout.");
       }
 
+      trackCommerceEvent("Begin Checkout", {
+        sourcePath: getBrowserPathname(),
+        productHandle,
+        checkoutType: "buy_now",
+        cartQuantity: 1,
+      });
       window.location.href = data.checkoutUrl;
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Unable to create Shopify checkout.");
@@ -121,7 +134,11 @@ export function ProductActions({
       >
         {isUnavailable ? "Unavailable" : isBuying ? "Opening Checkout..." : "Buy Now"}
       </button>
-      <p className="rounded-md bg-white px-3 py-2 text-sm leading-6 text-slate-600 sm:col-span-2">
+      <p
+        role="status"
+        aria-live="polite"
+        className="rounded-md bg-white px-3 py-2 text-sm leading-6 text-slate-600 sm:col-span-2"
+      >
         {status ??
           (isUnavailable
             ? "This SKU is not available for checkout right now."

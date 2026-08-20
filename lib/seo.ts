@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Product, ProductSummary } from "./data.ts";
 import { siteConfig } from "./data.ts";
+import { isTranslatedPath, localizedHref, stripLocalePrefix } from "./i18n/routing.ts";
 
 type SeoInput = {
   title: string;
@@ -58,6 +59,14 @@ const returnPolicyId = `${returnPolicyUrl}#return-policy`;
 
 export function createMetadata({ title, description, path = "", image }: SeoInput): Metadata {
   const canonical = absoluteUrl(path);
+  const counterpartPath = stripLocalePrefix(path || "/");
+  const languages = isTranslatedPath(counterpartPath)
+    ? {
+        en: absoluteUrl(localizedHref("en", counterpartPath)),
+        es: absoluteUrl(localizedHref("es", counterpartPath)),
+        "x-default": absoluteUrl(localizedHref("en", counterpartPath)),
+      }
+    : undefined;
 
   return {
     // Absolute title: page titles already include the brand, so the root
@@ -66,6 +75,7 @@ export function createMetadata({ title, description, path = "", image }: SeoInpu
     description,
     alternates: {
       canonical,
+      ...(languages ? { languages } : {}),
     },
     openGraph: {
       title,

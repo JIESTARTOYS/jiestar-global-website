@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SafeAnalytics } from "@/components/analytics/SafeAnalytics";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { siteConfig } from "@/lib/data";
 import { createJsonLdScript, createOrganizationJsonLd, createWebSiteJsonLd } from "@/lib/seo";
-import "./globals.css";
+import "../globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
     "Discover JIESTAR building block sets for collectors, retailers, distributors, and global ecommerce sellers.",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -33,6 +35,8 @@ export default async function RootLayout({
           <main>{children}</main>
           <Footer />
         </CartProvider>
+        <SafeAnalytics />
+        <SpeedInsights />
       </body>
     </html>
   );

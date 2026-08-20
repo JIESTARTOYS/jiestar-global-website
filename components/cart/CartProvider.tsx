@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeftIcon, MinusIcon, PlusIcon, TrashIcon, XIcon } from "@/components/ui/Icons";
+import { getBrowserPathname, trackCommerceEvent } from "@/lib/analytics";
 import type { Cart } from "@/lib/shopify";
 
 type CartContextValue = {
@@ -440,6 +441,15 @@ function CartDrawer() {
           </div>
           <a
             href={cart?.checkoutUrl ?? undefined}
+            onClick={() => {
+              if (cart?.checkoutUrl && cart.totalQuantity > 0 && !isLoading) {
+                trackCommerceEvent("Begin Checkout", {
+                  sourcePath: getBrowserPathname(),
+                  checkoutType: "cart",
+                  cartQuantity: cart.totalQuantity,
+                });
+              }
+            }}
             className={`flex min-h-12 w-full items-center justify-center rounded-md px-5 text-sm font-black text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 ${
               cart?.checkoutUrl && cart.totalQuantity > 0 && !isLoading
                 ? "bg-red-600 hover:bg-red-700"

@@ -205,9 +205,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:shrink-0">
-                <LinkButton href="/wholesale" className="px-4">Request Wholesale Quote</LinkButton>
-                <LinkButton href="/custom-solutions" variant="secondary" className="px-4">Discuss Custom Packaging</LinkButton>
-                <LinkButton href="/contact" variant="secondary" className="px-4">Contact Sales</LinkButton>
+                <LinkButton href={`/wholesale?product=${product.handle}`} className="px-4">Request Wholesale Quote</LinkButton>
+                <LinkButton href={`/custom-solutions?product=${product.handle}`} variant="secondary" className="px-4">Discuss Custom Packaging</LinkButton>
+                <LinkButton href={`/contact?product=${product.handle}`} variant="secondary" className="px-4">Contact Sales</LinkButton>
               </div>
             </div>
           </div>

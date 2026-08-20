@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   buildInquiryEmail,
+  createInquiryDeliveryLog,
   deliverInquiry,
   getInquiryDeliveryConfig,
   getInquiryRecipient,
@@ -11,6 +12,9 @@ import type { NormalizedInquiryPayload } from "./request-validation.ts";
 
 const wholesalePayload: NormalizedInquiryPayload = {
   type: "wholesale",
+  locale: "es",
+  sourcePath: "/es/wholesale",
+  productHandle: "city-train-59005",
   email: "buyer@example.com",
   company: "Global Blocks Ltd",
   country: "United States",
@@ -47,19 +51,23 @@ test("buildInquiryEmail formats a readable internal notification", () => {
   assert.match(email.subject, /Wholesale inquiry/i);
   assert.match(email.text, /Global Blocks Ltd/);
   assert.match(email.text, /Interested Category: Trains/);
+  assert.match(email.text, /Language \/ Locale: es/);
+  assert.match(email.text, /Source Page: \/es\/wholesale/);
+  assert.match(email.text, /Product Handle: city-train-59005/);
   assert.match(email.html, /Please send wholesale information\./);
 });
 
-test("deliverInquiry reports missing Resend configuration without calling fetch", async () => {
+test("deliverInquiry fails safely when Resend is not configured without calling fetch", async () => {
   let called = false;
   const result = await deliverInquiry(wholesalePayload, createConfig({ resendApiKey: "" }), async () => {
     called = true;
     return new Response(null, { status: 200 });
   });
 
-  assert.equal(result.ok, true);
+  assert.equal(result.ok, false);
   assert.equal(result.deliveryConfigured, false);
   assert.equal(result.contactEmail, "info@jiestartoys.com");
+  assert.equal(result.logError, "delivery_not_configured");
   assert.equal(called, false);
 });
 
@@ -127,4 +135,85 @@ test("getInquiryDeliveryConfig falls back when optional email environment variab
     process.env.SUPPORT_EMAIL = previousSupportEmail;
     process.env.INQUIRY_FROM_EMAIL = previousFromEmail;
   }
+});
+
+test("createInquiryDeliveryLog contains operational fields but excludes inquiry content and attribution", () => {
+  const log = createInquiryDeliveryLog(
+    {
+      ...wholesalePayload,
+      name: "Sensitive Buyer",
+      whatsapp: "+1 555 0100",
+      orderNumber: "ORDER-SECRET",
+    },
+    {
+      ok: true,
+      deliveryConfigured: true,
+      contactEmail: "info@jiestartoys.com",
+    },
+    { requestId: "request-123", durationMs: 12.6 },
+  );
+
+  assert.deepEqual(log, {
+    level: "info",
+    message: "Inquiry delivery completed",
+    route: "/api/inquiry",
+    requestId: "request-123",
+    inquiryType: "wholesale",
+    locale: "es",
+    deliveryConfigured: true,
+    durationMs: 13,
+    outcome: "delivered",
+  });
+
+  const serialized = JSON.stringify(log);
+  assert.doesNotMatch(serialized, /Sensitive Buyer/);
+  assert.doesNotMatch(serialized, /es\/wholesale/);
+  assert.doesNotMatch(serialized, /city-train-59005/);
+  assert.doesNotMatch(serialized, /buyer@example\.com/);
+  assert.doesNotMatch(serialized, /555 0100/);
+  assert.doesNotMatch(serialized, /ORDER-SECRET/);
+  assert.doesNotMatch(serialized, /Please send wholesale information/);
+});
+
+test("createInquiryDeliveryLog uses a sanitized delivery error", async () => {
+  const delivery = await deliverInquiry(wholesalePayload, createConfig(), async () => {
+    throw new Error("buyer@example.com failed with secret-token");
+  });
+
+  assert.equal(delivery.ok, false);
+
+  const log = createInquiryDeliveryLog(wholesalePayload, delivery, {
+    requestId: "request-456",
+    durationMs: 4,
+  });
+  const serialized = JSON.stringify(log);
+
+  assert.equal(log.level, "error");
+  assert.equal(log.error, "resend_request_failed");
+  assert.doesNotMatch(serialized, /buyer@example\.com/);
+  assert.doesNotMatch(serialized, /secret-token/);
+});
+
+test("createInquiryDeliveryLog treats missing delivery configuration as an operational error", async () => {
+  const delivery = await deliverInquiry(
+    wholesalePayload,
+    createConfig({ resendApiKey: "" }),
+  );
+  const log = createInquiryDeliveryLog(wholesalePayload, delivery, {
+    requestId: "request-789",
+    durationMs: 2,
+  });
+
+  assert.deepEqual(log, {
+    level: "error",
+    message: "Inquiry delivery failed",
+    route: "/api/inquiry",
+    requestId: "request-789",
+    inquiryType: "wholesale",
+    locale: "es",
+    deliveryConfigured: false,
+    durationMs: 2,
+    outcome: "failed",
+    error: "delivery_not_configured",
+  });
 });

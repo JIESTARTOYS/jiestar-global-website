@@ -1,8 +1,15 @@
+import { isValidProductHandle } from "./product-handle.ts";
+
 export type InquiryType = "wholesale" | "custom" | "contact" | "replacement-parts";
+export type InquiryLocale = "en" | "es";
 
 export type NormalizedInquiryPayload = {
   type: InquiryType;
-} & Record<string, string>;
+  locale?: InquiryLocale;
+  sourcePath?: string;
+  productHandle?: string;
+  [field: string]: string | undefined;
+};
 
 type NormalizeResult =
   | {
@@ -16,8 +23,12 @@ type NormalizeResult =
     };
 
 const allowedInquiryTypes = new Set<InquiryType>(["wholesale", "custom", "contact", "replacement-parts"]);
+const allowedLocales = new Set<InquiryLocale>(["en", "es"]);
 const allowedFields = [
   "type",
+  "locale",
+  "sourcePath",
+  "productHandle",
   "name",
   "company",
   "country",
@@ -39,6 +50,9 @@ const allowedFields = [
   "preferredContact",
 ];
 const fieldLimits: Record<string, number> = {
+  locale: 2,
+  sourcePath: 500,
+  productHandle: 255,
   message: 5000,
   customizationNeeds: 3000,
   interestedCategory: 500,
@@ -59,6 +73,10 @@ function requiredFieldsForType(type: InquiryType) {
 
 function hasValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function hasValidSourcePath(value: string) {
+  return /^\/[A-Za-z0-9/_-]*$/.test(value);
 }
 
 export function normalizeInquiryPayload(body: Record<string, unknown>): NormalizeResult {
@@ -91,6 +109,18 @@ export function normalizeInquiryPayload(body: Record<string, unknown>): Normaliz
     payload[field] = value;
   }
 
+  if (payload.locale && !allowedLocales.has(payload.locale as InquiryLocale)) {
+    return { ok: false, error: "Invalid locale." };
+  }
+
+  if (payload.sourcePath && !hasValidSourcePath(payload.sourcePath)) {
+    return { ok: false, error: "Field sourcePath must be a pathname." };
+  }
+
+  if (payload.productHandle && !isValidProductHandle(payload.productHandle)) {
+    return { ok: false, error: "Invalid product handle." };
+  }
+
   const missingFields = requiredFieldsForType(inquiryType).filter((field) => !payload[field]);
 
   if (missingFields.length) {
@@ -101,7 +131,7 @@ export function normalizeInquiryPayload(body: Record<string, unknown>): Normaliz
     };
   }
 
-  if (!hasValidEmail(payload.email)) {
+  if (!hasValidEmail(payload.email ?? "")) {
     return { ok: false, error: "Please enter a valid email address." };
   }
 

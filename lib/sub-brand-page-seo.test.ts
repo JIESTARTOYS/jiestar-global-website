@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const collectionPageSource = readFileSync("app/collections/[handle]/page.tsx", "utf8");
+const collectionPageSource = readFileSync("app/(default)/collections/[handle]/page.tsx", "utf8");
 
 test("brand collection pages use configured names, headings, metadata, and logos", () => {
   assert.match(collectionPageSource, /subBrandForHandle\.seo\.title/);

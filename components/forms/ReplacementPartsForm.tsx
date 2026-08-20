@@ -1,14 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { getBrowserPathname, trackInquiryEvent, trackInquiryFailure } from "@/lib/analytics";
 
 const fieldClass =
-  "min-h-11 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-slate-950";
+  "min-h-11 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2";
 
 export function ReplacementPartsForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const startedRef = useRef(false);
+
+  function getAttribution() {
+    return {
+      locale: "en" as const,
+      formType: "replacement-parts" as const,
+      sourcePath: getBrowserPathname("/support/replacement-parts"),
+    };
+  }
+
+  function onStart() {
+    if (startedRef.current) {
+      return;
+    }
+
+    startedRef.current = true;
+    trackInquiryEvent("Inquiry Started", getAttribution());
+  }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,12 +46,20 @@ export function ReplacementPartsForm() {
       `Issue type: ${payload.issueType ?? "not sure yet"}.`,
       `Preferred contact: ${payload.preferredContact ?? "email"}.`,
     ].join(" ");
+    const attribution = getAttribution();
+    trackInquiryEvent("Inquiry Submitted", attribution);
 
     try {
       const response = await fetch("/api/inquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "replacement-parts", ...payload, message }),
+        body: JSON.stringify({
+          type: "replacement-parts",
+          locale: attribution.locale,
+          sourcePath: attribution.sourcePath,
+          ...payload,
+          message,
+        }),
       });
 
       const data = (await response.json().catch(() => null)) as {
@@ -42,9 +69,22 @@ export function ReplacementPartsForm() {
       } | null;
 
       if (!response.ok) {
-        throw new Error(data?.error ?? "Submission failed. Please check the required fields and try again.");
+        trackInquiryFailure(attribution, response.status);
+
+        setErrorMessage(data?.error ?? "Submission failed. Please check the required fields and try again.");
+        setStatus("error");
+        return;
       }
 
+      if (typeof data?.deliveryConfigured !== "boolean") {
+        trackInquiryFailure(attribution);
+
+        setErrorMessage("Submission failed. Please email support@jiestartoys.com directly.");
+        setStatus("error");
+        return;
+      }
+
+      trackInquiryEvent("Inquiry Validated", attribution);
       form.reset();
       setSuccessMessage(
         data?.deliveryConfigured === true
@@ -52,8 +92,18 @@ export function ReplacementPartsForm() {
           : `Request received. For urgent support, email ${data?.contactEmail ?? "support@jiestartoys.com"} directly.`,
       );
       setStatus("success");
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Submission failed. Please email support@jiestartoys.com directly.");
+      const delivered = data?.deliveryConfigured === true;
+      trackInquiryEvent(
+        delivered ? "Inquiry Delivered" : "Inquiry Delivery Not Configured",
+        {
+          ...attribution,
+          outcome: delivered ? "delivered" : "delivery_not_configured",
+        },
+      );
+    } catch {
+      trackInquiryFailure(attribution);
+
+      setErrorMessage("Submission failed. Please email support@jiestartoys.com directly.");
       setStatus("error");
     }
   }
@@ -75,7 +125,11 @@ export function ReplacementPartsForm() {
           </div>
         </div>
 
-        <form onSubmit={onSubmit} className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <form
+          onSubmit={onSubmit}
+          onFocusCapture={onStart}
+          className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <Field name="name" label="Name" required />
             <Field name="email" label="Email" type="email" required />
@@ -121,13 +175,13 @@ export function ReplacementPartsForm() {
           </button>
 
           {status === "success" ? (
-            <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+            <p role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
               {successMessage}
             </p>
           ) : null}
 
           {status === "error" ? (
-            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+            <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
               {errorMessage ?? "Submission failed. Please email support@jiestartoys.com directly."}
             </p>
           ) : null}

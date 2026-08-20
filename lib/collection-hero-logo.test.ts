@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 test("brand collection hero renders logos inside a fill-based display stage", () => {
-  const pageSource = readFileSync("app/collections/[handle]/page.tsx", "utf8");
+  const pageSource = readFileSync("app/(default)/collections/[handle]/page.tsx", "utf8");
   const brandLogoBranch = pageSource.match(/\{subBrand \? \([\s\S]*?\) : collection\.image \?/);
 
   assert.ok(brandLogoBranch, "Expected a dedicated sub-brand logo branch in collection hero");

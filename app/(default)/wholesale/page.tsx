@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon, UserIcon } from "@/components/ui/Icons";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
@@ -252,9 +253,9 @@ export default function WholesalePage() {
                 <ShieldIcon className="mt-0.5 size-5 shrink-0 text-red-600" />
                 <p className="text-sm leading-6 text-slate-700">
                   Need custom development, packaging customization, or exclusive product line cooperation? Visit{" "}
-                  <a href="/custom-solutions" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">
+                  <Link href="/custom-solutions" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">
                     Custom Solutions
-                  </a>
+                  </Link>
                   .
                 </p>
               </div>

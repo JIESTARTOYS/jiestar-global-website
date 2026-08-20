@@ -1,20 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cooperationTypes } from "@/lib/data";
+import { getBrowserPathname, trackInquiryEvent, trackInquiryFailure } from "@/lib/analytics";
+import { isValidProductHandle } from "@/lib/product-handle";
 
 type InquiryFormProps = {
   type: "wholesale" | "custom" | "contact";
+  locale?: "en";
+  sourcePath?: string;
+  productHandle?: string;
 };
 
 const fieldClass =
-  "min-h-11 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-slate-950";
+  "min-h-11 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none transition focus:border-slate-950 focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2";
 
-export function InquiryForm({ type }: InquiryFormProps) {
+export function InquiryForm({ type, locale = "en", sourcePath, productHandle }: InquiryFormProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const startedRef = useRef(false);
   const isWholesale = type === "wholesale";
+
+  function getAnalyticsAttribution() {
+    const resolvedSourcePath = getBrowserPathname(sourcePath);
+
+    return {
+      locale,
+      formType: type,
+      sourcePath: resolvedSourcePath,
+      // Only developer-provided product data is safe for Analytics. A query
+      // value is retained for the private inquiry email, but never tracked.
+      ...(productHandle && isValidProductHandle(productHandle) ? { productHandle } : {}),
+    };
+  }
+
+  function getSubmissionAttribution() {
+    const analyticsAttribution = getAnalyticsAttribution();
+    const queryProductHandle = typeof window === "undefined"
+      ? undefined
+      : new URLSearchParams(window.location.search).get("product") ?? undefined;
+    const candidateProductHandle = productHandle ?? queryProductHandle;
+    const resolvedProductHandle = candidateProductHandle && isValidProductHandle(candidateProductHandle)
+      ? candidateProductHandle
+      : undefined;
+
+    return {
+      ...analyticsAttribution,
+      ...(resolvedProductHandle ? { productHandle: resolvedProductHandle } : {}),
+    };
+  }
+
+  function onStart() {
+    if (startedRef.current) {
+      return;
+    }
+
+    startedRef.current = true;
+    trackInquiryEvent("Inquiry Started", getAnalyticsAttribution());
+  }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -24,12 +68,21 @@ export function InquiryForm({ type }: InquiryFormProps) {
     const form = event.currentTarget;
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
+    const attribution = getSubmissionAttribution();
+    const analyticsAttribution = getAnalyticsAttribution();
+    trackInquiryEvent("Inquiry Submitted", analyticsAttribution);
 
     try {
       const response = await fetch("/api/inquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, ...payload }),
+        body: JSON.stringify({
+          type,
+          locale: attribution.locale,
+          sourcePath: attribution.sourcePath,
+          ...(attribution.productHandle ? { productHandle: attribution.productHandle } : {}),
+          ...payload,
+        }),
       });
 
       const data = (await response.json().catch(() => null)) as {
@@ -39,9 +92,22 @@ export function InquiryForm({ type }: InquiryFormProps) {
       } | null;
 
       if (!response.ok) {
-        throw new Error(data?.error ?? "Submission failed. Please check the required fields and try again.");
+        trackInquiryFailure(analyticsAttribution, response.status);
+
+        setErrorMessage(data?.error ?? "Submission failed. Please check the required fields and try again.");
+        setStatus("error");
+        return;
       }
 
+      if (typeof data?.deliveryConfigured !== "boolean") {
+        trackInquiryFailure(analyticsAttribution);
+
+        setErrorMessage("Submission failed. Please email info@jiestartoys.com directly.");
+        setStatus("error");
+        return;
+      }
+
+      trackInquiryEvent("Inquiry Validated", analyticsAttribution);
       form.reset();
       const contactEmail = data?.contactEmail ?? "info@jiestartoys.com";
       const delivered = data?.deliveryConfigured === true;
@@ -55,14 +121,27 @@ export function InquiryForm({ type }: InquiryFormProps) {
             : `Inquiry received. For urgent requests, email ${contactEmail} directly.`,
       );
       setStatus("success");
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Submission failed. Please email info@jiestartoys.com directly.");
+      trackInquiryEvent(
+        delivered ? "Inquiry Delivered" : "Inquiry Delivery Not Configured",
+        {
+          ...analyticsAttribution,
+          outcome: delivered ? "delivered" : "delivery_not_configured",
+        },
+      );
+    } catch {
+      trackInquiryFailure(analyticsAttribution);
+
+      setErrorMessage("Submission failed. Please email info@jiestartoys.com directly.");
       setStatus("error");
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <form
+      onSubmit={onSubmit}
+      onFocusCapture={onStart}
+      className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+    >
       <div>
         <p className="text-xs font-black uppercase text-red-600">
           {type === "wholesale" ? "Wholesale inquiry" : type === "custom" ? "Custom project inquiry" : "Inquiry form"}
@@ -150,12 +229,12 @@ export function InquiryForm({ type }: InquiryFormProps) {
       </button>
 
       {status === "success" ? (
-        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+        <p role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
           {successMessage}
         </p>
       ) : null}
       {status === "error" ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+        <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
           {errorMessage ?? "Submission failed. Please email info@jiestartoys.com directly."}
         </p>
       ) : null}
