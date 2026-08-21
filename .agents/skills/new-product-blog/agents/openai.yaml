@@ -1,0 +1,4 @@
+interface:
+  display_name: JIESTAR New Product Blog
+  short_description: Prepare review-only English blog drafts from newly public Shopify products.
+  default_prompt: Use $new-product-blog to scan the public Shopify catalog, prepare at most three review-only New Releases drafts, finalize valid packages, and report counts without changing tracked files or publishing.

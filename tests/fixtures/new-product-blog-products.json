@@ -1,0 +1,38 @@
+{
+  "products": [
+    {
+      "id": "gid://shopify/Product/fixture-1",
+      "handle": "jiestar-botanical-display-set-x88060",
+      "title": "JIESTAR Botanical Display Building Set X88060",
+      "vendor": "JIESTAR",
+      "productType": "Flowers & Botanical",
+      "description": "A layered botanical building block display with green leaves, shaped flowers, and a stable base for shelf presentation.",
+      "createdAt": "2026-08-15T04:00:00Z",
+      "updatedAt": "2026-08-15T04:00:00Z",
+      "collections": [{ "handle": "flowers-botanical", "title": "Flowers & Botanical" }],
+      "images": [
+        { "url": "https://cdn.shopify.com/fixture-x88060-1.jpg", "altText": "X88060 botanical display set" },
+        { "url": "https://cdn.shopify.com/fixture-x88060-2.jpg", "altText": "X88060 botanical model details" }
+      ],
+      "skus": ["X88060"],
+      "specs": { "piece_count": "820", "recommended_age": "8+" }
+    },
+    {
+      "id": "gid://shopify/Product/fixture-2",
+      "handle": "jiestar-botanical-display-set-x88061",
+      "title": "JIESTAR Botanical Display Building Set X88061",
+      "vendor": "JIESTAR",
+      "productType": "Flowers & Botanical",
+      "description": "A decorative flower arrangement built around a compact base, layered stems, and a finished composition for display.",
+      "createdAt": "2026-08-16T04:00:00Z",
+      "updatedAt": "2026-08-16T04:00:00Z",
+      "collections": [{ "handle": "flowers-botanical", "title": "Flowers & Botanical" }],
+      "images": [
+        { "url": "https://cdn.shopify.com/fixture-x88061-1.jpg", "altText": "X88061 flower display set" },
+        { "url": "https://cdn.shopify.com/fixture-x88061-2.jpg", "altText": "X88061 flower model details" }
+      ],
+      "skus": ["X88061"],
+      "specs": { "piece_count": "799", "recommended_age": "8+" }
+    }
+  ]
+}

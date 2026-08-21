@@ -135,7 +135,7 @@ Text separates the images.
 test("every blog post has valid dates, readable content, and a local cover image", () => {
   const posts = getBlogPosts();
 
-  assert.equal(posts.length, 25);
+  assert.ok(posts.length >= 25);
 
   for (const post of posts) {
     assert.match(post.date, /^\d{4}-\d{2}-\d{2}$/);
@@ -279,14 +279,15 @@ test("related exhibition articles stay within Exhibitions before broader JIESTAR
 
 test("new-release feature uses four verified local images and direct product links", () => {
   const posts = getBlogSectionPosts("new-releases");
+  const post = getBlogPost("new-building-block-sets-jiestar-catalog-2026");
 
-  assert.equal(posts.length, 1);
-  assert.equal(posts[0].slug, "new-building-block-sets-jiestar-catalog-2026");
+  assert.ok(posts.length >= 1);
+  assert.ok(post);
 
-  const imageBlocks = parseMarkdownBlocks(posts[0].content).filter((block) => block.type === "image");
+  const imageBlocks = parseMarkdownBlocks(post.content).filter((block) => block.type === "image");
   assert.equal(imageBlocks.length, 4);
-  assert.ok(posts[0].content.includes("/products/guly-w16-engine-model-kit-60556"));
-  assert.ok(posts[0].content.includes("/products/guly-1-8-remote-control-drift-stunt-car-model-kit-10659"));
-  assert.ok(posts[0].content.includes("/products/x88059-jiestar-impressionist-water-lily-pond-building-set"));
-  assert.ok(posts[0].content.includes("/products/x88057-jiestar-wicked-beauty-flower-garden-building-set"));
+  assert.ok(post.content.includes("/products/guly-w16-engine-model-kit-60556"));
+  assert.ok(post.content.includes("/products/guly-1-8-remote-control-drift-stunt-car-model-kit-10659"));
+  assert.ok(post.content.includes("/products/x88059-jiestar-impressionist-water-lily-pond-building-set"));
+  assert.ok(post.content.includes("/products/x88057-jiestar-wicked-beauty-flower-garden-building-set"));
 });
