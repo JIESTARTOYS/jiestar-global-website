@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon, UserIcon } from "@/components/ui/Icons";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
@@ -260,6 +261,21 @@ export default function WholesalePage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="px-5 pb-16 lg:px-8">
+        <div className="mx-auto max-w-7xl rounded-lg border border-slate-200 bg-white p-5 sm:p-8">
+          <h2 className="text-2xl font-semibold text-slate-950">Explore product categories and buying guides</h2>
+          <p className="mt-3 text-sm leading-7 text-slate-600">Compare existing product lines and prepare the details needed for a wholesale inquiry.</p>
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+            <li><Link href="/collections/flowers-botanical" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">Flower building block sets</Link></li>
+            <li><Link href="/collections/vehicles" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">Vehicle building block sets</Link></li>
+            <li><Link href="/collections/ships-boats" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">Ship and boat building block sets</Link></li>
+            <li><Link href="/collections/buildings-street-scenes" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">Buildings and street scene sets</Link></li>
+            <li><Link href="/blog/building-block-sets-wholesale-moq-pricing-packaging-shipping" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">MOQ, pricing, packaging and shipping guide</Link></li>
+            <li><Link href="/blog/building-block-rfq-checklist" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">Building block quotation checklist</Link></li>
+          </ul>
         </div>
       </section>
 

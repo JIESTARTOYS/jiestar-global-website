@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { SubBrandCarousel } from "@/components/sections/SubBrandCarousel";
 import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, SparkIcon, StoreIcon } from "@/components/ui/Icons";
@@ -263,6 +264,19 @@ export default function CustomSolutionsPage() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="px-5 pb-16 lg:px-8">
+        <div className="mx-auto max-w-7xl rounded-lg border border-slate-200 bg-white p-5 sm:p-8">
+          <h2 className="text-2xl font-semibold text-slate-950">Plan your custom building block project</h2>
+          <p className="mt-3 text-sm leading-7 text-slate-600">Use these guides to compare development options and prepare your product and packaging brief.</p>
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+            <li><Link href="/blog/oem-vs-odm-building-blocks" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">OEM vs. ODM building blocks</Link></li>
+            <li><Link href="/blog/private-label-building-blocks-for-retailers" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">Private label building blocks for retailers</Link></li>
+            <li><Link href="/blog/custom-packaging-for-building-block-toys" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">Custom packaging for building block toys</Link></li>
+            <li><Link href="/about" className="font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">Explore JIESTAR and our manufacturing process</Link></li>
+          </ul>
         </div>
       </section>
 
