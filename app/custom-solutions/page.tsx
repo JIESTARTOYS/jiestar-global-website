@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { B2BManufacturerInfo } from "@/components/sections/B2BManufacturerInfo";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { SubBrandCarousel } from "@/components/sections/SubBrandCarousel";
 import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, SparkIcon, StoreIcon } from "@/components/ui/Icons";
@@ -10,9 +11,9 @@ import { createBreadcrumbJsonLd, createJsonLdScript, createMetadata } from "@/li
 import { subBrands } from "@/lib/sub-brands";
 
 export const metadata = createMetadata({
-  title: "Custom Building Blocks Manufacturer | OEM/ODM Brick Sets | JIESTAR",
+  title: "Custom Building Block Sets & OEM/ODM Manufacturer | JIESTAR",
   description:
-    "Discuss custom building block sets, OEM/ODM projects, private label packaging, logo customization, exclusive SKUs, and product development with JIESTAR.",
+    "Plan custom building block sets with JIESTAR: OEM/ODM development, private label packaging, sample approval, exclusive product lines, and sub-brand cooperation.",
   path: "/custom-solutions",
 });
 
@@ -30,10 +31,10 @@ const heroStats = [
 ];
 
 const capabilities: Array<[string, string, IconComponent]> = [
-  ["OEM / ODM Customization", "Adjust product direction, model details, packaging, logo, and market-facing presentation.", FactoryIcon],
+  ["OEM / ODM Customization", "Bring a defined design for OEM review, or work with JIESTAR on a product direction through ODM development. Confirm the design and production responsibilities for your project.", FactoryIcon],
   ["Product Co-Development", "Develop differentiated building block sets around a partner's market, audience, and launch goals.", SparkIcon],
   ["Packaging & Brand Customization", "Support packaging direction, brand logo placement, and retail-ready presentation planning.", PackageIcon],
-  ["Exclusive SKU", "Create dedicated versions for channels, platforms, regional markets, or campaign needs.", StoreIcon],
+  ["Exclusive SKU", "Discuss a dedicated version for your channel or market. Agree any exclusivity scope, duration, and commercial terms in writing.", StoreIcon],
   ["Exclusive Product Line", "Plan a focused product series with consistent category logic, visual identity, and launch rhythm.", GlobeIcon],
   ["Sub-Brand Partnership", "Support long-term cooperation where JIESTAR helps partners build distinct product brands.", ShieldIcon],
 ];
@@ -62,14 +63,25 @@ const showroomDirections = [
   },
 ];
 
+const projectBrief = [
+  ["Audience and product concept", "Describe the buyer, age range, category, display or play features, and target market. Product links or reference sketches help explain the direction."],
+  ["Customization scope", "Separate model development from box artwork, instructions, logo placement, and naming. Identify the designs and brand assets you can authorize for use."],
+  ["Quantity and commercial goals", "Share the estimated quantity per SKU, target price band, sales channels, and launch date. These inputs guide feasibility and quotation review."],
+  ["Approval and documentation", "Identify who approves the model and artwork, which sample checks matter, and which destination-market documents your team needs to review."],
+];
+
 const process = [
-  ["01", "Project brief", "Share cooperation type, target market, category direction, quantity range, and launch needs."],
-  ["02", "Product direction", "Review product concept, customization depth, packaging direction, and business fit."],
-  ["03", "Sample development", "Confirm scope, timeline, MOQ direction, sample requirements, and approval details."],
-  ["04", "Launch planning", "Prepare product line, packaging, ordering, and market launch communication with the partner."],
+  ["01", "Brief and feasibility", "Agree the product direction, intended market, customization depth, and design responsibilities before detailed development."],
+  ["02", "Scope and quotation", "Review MOQ, development or tooling needs, sample costs, packaging, and proposed timing for the defined scope."],
+  ["03", "Sample and artwork approval", "Check the build, functions, instructions, and packaging against the brief. Record revisions and approval before confirming production."],
+  ["04", "Production and launch planning", "Align the order specification, quality checks, documentation, shipment plan, and future product-line or replenishment needs."],
 ];
 
 const faqs = [
+  ["Can I start with private label packaging instead of a new model?", "Yes. Discuss an existing product with your packaging and brand presentation as one possible scope. JIESTAR will review the selected SKU, artwork requirements, quantity, and permissions before confirming feasibility."],
+  ["What determines the MOQ and timeline for a custom set?", "Customization depth, part or tooling needs, packaging, quantity, and sample revisions affect the proposal. MOQ and timing are confirmed after the brief is reviewed; a requested launch date is a planning input."],
+  ["Does a custom SKU include exclusive rights?", "Exclusivity needs a separate written agreement covering the product, territory or channel, duration, and responsibilities. Clarify these terms during project review."],
+
   [
     "How is Custom Solutions different from Wholesale?",
     "Wholesale focuses on existing JIESTAR product supply. Custom Solutions is for OEM / ODM, custom product development, exclusive product lines, and sub-brand cooperation.",
@@ -110,10 +122,10 @@ export default function CustomSolutionsPage() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-normal text-red-300">Custom Solutions</p>
             <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-normal sm:text-5xl lg:text-[56px]">
-              Custom Building Block Solutions
+              Custom Building Block Sets & OEM / ODM Development
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-300 sm:text-lg">
-              Build OEM / ODM building block products, exclusive SKUs, custom product lines, and long-term sub-brand partnerships with JIESTAR.
+              Develop custom building block sets around your audience, product concept, and brand. Discuss OEM / ODM development, private label packaging, exclusive product lines, and long-term sub-brand cooperation with JIESTAR.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <HeroBannerButton href="#project-form">Start Project</HeroBannerButton>
@@ -160,7 +172,7 @@ export default function CustomSolutionsPage() {
                 <div className="flex size-11 items-center justify-center rounded-md bg-slate-950 text-white">
                   <Icon className="size-5" />
                 </div>
-                <h2 className="mt-5 text-lg font-semibold text-slate-950">{title}</h2>
+                <h3 className="mt-5 text-lg font-semibold text-slate-950">{title}</h3>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{description}</p>
               </article>
             ))}
@@ -198,6 +210,23 @@ export default function CustomSolutionsPage() {
         </div>
       </section>
 
+      <section id="project-brief" className="scroll-mt-24 px-5 pb-16 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <SectionHeader eyebrow="Prepare your project" title="Build a brief for your custom building block set" description="Use these four areas to define the work and make an OEM / ODM proposal easier to assess." />
+          <dl className="mt-8 grid gap-5 sm:grid-cols-2">
+            {projectBrief.map(([title, description]) => (
+              <div key={title} className="rounded-lg border border-slate-200 bg-white p-5 sm:p-6">
+                <dt className="text-lg font-semibold text-slate-950">{title}</dt>
+                <dd className="mt-3 text-sm leading-7 text-slate-600">{description}</dd>
+              </div>
+            ))}
+          </dl>
+          <Link href="/blog/custom-building-block-sets-from-concept-to-production" className="mt-5 inline-block font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">Read the concept-to-production guide</Link>
+        </div>
+      </section>
+
+      <B2BManufacturerInfo custom />
+
       <section id="sub-brand-examples" className="scroll-mt-24 bg-white px-5 py-16 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <SectionHeader
@@ -215,14 +244,14 @@ export default function CustomSolutionsPage() {
         <div className="mx-auto max-w-7xl">
           <SectionHeader
             eyebrow="Process"
-            title="Cooperation process"
-            description="A practical first-version process keeps communication clear while leaving room for larger custom projects and longer product line planning."
+            title="From custom brief to production approval"
+            description="Agree the scope, sample, and production details at each stage, with timing confirmed for your project."
           />
           <div className="mt-8 grid gap-4 md:grid-cols-4">
             {process.map(([number, title, description]) => (
               <article key={number} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
                 <p className="text-sm font-bold text-red-600">{number}</p>
-                <h2 className="mt-3 text-lg font-semibold text-slate-950">{title}</h2>
+                <h3 className="mt-3 text-lg font-semibold text-slate-950">{title}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
               </article>
             ))}
@@ -259,7 +288,7 @@ export default function CustomSolutionsPage() {
           <div className="grid gap-4">
             {faqs.map(([question, answer]) => (
               <article key={question} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 className="text-base font-semibold text-slate-950">{question}</h2>
+                <h3 className="text-base font-semibold text-slate-950">{question}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{answer}</p>
               </article>
             ))}

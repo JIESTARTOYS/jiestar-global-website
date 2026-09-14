@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { B2BManufacturerInfo } from "@/components/sections/B2BManufacturerInfo";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { ArrowRightIcon, FactoryIcon, GlobeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon, UserIcon } from "@/components/ui/Icons";
 import { HeroBannerButton } from "@/components/ui/HeroBannerButton";
@@ -8,9 +9,9 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { createBreadcrumbJsonLd, createJsonLdScript, createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Wholesale Building Blocks & Brick Sets | JIESTAR Factory Supply",
+  title: "Wholesale Building Block Sets & Factory Supply | JIESTAR",
   description:
-    "Request JIESTAR wholesale building block catalogs and pricing for retailers, distributors, Amazon sellers, TikTok Shop sellers, and toy business buyers.",
+    "Source wholesale building block sets from JIESTAR. Compare product lines and discuss MOQ, samples, carton details, pricing, and shipping for your market.",
   path: "/wholesale",
 });
 
@@ -49,7 +50,18 @@ const process: Array<[string, string, string, IconComponent]> = [
   ["04", "Order Planning", "Confirm sample needs, quantity direction, lead time, shipping approach, and future replenishment planning.", TruckIcon],
 ];
 
+const procurementDetails = [
+  ["Product selection", "Share product links or SKUs, preferred categories, and quantities per model. Mention whether you are planning an initial order or replenishment."],
+  ["MOQ and price basis", "Ask for the minimum quantity per SKU, carton quantities, and price at your planned order size. Confirm whether different models can be combined."],
+  ["Samples and packaging", "Confirm sample availability and cost, piece count, age grade, box contents, carton dimensions, and gross weight for the selected products."],
+  ["Destination and shipping", "Provide the delivery country and postal code or port. Ask the quotation to identify its shipping basis, freight scope, and production or dispatch schedule."],
+];
+
 const faqs = [
+  ["What is the MOQ for wholesale building blocks?", "The minimum order is confirmed for the selected SKU, packing format, and order scope. Send your product list and quantity per model so JIESTAR can review the applicable MOQ and any mixed-model options."],
+  ["Are website prices the wholesale price?", "The storefront shows retail offers. Request a separate B2B quotation that identifies the selected models, quantities, packaging, and shipping basis."],
+  ["Can I review a sample before a bulk order?", "Include sample needs in your inquiry. Availability, sample charges, delivery costs, and timing are confirmed for the selected models before you proceed."],
+
   [
     "Can I request a product catalog before placing an order?",
     "Yes. Leave your email to start a wholesale catalog request before detailed order discussion.",
@@ -90,10 +102,10 @@ export default function WholesalePage() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-normal text-red-300">WHOLESALE PROGRAM</p>
             <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-normal sm:text-5xl lg:text-[56px]">
-              Request Wholesale Catalog & Pricing
+              Wholesale Building Block Sets for Retailers & Distributors
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-300 sm:text-lg">
-              Apply to receive JIESTAR wholesale catalogs, product materials, and private pricing for retailers, distributors, e-commerce sellers, and channel buyers.
+              Source existing JIESTAR building block sets for toy stores, distributors, online shops, and gift programs. Request a catalog and private wholesale pricing matched to your product selection and market.
               <br />
               <br />
               Our team will review your inquiry and follow up with MOQ, shipping, and order details through your preferred contact channel.
@@ -141,7 +153,7 @@ export default function WholesalePage() {
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {buyers.map(([title, description]) => (
                 <article key={title} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                  <h2 className="text-base font-semibold text-slate-950">{title}</h2>
+                  <h3 className="text-base font-semibold text-slate-950">{title}</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
                 </article>
               ))}
@@ -160,7 +172,7 @@ export default function WholesalePage() {
                     <Icon className="size-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-slate-950">{title}</h2>
+                    <h3 className="text-base font-semibold text-slate-950">{title}</h3>
                     <p className="mt-1 text-sm leading-6 text-slate-600">{description}</p>
                   </div>
                 </article>
@@ -204,7 +216,7 @@ export default function WholesalePage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="text-xs font-black uppercase text-red-600">{number}</span>
-                      <h2 className="text-lg font-black text-slate-950">{title}</h2>
+                      <h3 className="text-lg font-black text-slate-950">{title}</h3>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
                   </div>
@@ -214,6 +226,24 @@ export default function WholesalePage() {
           </div>
         </div>
       </section>
+
+      <section id="procurement-details" className="scroll-mt-24 px-5 pb-16 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <SectionHeader eyebrow="Prepare your quotation" title="What to confirm before a bulk building block order" description="A short product list and destination help turn a general catalog request into a quotation you can compare." />
+          <dl className="mt-8 grid gap-5 sm:grid-cols-2">
+            {procurementDetails.map(([title, description]) => (
+              <div key={title} className="rounded-lg border border-slate-200 bg-white p-5 sm:p-6">
+                <dt className="text-lg font-semibold text-slate-950">{title}</dt>
+                <dd className="mt-3 text-sm leading-7 text-slate-600">{description}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-5 text-sm leading-7 text-slate-600">Your requested delivery date helps with planning. MOQ, availability, and timing are confirmed in the quotation for your order.</p>
+          <Link href="/blog/building-block-rfq-checklist" className="mt-4 inline-block font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">Use the building block quotation checklist</Link>
+        </div>
+      </section>
+
+      <B2BManufacturerInfo />
 
       <section id="catalog-request" className="scroll-mt-24 bg-slate-950 px-5 py-14 text-white lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -238,13 +268,13 @@ export default function WholesalePage() {
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.85fr_1fr]">
           <SectionHeader
             eyebrow="FAQ"
-            title="Catalog request questions"
-            description="Common questions before requesting wholesale catalog materials from JIESTAR."
+            title="Wholesale building block buying questions"
+            description="Review MOQ, samples, pricing, and the right cooperation path before sending your inquiry."
           />
           <div className="grid gap-4">
             {faqs.map(([question, answer]) => (
               <article key={question} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 className="text-base font-semibold text-slate-950">{question}</h2>
+                <h3 className="text-base font-semibold text-slate-950">{question}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{answer}</p>
               </article>
             ))}
