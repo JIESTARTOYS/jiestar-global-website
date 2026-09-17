@@ -1,6 +1,9 @@
+const manufacturerName = "Guangdong JieXing Toys Industrial Co., Ltd.";
+const legalName = "HONG KONG ZHILE TRADING CO., LIMITED";
+
 export const businessConfig = {
   tradeName: "JIESTAR",
-  legalName: "HONG KONG ZHILE TRADING CO., LIMITED",
+  legalName,
   legalNameChinese: "香港智樂貿易有限公司",
   companyRegistrationNumber: "80836623",
   businessRegistrationNumber: "80836623-000-07-26-1",
@@ -16,8 +19,14 @@ export const businessConfig = {
   phoneHref: "tel:+8613710335072",
   businessEmail: "info@jiestartoys.com",
   supportEmail: "support@jiestartoys.com",
-  manufacturerName: "Guangdong Jiexing Toys Industrial Co., Ltd.",
+  manufacturerName,
+  brandOwnership:
+    `JIESTAR is a brand of ${manufacturerName}, the brand owner responsible for product development, manufacturing, and supply.`,
+  salesRole:
+    `${legalName} is an authorized JIESTAR website and international sales operator. It is the seller for wholesale, custom-development, and retail orders, responsible for contracting, commercial invoices, payments, and related customer support, returns, and refunds under the applicable order terms.`,
+  b2bRelationship:
+    `Wholesale and custom-development orders are contracted with, invoiced by, and paid to ${legalName}, an authorized JIESTAR sales operator. ${manufacturerName} provides brand, product-development, and manufacturing support.`,
   relationship:
-    "HONG KONG ZHILE TRADING CO., LIMITED is authorized to operate the JIESTAR international website and sales channels. It is the seller and merchant of record for retail orders placed through this website. Guangdong Jiexing Toys Industrial Co., Ltd. is responsible for the JIESTAR brand, product development, manufacturing, and supply.",
+    `JIESTAR is owned by ${manufacturerName}. ${legalName} is authorized to operate the official JIESTAR international website and sell to wholesale, custom-development, and retail customers.`,
   governingLaw: "Hong Kong Special Administrative Region",
 } as const;

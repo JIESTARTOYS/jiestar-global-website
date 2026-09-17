@@ -3,7 +3,9 @@ import test from "node:test";
 import type { Product } from "./data.ts";
 import {
   createBreadcrumbJsonLd,
+  createBrandJsonLd,
   createBlogPostingJsonLd,
+  createManufacturerJsonLd,
   createMerchantReturnPolicyJsonLd,
   createMetadata,
   createOrganizationJsonLd,
@@ -163,6 +165,35 @@ test("createOrganizationJsonLd identifies the Hong Kong online seller", () => {
   assert.equal(schema.logo, "https://www.jiestartoys.com/images/brand/jiestar-logo-color.png");
   assert.ok(schema.alternateName.includes("香港智樂貿易有限公司"));
   assert.equal(schema.brand.name, "JIESTAR");
+});
+
+test("brand ownership, website publishing, and retail obligations resolve to distinct legal entities", () => {
+  const seller = createOrganizationJsonLd();
+  const manufacturer = createManufacturerJsonLd();
+  const brand = createBrandJsonLd();
+  const website = createWebSiteJsonLd();
+  const productSchema = createProductJsonLd({ ...product, price: "$89.00" }, {
+    description: "A retail building block set.",
+    path: "/products/sample-train-set",
+  });
+  const offer = productSchema.offers as { seller: { "@id": string } };
+
+  assert.notEqual(manufacturer["@id"], seller["@id"]);
+  assert.equal(manufacturer.legalName, "Guangdong JieXing Toys Industrial Co., Ltd.");
+  assert.equal(seller.legalName, "HONG KONG ZHILE TRADING CO., LIMITED");
+  assert.deepEqual(seller.alternateName, ["香港智樂貿易有限公司"]);
+  assert.match(seller.description, /wholesale, custom-development, and retail orders/);
+  assert.equal(brand["@type"], "Brand");
+  assert.match(brand.description, /owned by Guangdong JieXing Toys Industrial Co\., Ltd\./);
+  assert.equal(manufacturer.brand["@id"], brand["@id"]);
+  assert.equal(seller.brand["@id"], brand["@id"]);
+  assert.equal(website.publisher["@id"], seller["@id"]);
+  assert.deepEqual(website.about, [{ "@id": brand["@id"] }, { "@id": manufacturer["@id"] }]);
+  assert.equal(offer.seller["@id"], seller["@id"]);
+  assert.equal(createShippingPolicyJsonLd()["@id"], seller["@id"]);
+  assert.equal(createMerchantReturnPolicyJsonLd()["@id"], seller["@id"]);
+  assert.equal("address" in manufacturer, false);
+  assert.equal("identifier" in manufacturer, false);
 });
 
 test("createBlogPostingJsonLd includes cover image and honest publication dates", () => {

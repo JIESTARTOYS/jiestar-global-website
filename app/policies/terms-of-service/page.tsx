@@ -1,3 +1,4 @@
+import { businessConfig } from "@/lib/business";
 import { PolicyPage } from "@/components/ui/PolicyPage";
 import { createMetadata } from "@/lib/seo";
 
@@ -11,15 +12,15 @@ export default function TermsPage() {
   return (
     <PolicyPage
       title="Terms of Service"
-      description="These terms govern use of the JIESTAR global website and eligible retail orders sold by HONG KONG ZHILE TRADING CO., LIMITED."
-      updatedLabel="Last updated July 24, 2026"
+      description={`These terms cover the official JIESTAR website and sales by ${businessConfig.legalName}. Wholesale and custom-development orders also follow their agreed written commercial terms.`}
+      updatedLabel="Last updated September 17, 2026"
       sections={[
         {
-          title: "Merchant and website operator",
-          body: "HONG KONG ZHILE TRADING CO., LIMITED operates this international website and is the seller and merchant of record for eligible retail orders placed through it. JIESTAR is the customer-facing trade name used on the website.",
+          title: "Brand owner and international seller",
+          body: businessConfig.relationship,
           items: [
-            "Guangdong Jiexing Toys Industrial Co., Ltd. is responsible for the JIESTAR brand, product development, manufacturing, and supply.",
-            "The Hong Kong company is authorized to operate JIESTAR international sales channels and handle retail orders, payments, customer support, returns, and refunds for this website.",
+            businessConfig.brandOwnership,
+            businessConfig.salesRole,
             "The full company registration, business registration, address, telephone, and email details are displayed on this page and on the Business & Legal Information page.",
           ],
         },
@@ -59,10 +60,11 @@ export default function TermsPage() {
         },
         {
           title: "Business cooperation",
-          body: "Wholesale supply, factory-direct supply, OEM / ODM customization, product co-development, exclusive SKU programs, exclusive product lines, and sub-brand partnerships require direct confirmation with the JIESTAR business team.",
+          body: businessConfig.b2bRelationship,
           items: [
             "MOQ, quotation, sample cost, tooling, packaging customization, lead time, payment terms, shipping terms, and exclusivity are not confirmed by website inquiry alone.",
-            "Business cooperation details become binding only when both parties confirm the relevant written quotation, purchase order, agreement, or approved project document.",
+            `The seller named in the quotation, contract, and commercial invoice is ${businessConfig.legalName}. Follow the payment instructions confirmed in those order documents.`,
+            "Business cooperation details become binding only when both parties confirm the relevant written quotation, purchase order, agreement, or approved project document. B2B payment, delivery, after-sales, and dispute terms are governed by that agreement.",
             "JIESTAR may decline inquiries that do not fit product capability, compliance requirements, production schedule, or brand cooperation direction.",
           ],
         },
@@ -71,7 +73,7 @@ export default function TermsPage() {
           body: "Website text, product images, logos, product designs, catalogs, and other materials may be protected by trademark, copyright, design, or other intellectual property rights.",
           items: [
             "Visitors may use the website for personal shopping or legitimate business evaluation but may not reproduce, misrepresent, sell, or exploit protected content without authorization.",
-            "Company registration does not itself grant ownership of third-party trademarks or intellectual property.",
+            `The JIESTAR brand belongs to ${businessConfig.manufacturerName}. Other trademarks and materials remain the property of their respective owners.`,
           ],
         },
         {

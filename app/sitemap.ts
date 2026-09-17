@@ -32,8 +32,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticRoutes.map((route) => ({
       url: `${siteConfig.url}${route}`,
-      ...(["/wholesale", "/custom-solutions"].includes(route)
-        ? { lastModified: new Date("2026-09-14") }
+      ...(["", "/wholesale", "/custom-solutions", "/about", "/contact", "/business-information", "/policies/terms-of-service", "/policies/privacy-policy", "/policies/refund-policy"].includes(route)
+        ? { lastModified: new Date("2026-09-17") }
         : {}),
     })),
     ...BLOG_SECTION_SLUGS.map((slug) => ({

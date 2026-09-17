@@ -42,6 +42,8 @@ export function absoluteUrl(path = "") {
 
 const defaultOgImagePath = "/images/brand/jiestar-logo-color.png";
 const organizationId = absoluteUrl("/#organization");
+const brandId = absoluteUrl("/#brand");
+const manufacturerId = absoluteUrl("/business-information#brand-owner");
 const shippingPolicyUrl = absoluteUrl("/policies/shipping-policy");
 const shippingServiceId = `${shippingPolicyUrl}#standard-shipping`;
 const returnPolicyUrl = absoluteUrl("/policies/refund-policy");
@@ -97,12 +99,7 @@ export function createOrganizationJsonLd() {
     "@type": "Organization",
     "@id": organizationId,
     name: businessConfig.legalName,
-    alternateName: [
-      businessConfig.legalNameChinese,
-      "Jie Star",
-      "JIE-STAR",
-      "JIESTAR Toys",
-    ],
+    alternateName: [businessConfig.legalNameChinese],
     legalName: businessConfig.legalName,
     url: absoluteUrl("/"),
     logo: absoluteUrl("/images/brand/jiestar-logo-color.png"),
@@ -126,10 +123,37 @@ export function createOrganizationJsonLd() {
     },
     brand: {
       "@type": "Brand",
+      "@id": brandId,
       name: businessConfig.tradeName,
     },
     description:
-      "Authorized international website operator, retail seller, and merchant of record for JIESTAR online sales.",
+      "Authorized operator of the official JIESTAR international website and seller for wholesale, custom-development, and retail orders, responsible for contracting, commercial invoices, payments, and related after-sales support.",
+  };
+}
+
+export function createBrandJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Brand",
+    "@id": brandId,
+    name: businessConfig.tradeName,
+    alternateName: ["Jie Star", "JIE-STAR", "JIESTAR Toys"],
+    url: absoluteUrl("/"),
+    logo: absoluteUrl(defaultOgImagePath),
+    description: `JIESTAR is a building block brand owned by ${businessConfig.manufacturerName}.`,
+  };
+}
+
+export function createManufacturerJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": manufacturerId,
+    name: businessConfig.manufacturerName,
+    legalName: businessConfig.manufacturerName,
+    url: absoluteUrl("/business-information#brand-owner"),
+    brand: { "@id": brandId },
+    description: businessConfig.brandOwnership,
   };
 }
 
@@ -205,6 +229,9 @@ export function createWebSiteJsonLd() {
     name: siteConfig.name,
     alternateName: ["JIESTAR", "Jie Star", "JIE-STAR"],
     url: absoluteUrl("/"),
+    description: "The official JIESTAR international website for retail shopping, wholesale supply, and custom product development.",
+    publisher: { "@id": organizationId },
+    about: [{ "@id": brandId }, { "@id": manufacturerId }],
   };
 }
 
@@ -231,7 +258,8 @@ export function createBlogPostingJsonLd({ title, description, datePublished, dat
     },
     publisher: {
       "@type": "Organization",
-      name: "JIESTAR",
+      "@id": organizationId,
+      name: businessConfig.legalName,
       logo: {
         "@type": "ImageObject",
         url: absoluteUrl(defaultOgImagePath),
@@ -287,6 +315,7 @@ export function createProductJsonLd(product: Product, options: ProductJsonLdOpti
     if (price) {
       schema.offers = {
         "@type": "Offer",
+        seller: { "@id": organizationId },
         url: absoluteUrl(options.path),
         priceCurrency: "USD",
         price,

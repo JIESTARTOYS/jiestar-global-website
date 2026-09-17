@@ -67,7 +67,7 @@ export const siteConfig = {
   businessEmail: businessConfig.businessEmail,
   supportEmail: businessConfig.supportEmail,
   description:
-    "JIESTAR is a global building block brand supporting retail customers, wholesale buyers, custom product development, and long-term brand partnerships through its authorized international sales operator.",
+    "The official JIESTAR website for building block sets, wholesale supply, custom product development, and long-term brand partnerships.",
 };
 
 export const navigation = [

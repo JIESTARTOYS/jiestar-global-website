@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeftIcon, MinusIcon, PlusIcon, TrashIcon, XIcon } from "@/components/ui/Icons";
 import type { Cart } from "@/lib/shopify";
+import { RetailSellerDisclosure } from "@/components/ui/RetailSellerDisclosure";
 
 type CartContextValue = {
   cart: Cart | null;
@@ -438,6 +439,7 @@ function CartDrawer() {
             <span className="font-bold text-slate-600">Subtotal</span>
             <span className="font-black text-slate-950">{cart?.subtotal ?? "$0.00"}</span>
           </div>
+          <RetailSellerDisclosure className="mb-3" onNavigate={closeCart} />
           <a
             href={cart?.checkoutUrl ?? undefined}
             className={`flex min-h-12 w-full items-center justify-center rounded-md px-5 text-sm font-black text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 ${

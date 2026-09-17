@@ -12,11 +12,13 @@ export function B2BManufacturerInfo({ custom = false }: { custom?: boolean }) {
             title={custom ? "Review the manufacturing side of your custom project" : "Know the manufacturer behind your wholesale order"}
           />
           <p className="mt-4 text-sm leading-7 text-slate-600">
-            {businessConfig.manufacturerName} is responsible for the JIESTAR brand, product development, manufacturing, and supply.
-            {" "}{businessConfig.legalName} operates this international website and its sales channels.
+            {businessConfig.brandOwnership}
+          </p>
+          <p className="mt-3 text-sm leading-7 text-slate-600">
+            {businessConfig.b2bRelationship}
           </p>
           <Link href="/business-information" className="mt-4 inline-block font-semibold text-red-700 underline decoration-red-300 underline-offset-4 hover:text-red-800">
-            Review company and sales operator details
+            Review brand ownership and sales company details
           </Link>
         </div>
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-5 sm:p-6">

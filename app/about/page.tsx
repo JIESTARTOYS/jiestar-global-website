@@ -1,3 +1,4 @@
+import { businessConfig } from "@/lib/business";
 import Link from "next/link";
 import Image from "next/image";
 import type { ComponentType, SVGProps } from "react";
@@ -20,7 +21,7 @@ import { subBrands } from "@/lib/sub-brands";
 export const metadata = createMetadata({
   title: "About JIESTAR | Official Building Block Toy Manufacturer",
   description:
-    "Learn about the JIESTAR brand and manufacturing base, together with the authorized Hong Kong company operating its international website and sales channel.",
+    "Meet JIESTAR, its brand owner Guangdong JieXing Toys Industrial Co., Ltd., and its authorized international sales operator for wholesale, custom, and retail orders.",
   path: "/about",
 });
 
@@ -211,7 +212,7 @@ export default function AboutPage() {
       <section className="overflow-hidden border-b border-slate-200 bg-white px-5 py-12 sm:py-16 lg:px-8">
         <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[0.74fr_1.26fr] lg:items-center">
           <div className="min-w-0">
-            <p className="text-sm font-bold uppercase tracking-normal text-red-600">About JIESTAR</p>
+            <p className="text-sm font-bold uppercase tracking-normal text-red-600">The official JIESTAR website</p>
             <h1 className="mt-4 max-w-2xl break-words text-[34px] font-bold leading-[1.12] tracking-normal text-slate-950 sm:text-5xl lg:text-[60px] lg:leading-[1.04]">
               Inside JIESTAR&apos;s Building Block Manufacturing Base
             </h1>
@@ -228,7 +229,10 @@ export default function AboutPage() {
               />
             </div>
             <p className="mt-6 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
-              JIESTAR, also written as Jie Star or JIE-STAR, is the official building block brand of Guangdong Jiexing Toys Industrial Co., Ltd. Since 1998, the manufacturing company has supported global partners with product development, injection molding, quality inspection, warehouse supply, wholesale cooperation, and OEM / ODM projects. HONG KONG ZHILE TRADING CO., LIMITED is authorized to operate JIESTAR&apos;s international website and sales channels and serves as the seller and merchant of record for eligible retail orders placed through this website.
+              JIESTAR, also written as Jie Star or JIE-STAR, is owned by {businessConfig.manufacturerName}. Since 1998, the company has supported global partners with product development, injection molding, quality inspection, warehouse supply, and OEM / ODM manufacturing.
+            </p>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600">
+              {businessConfig.legalName} operates this official JIESTAR international website as an authorized sales operator. It is the seller for wholesale, custom-development, and retail orders, handling contracts, commercial invoices, payments, and related after-sales support.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link

@@ -38,6 +38,7 @@ export function HomeHero() {
       <div className="mx-auto max-w-7xl overflow-hidden rounded-b-lg border border-slate-200 bg-[linear-gradient(90deg,#ffffff_0%,#f7f8fa_50%,#eef1f5_100%)] shadow-sm shadow-slate-950/[0.04]">
         <div className="relative grid min-h-[540px] items-center gap-5 px-5 py-10 sm:gap-8 sm:px-8 lg:grid-cols-[0.82fr_1.18fr] lg:px-12 lg:py-12">
           <div className="relative z-10 max-w-xl">
+            <p className="mb-4 text-xs font-bold uppercase tracking-wide text-red-700">Official JIESTAR website</p>
             <h1 className="text-5xl font-black leading-[0.98] tracking-normal text-slate-950 sm:text-6xl lg:text-[76px]">
               Build Beyond Imagination<span className="text-red-600">.</span>
             </h1>

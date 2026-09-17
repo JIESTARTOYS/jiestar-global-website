@@ -1,3 +1,4 @@
+import { businessConfig } from "@/lib/business";
 import { PolicyPage } from "@/components/ui/PolicyPage";
 import { createMetadata } from "@/lib/seo";
 
@@ -11,12 +12,12 @@ export default function PrivacyPolicyPage() {
   return (
     <PolicyPage
       title="Privacy Policy"
-      description="This policy explains how HONG KONG ZHILE TRADING CO., LIMITED handles information for the JIESTAR international website, retail orders, support, and business inquiries."
-      updatedLabel="Last updated July 24, 2026"
+      description={`This policy explains how ${businessConfig.legalName} handles information for the official JIESTAR international website, wholesale and custom-development business, retail orders, and customer support.`}
+      updatedLabel="Last updated September 17, 2026"
       sections={[
         {
           title: "Who is responsible for your information",
-          body: "HONG KONG ZHILE TRADING CO., LIMITED operates this website and is responsible for personal information used for international website operations and eligible retail sales. Guangdong Jiexing Toys Industrial Co., Ltd. may support brand, product, manufacturing, quality, or business-cooperation matters when needed.",
+          body: `${businessConfig.legalName} operates this official JIESTAR website and is responsible for personal information used for website operations, business inquiries, wholesale and custom-development orders, retail sales, and customer support. ${businessConfig.manufacturerName}, the JIESTAR brand owner and manufacturer, may receive information needed for product development, manufacturing, quality, or after-sales support.`,
           items: [
             "Privacy questions and requests can be sent to the business email or telephone displayed below.",
             "Shopify and enabled payment providers separately process information needed to provide checkout, payment, fraud-prevention, and order services.",
@@ -28,7 +29,7 @@ export default function PrivacyPolicyPage() {
             "Contact details such as name, company, country or region, email address, phone number, and message content.",
             "Retail order details and checkout information handled through Shopify and related commerce services.",
             "Support request details such as order number, product SKU, missing piece information, photos, and delivery information.",
-            "Business inquiry details related to wholesale supply, OEM / ODM customization, product co-development, exclusive SKU programs, or sub-brand partnership.",
+            "Business inquiry and order details related to wholesale supply, OEM / ODM customization, product co-development, exclusive SKU programs, or sub-brand partnership, including contracts, commercial invoices, and payment records.",
             "Basic website usage information such as pages visited, device/browser information, referral source, and cookie or analytics signals where enabled.",
           ],
         },
@@ -36,7 +37,7 @@ export default function PrivacyPolicyPage() {
           title: "How we use information",
           items: [
             "To process retail orders, checkout communication, customer service, and after-sales support.",
-            "To respond to wholesale, custom solutions, product development, and business cooperation inquiries.",
+            "To respond to business inquiries and manage wholesale and custom-development quotations, contracts, commercial invoices, payments, and after-sales support.",
             "To review missing piece, replacement part, return, refund, or quality issue requests.",
             "To improve website structure, product presentation, support workflows, and customer communication.",
             "To maintain website security, prevent misuse, and support ordinary business operations.",

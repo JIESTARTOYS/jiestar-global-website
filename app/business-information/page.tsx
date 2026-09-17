@@ -5,7 +5,7 @@ import { createMetadata } from "@/lib/seo";
 export const metadata = createMetadata({
   title: "Business & Legal Information | JIESTAR Toys",
   description:
-    "Verified company, registration, address, telephone, seller, and brand relationship information for the JIESTAR global website.",
+    "JIESTAR brand ownership, manufacturing, and authorized international sales information for wholesale, custom-development, and retail customers.",
   path: "/business-information",
 });
 
@@ -26,8 +26,8 @@ export default function BusinessInformationPage() {
             Business &amp; Legal Information
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
-            This page identifies the company operating JIESTAR&apos;s international website and retail sales channel,
-            together with its relationship to the JIESTAR brand and manufacturing company.
+            This is the official JIESTAR international website. Below are the brand owner and manufacturer,
+            followed by the authorized company operating the website and selling to our business and retail customers.
           </p>
         </header>
 

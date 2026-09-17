@@ -1,3 +1,4 @@
+import { businessConfig } from "@/lib/business";
 import Image from "next/image";
 import { SiteLogo } from "@/components/layout/SiteLogo";
 import { LinkButton } from "@/components/ui/LinkButton";
@@ -45,7 +46,10 @@ export function BrandStory() {
                 Global Brand, Builder-First Products
               </h2>
               <p className="mt-5 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
-                Founded in 1998, Guangdong Jiexing Toys Industrial Co., Ltd. supports the JIESTAR brand through product development and manufacturing. HONG KONG ZHILE TRADING CO., LIMITED is authorized to operate the international website and sales channel, giving global shoppers and partners a clearly identified commercial contact.
+                JIESTAR is a brand of {businessConfig.manufacturerName}. Founded in 1998, the company brings together product development, manufacturing, and supply for builders and business partners worldwide.
+              </p>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-slate-600">
+                Our official international website and wholesale, custom-development, and retail sales are operated by {businessConfig.legalName}, an authorized JIESTAR sales operator.
               </p>
             </div>
 

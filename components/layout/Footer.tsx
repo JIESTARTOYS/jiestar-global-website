@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/data";
+import { businessConfig } from "@/lib/business";
 import { ArrowRightIcon } from "@/components/ui/Icons";
 import { SiteLogo } from "@/components/layout/SiteLogo";
 
@@ -77,15 +78,25 @@ export function Footer() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-4 border-t border-white/10 px-5 py-5 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <p>
-            © 2026 JIESTAR. Online sales operated by{" "}
-            <Link href="/business-information" className="transition hover:text-white">
-              HONG KONG ZHILE TRADING CO., LIMITED
-            </Link>
-            .
-          </p>
-          <div className="flex flex-wrap gap-5">
+        <div className="flex flex-col gap-5 border-t border-white/10 px-5 py-5 text-sm text-slate-300 lg:px-8">
+          <div className="max-w-4xl space-y-2 leading-6">
+            <p>© 2026 JIESTAR.</p>
+            <p>
+              JIESTAR is a brand of{" "}
+              <Link href="/business-information#brand-owner" className="underline decoration-slate-500 underline-offset-4 transition hover:text-white">
+                {businessConfig.manufacturerName}
+              </Link>
+              .
+            </p>
+            <p>
+              International sales are operated by{" "}
+              <Link href="/business-information#international-sales" className="underline decoration-slate-500 underline-offset-4 transition hover:text-white">
+                {businessConfig.legalName}
+              </Link>
+              , an authorized JIESTAR sales operator.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-3">
             {legalLinks.map(([label, href]) => (
               <Link key={href} href={href} className="hover:text-white">
                 {label}

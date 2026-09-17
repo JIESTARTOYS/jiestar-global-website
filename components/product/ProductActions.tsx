@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
 import { CartIcon, ShieldIcon } from "@/components/ui/Icons";
+import { RetailSellerDisclosure } from "@/components/ui/RetailSellerDisclosure";
 
 type ProductActionsProps = {
   productTitle: string;
@@ -102,6 +103,7 @@ export function ProductActions({
           </p>
         </div>
       </div>
+      <RetailSellerDisclosure className="sm:col-span-2" />
       <button
         type="button"
         onClick={handleAddToCart}

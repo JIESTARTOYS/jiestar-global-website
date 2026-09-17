@@ -3,7 +3,7 @@ import { CartProvider } from "@/components/cart/CartProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { siteConfig } from "@/lib/data";
-import { createJsonLdScript, createOrganizationJsonLd, createWebSiteJsonLd } from "@/lib/seo";
+import { createBrandJsonLd, createJsonLdScript, createManufacturerJsonLd, createOrganizationJsonLd, createWebSiteJsonLd } from "@/lib/seo";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s | JIESTAR Toys",
   },
   description:
-    "Discover JIESTAR building block sets for collectors, retailers, distributors, and global ecommerce sellers.",
+    "The official JIESTAR website for building block sets, wholesale supply, custom product development, and global brand partnerships.",
 };
 
 export default async function RootLayout({
@@ -26,7 +26,7 @@ export default async function RootLayout({
       <body className="min-h-full bg-[#f6f7f9] text-slate-950">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={createJsonLdScript([createOrganizationJsonLd(), createWebSiteJsonLd()])}
+          dangerouslySetInnerHTML={createJsonLdScript([createOrganizationJsonLd(), createBrandJsonLd(), createManufacturerJsonLd(), createWebSiteJsonLd()])}
         />
         <CartProvider>
           <Header />

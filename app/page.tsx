@@ -17,7 +17,7 @@ export const revalidate = 300;
 export const metadata = createMetadata({
   title: "JIESTAR Official | Building Block Sets, Wholesale & Custom OEM/ODM Solutions",
   description:
-    "Shop JIESTAR building block sets and explore wholesale or OEM/ODM cooperation through the brand's authorized international website and sales operator.",
+    "Explore the official JIESTAR website for building block sets, wholesale supply, OEM/ODM development, and global brand partnerships.",
   path: "/",
 });
 

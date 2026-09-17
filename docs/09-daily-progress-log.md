@@ -30,6 +30,19 @@
 
 ---
 
+## 2026-09-17
+
+### 子项目 / 小项：JIESTAR 官方品牌与香港销售主体展示
+
+- 当前状态：网站实现已在独立目录 `/Users/chensen/projects/jiestar-brand-sales-identity` 完成；分支 `codex/brand-sales-identity`，基于已核对的生产/main 提交 `a1a914d`。owner 已明确授权本项提交并部署；发布前已重新核对 main 与本地基线一致，常用目录已有的其他改动保留。
+- 身份安排：按 owner 确认，JIESTAR 品牌所有及研发制造公司为 `Guangdong JieXing Toys Industrial Co., Ltd.`；`HONG KONG ZHILE TRADING CO., LIMITED` 为获授权的网站与国际销售运营方，同时是 B2B/C 端签约、商业发票、收款及相关售后主体。此次未独立审核权属/授权原件，不扩展为域名、代码及第三方素材所有权。
+- 本次完成：首页、About、Wholesale/Custom Solutions 共用制造说明、Contact、三行页脚、双区块法律信息页统一身份；条款、隐私、退款页明确两类订单责任及 B2B 书面商务条件。公司故事文章同步修正运营主体歧义，保留原发布日期并添加真实更新日。
+- 搜索与结账：结构化资料分开 JIESTAR Brand、制造公司、香港销售公司；Website publisher、Product Offer seller 及运输/退款责任关联香港公司。商品购买区与购物车新增 Retail seller 披露及公司资料链接。Shopify/Airwallex 商户、API、支付及收款逻辑未改。
+- 验证：86 项测试、lint、生产构建通过（862 个静态页面）；11 个代表网址 HTTP/身份/结构化资料检查通过；核心五页及公司故事在 1440×1000 与 390×844 下检查，无横向溢出或浏览器 error。手机端实际加入 Shopify 购物车、披露链接关闭抽屉并导航、跳转现有 `checkout.jiestartoys.com` 均正常。
+- 现有线上结账核验：Shopify Legal notice 已明确香港智乐为 contracting seller / merchant of record，并说明制造公司及授权关系；本次仅用访客购物车查看，未填写客户/支付资料、未提交订单，未更改 Shopify 政策或账户设置。
+- 证据：独立目录 `output/brand-sales-identity/` 保存测试/构建日志、页面核验 JSON、结账 Legal notice 及桌面/手机截图；不含购物车 token 或支付资料。本地预览端口为 3017。
+- 发布验收：使用此独立目录提交，经 main 的现有 Vercel 流程上线后核对生产版本、页面、结构化资料和结账入口；实际发布结果保存在本项 output 目录及常用目录交接记录。项目未找到可独立核验的正式 B2B 合同/商业发票样本；实际文件及 Airwallex 账户登记范围的一致性仍需据原件核对，本次网站实现不代表账户审核批准。
+
 ## 2026-09-14
 
 ### 子项目 / 小项：批发与定制非品牌 SEO 内容上线及周检

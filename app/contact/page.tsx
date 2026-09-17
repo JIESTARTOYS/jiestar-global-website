@@ -1,3 +1,4 @@
+import { businessConfig } from "@/lib/business";
 import Link from "next/link";
 import Image from "next/image";
 import { InquiryForm } from "@/components/forms/InquiryForm";
@@ -47,6 +48,9 @@ export default function ContactPage() {
             </h1>
             <p className="mt-4 text-base leading-8 text-slate-600">
               Use this form for DTC questions, wholesale supply, OEM / ODM customization, product co-development, exclusive product lines, or sub-brand partnership.
+            </p>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              Our international sales and support team operates through {businessConfig.legalName}, an authorized JIESTAR sales operator for wholesale, custom-development, and retail orders.
             </p>
             <div className="mt-6 grid gap-3">
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">

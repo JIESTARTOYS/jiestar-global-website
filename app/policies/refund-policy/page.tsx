@@ -1,3 +1,4 @@
+import { businessConfig } from "@/lib/business";
 import { PolicyPage } from "@/components/ui/PolicyPage";
 import { createJsonLdScript, createMerchantReturnPolicyJsonLd, createMetadata } from "@/lib/seo";
 
@@ -14,8 +15,12 @@ export default function RefundPolicyPage() {
       <PolicyPage
         title="Returns & Refunds"
         description="Retail customers may request a return within 14 days after delivery. Please obtain return authorization and a designated return address before sending anything back. This policy does not limit rights that cannot be excluded under applicable consumer law."
-        updatedLabel="Last updated July 21, 2026"
+        updatedLabel="Last updated September 17, 2026"
         sections={[
+          {
+            title: "Seller and after-sales responsibility",
+            body: `${businessConfig.legalName} is the seller responsible for returns, refunds, and related after-sales support for retail orders placed through this official JIESTAR website. Contact our support team using the details below.`,
+          },
           {
             title: "Cancel before dispatch",
             items: [
@@ -70,7 +75,7 @@ export default function RefundPolicyPage() {
           },
           {
             title: "Wholesale and custom orders",
-            body: "B2B, wholesale, OEM / ODM, product co-development, custom packaging, exclusive SKU, and sub-brand orders are governed by the applicable quotation, purchase order, contract, or other written agreement.",
+            body: `Wholesale, OEM / ODM, product co-development, custom packaging, exclusive SKU, and sub-brand orders are sold by ${businessConfig.legalName}. Returns, quality claims, and refunds for these business orders are governed by the applicable quotation, purchase order, contract, or other written agreement with that company.`,
             items: [
               "Bulk quality claims, carton shortages, and shipment discrepancies should include the relevant order documents and supporting evidence.",
               "The retail 14-day return process does not replace separately agreed commercial terms.",

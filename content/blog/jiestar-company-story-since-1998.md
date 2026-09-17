@@ -1,19 +1,20 @@
 ---
 title: "JIESTAR Company Story: Toy Manufacturing Experience Since 1998"
-description: "An evidence-based overview of JIESTAR and Guangdong Jiexing Toys Industrial Co., Ltd., from its 1998 foundation to product development and international trade fair participation."
+description: "An evidence-based overview of JIESTAR and Guangdong JieXing Toys Industrial Co., Ltd., from its 1998 foundation to product development and international trade fair participation."
 category: "Company News"
 date: "2026-07-10"
+updatedAt: "2026-09-17"
 coverImage: "/images/site-visuals/factory/factory-gate-sign.webp"
-coverAlt: "Entrance sign of Guangdong Jiexing Toys Industrial Co Ltd, the company behind JIESTAR"
+coverAlt: "Entrance sign of Guangdong JieXing Toys Industrial Co Ltd, the company behind JIESTAR"
 ---
 
-JIESTAR is the building block brand of Guangdong Jiexing Toys Industrial Co., Ltd. The company was established in 1998 in Chenghai, Shantou, Guangdong, a region known for toy manufacturing and product supply. Today, the JIESTAR website brings together product browsing, quality information, wholesale cooperation, and custom product development for international customers and business partners.
+JIESTAR is the building block brand of Guangdong JieXing Toys Industrial Co., Ltd. The company was established in 1998 in Chenghai, Shantou, Guangdong, a region known for toy manufacturing and product supply. Today, the JIESTAR website brings together product browsing, quality information, wholesale cooperation, and custom product development for international customers and business partners.
 
 This article presents the company story through documented milestones and current operating capabilities. It does not claim that every present-day product line or service existed from the first year. Instead, it explains how long-term toy manufacturing experience supports the building block work JIESTAR carries out now.
 
 ## Established in Chenghai in 1998
 
-Guangdong Jiexing Toys Industrial Co., Ltd. was founded in 1998. Its Chenghai location places the company within one of China's major toy-industry clusters, where product design, molding, assembly, packaging, and export supply have developed across a broad network of specialist businesses.
+Guangdong JieXing Toys Industrial Co., Ltd. was founded in 1998. Its Chenghai location places the company within one of China's major toy-industry clusters, where product design, molding, assembly, packaging, and export supply have developed across a broad network of specialist businesses.
 
 Company age alone does not prove the quality of an individual product. For buyers, the useful question is how experience appears in current product information, manufacturing processes, quality checks, support routes, and business communication. The [About JIESTAR page](/about) provides the official relationship between the company and the brand.
 
@@ -47,7 +48,7 @@ The global website has two connected roles. For retail customers and collectors,
 
 These audiences require different information. A collector may want piece count, finished dimensions, difficulty, and display value. A distributor may need product mix, quantity discussion, packaging, shipping, and market fit. A custom project partner may need feasibility review, samples, branding, and a longer development process.
 
-Keeping these paths visible on one official brand site helps visitors understand that JIESTAR is not only a product listing surface and not only a factory introduction. It is a brand and cooperation hub supported by the operating company behind it.
+The official JIESTAR website brings these paths together. Guangdong JieXing Toys Industrial Co., Ltd. owns the brand and provides product-development and manufacturing support. HONG KONG ZHILE TRADING CO., LIMITED is the authorized website and international sales operator, handling wholesale, custom-development, and retail orders.
 
 ## Continuing the Story with Verifiable Updates
 
@@ -57,9 +58,9 @@ Visitors can [contact JIESTAR](/contact) for company information, product questi
 
 ## Frequently Asked Questions
 
-### Is JIESTAR the same as Guangdong Jiexing Toys Industrial Co., Ltd.?
+### Is JIESTAR the same as Guangdong JieXing Toys Industrial Co., Ltd.?
 
-JIESTAR is the building block brand of Guangdong Jiexing Toys Industrial Co., Ltd. The company name identifies the operating legal entity, while JIESTAR is the brand presented to customers and business partners.
+JIESTAR is the building block brand owned by Guangdong JieXing Toys Industrial Co., Ltd. International wholesale, custom-development, and retail orders are sold by HONG KONG ZHILE TRADING CO., LIMITED, which handles contracting, commercial invoices, payments, and related after-sales support. See our [brand ownership and sales company information](/business-information) for the roles of both companies.
 
 ### Does the 1998 date mean every current building block line began then?
 
