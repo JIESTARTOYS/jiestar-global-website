@@ -1,3 +1,4 @@
+import { getCollectionBuyingContent } from "@/lib/collection-content";
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/data";
 import { BLOG_SECTION_SLUGS, getBlogPosts } from "@/lib/blog";
@@ -39,9 +40,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...BLOG_SECTION_SLUGS.map((slug) => ({
       url: `${siteConfig.url}/blog/category/${slug}`,
     })),
-    ...collectionHandles.map((handle) => ({
-      url: `${siteConfig.url}/collections/${handle}`,
-    })),
+    ...collectionHandles.map((handle) => {
+      const content = getCollectionBuyingContent(handle);
+
+      return {
+        url: `${siteConfig.url}/collections/${handle}`,
+        ...(content ? { lastModified: new Date(content.updatedAt) } : {}),
+      };
+    }),
     ...products.map((product) => {
       const lastModified = product.updatedAt ?? product.createdAt;
 

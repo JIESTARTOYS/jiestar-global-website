@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CollectionBuyingGuide } from "@/components/sections/CollectionBuyingGuide";
+import { getCollectionBuyingContent } from "@/lib/collection-content";
 import { CollectionProductListing } from "@/components/product/CollectionProductListing";
 import { ArrowRightIcon, HomeIcon, PackageIcon, ShieldIcon, StoreIcon, TruckIcon } from "@/components/ui/Icons";
 import { LinkButton } from "@/components/ui/LinkButton";
@@ -55,12 +57,14 @@ export async function generateMetadata({ params, searchParams }: PageProps) {
   const products = shopifyCollection?.products ?? getProductsByCollection(handle);
   const currentPage = getPaginatedItems(products, page).currentPage;
 
+  const buyingContent = getCollectionBuyingContent(handle);
+
   return createMetadata({
     title:
       currentPage > 1
-        ? `${collection.title} Building Block Sets - Page ${currentPage} | JIESTAR`
-        : `${collection.title} Building Block Sets | JIESTAR Wholesale & Custom Supply`,
-    description: `Explore JIESTAR ${collection.title} building block sets for retail, wholesale, gift, display, and custom product planning. Contact us for catalog, MOQ, packaging, and B2B cooperation.`,
+        ? `${buyingContent?.heading ?? `${collection.title} Building Block Sets`} - Page ${currentPage} | JIESTAR`
+        : buyingContent?.seoTitle ?? `${collection.title} Building Block Sets | JIESTAR Wholesale & Custom Supply`,
+    description: buyingContent?.description ?? `Explore JIESTAR ${collection.title} building block sets for retail, wholesale, gift, display, and custom product planning. Contact us for catalog, MOQ, packaging, and B2B cooperation.`,
     path: buildPaginationHref(`/collections/${handle}`, currentPage),
   });
 }
@@ -83,7 +87,9 @@ export default async function CollectionPage({ params, searchParams }: PageProps
   const products = shopifyCollection?.products ?? getProductsByCollection(handle);
   const subBrand = getSubBrandByCollectionHandle(collection.handle);
   const isBrandCollection = Boolean(subBrand);
-  const collectionDescription = subBrand?.collectionDescription ?? collection.description;
+  const buyingContent = getCollectionBuyingContent(handle);
+  const currentPage = getPaginatedItems(products, page).currentPage;
+  const collectionDescription = buyingContent?.intro ?? subBrand?.collectionDescription ?? collection.description;
   const collectionSeo = getCollectionSeoCopy(collection.title);
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", path: "/" },
@@ -113,9 +119,12 @@ export default async function CollectionPage({ params, searchParams }: PageProps
                 {isBrandCollection ? "Brand collection" : "Collection"}
               </p>
               <h1 className="mt-3 text-3xl font-black leading-tight text-slate-950 sm:text-4xl">
-                {collection.title} Building Block Sets
+                {buyingContent?.heading ?? `${collection.title} Building Block Sets`}
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">{collectionDescription}</p>
+              {buyingContent && currentPage === 1 ? (
+                <Link href="#buying-guide" className="mt-4 w-fit text-sm font-bold text-red-700 underline underline-offset-4">Read the collection buying guide</Link>
+              ) : null}
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {[
                   { title: `${products.length} products`, text: "Available in this collection", icon: PackageIcon },
@@ -173,32 +182,34 @@ export default async function CollectionPage({ params, searchParams }: PageProps
           </div>
         </section>
 
-        <section className="mt-8 grid gap-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.03] sm:p-6 lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
-          <div>
-            <p className="text-sm font-black uppercase text-red-600">Category guide</p>
-            <h2 className="mt-2 text-3xl font-black tracking-normal text-slate-950">
-              {collectionSeo.title}
-            </h2>
-            <p className="mt-4 text-base leading-8 text-slate-600">{collectionSeo.intro}</p>
-            <p className="mt-4 text-base leading-8 text-slate-600">{collectionSeo.planning}</p>
-          </div>
-          <div className="grid gap-4">
-            <article className="rounded-lg bg-slate-50 p-5">
-              <h2 className="text-xl font-black text-slate-950">Suitable Buyer Scenarios</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{collectionSeo.scenarios}</p>
-            </article>
-            <article className="rounded-lg bg-red-50 p-5">
-              <h2 className="text-xl font-black text-slate-950">Wholesale and Custom Cooperation</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{collectionSeo.cooperation}</p>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{collectionSeo.custom}</p>
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <LinkButton href="/wholesale" className="px-4">Wholesale building block sets</LinkButton>
-                <LinkButton href="/custom-solutions" variant="secondary" className="px-4">Custom building block solutions</LinkButton>
-                <LinkButton href="/contact" variant="secondary" className="px-4">Contact JIESTAR official sales</LinkButton>
-              </div>
-            </article>
-          </div>
-        </section>
+        {!buyingContent ? (
+          <section className="mt-8 grid gap-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.03] sm:p-6 lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
+            <div>
+              <p className="text-sm font-black uppercase text-red-600">Category guide</p>
+              <h2 className="mt-2 text-3xl font-black tracking-normal text-slate-950">
+                {collectionSeo.title}
+              </h2>
+              <p className="mt-4 text-base leading-8 text-slate-600">{collectionSeo.intro}</p>
+              <p className="mt-4 text-base leading-8 text-slate-600">{collectionSeo.planning}</p>
+            </div>
+            <div className="grid gap-4">
+              <article className="rounded-lg bg-slate-50 p-5">
+                <h2 className="text-xl font-black text-slate-950">Suitable Buyer Scenarios</h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{collectionSeo.scenarios}</p>
+              </article>
+              <article className="rounded-lg bg-red-50 p-5">
+                <h2 className="text-xl font-black text-slate-950">Wholesale and Custom Cooperation</h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{collectionSeo.cooperation}</p>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{collectionSeo.custom}</p>
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                  <LinkButton href="/wholesale" className="px-4">Wholesale building block sets</LinkButton>
+                  <LinkButton href="/custom-solutions" variant="secondary" className="px-4">Custom building block solutions</LinkButton>
+                  <LinkButton href="/contact" variant="secondary" className="px-4">Contact JIESTAR official sales</LinkButton>
+                </div>
+              </article>
+            </div>
+          </section>
+        ) : null}
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
           <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.03] lg:sticky lg:top-24 lg:self-start">
@@ -249,6 +260,7 @@ export default async function CollectionPage({ params, searchParams }: PageProps
             />
           </div>
         </section>
+        {buyingContent && currentPage === 1 ? <CollectionBuyingGuide content={buyingContent} /> : null}
       </div>
     </div>
   );
