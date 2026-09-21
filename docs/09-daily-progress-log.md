@@ -30,6 +30,19 @@
 
 ---
 
+## 2026-09-21
+
+### 子项目 / 小项：四个重点分类独立 SEO 内容上线及周检
+
+- 已上线：花卉、车辆、船舶、建筑街景四分类分别增加独立英文标题、描述、H1、简介、选购要点、采购问题、FAQ 和已核验商品/指南内链。详细指南放在商品列表后，首屏增加跳转入口；仅分类首页展示，分页和其他品牌分类保持原有规则。四分类 sitemap 修改日为 2026-09-21。
+- 隔离目录 `/Users/chensen/projects/jiestar-seo-20260921`，分支 `codex/seo-collections-20260921`；基于生产 `55b1b7d`，内容提交 `028d04f` 已推送 main；Vercel `dpl_2eEzoZ8vkfFo4P68SjaWZS2pY9y3` READY，正式域名和提交匹配。保留 9 月 17 日品牌/销售主体改动及常用目录其他未完成工作。
+- 验证：86 项测试、lint、生产构建通过；四页 1400×900 桌面、390×844 手机指南及标题无横向溢出，采购入口跳转正常，浏览器 error 查询为空。本地与生产各 121 项核心网址、内链、本地图片、列表、分页 canonical、品牌分类回归及 sitemap 检查通过。首次生产回读有 TLS 连接中断，保留失败证据；启用另一种保留证书校验的 HTTP 传输重试后全通过。生产 error/fatal 日志查询为空。
+- 上线网址：`https://www.jiestartoys.com/collections/flowers-botanical`、`https://www.jiestartoys.com/collections/vehicles`、`https://www.jiestartoys.com/collections/ships-boats`、`https://www.jiestartoys.com/collections/buildings-street-scenes`。
+- 周检状态：技术检查完成，Google 实际收录待补。本次打开 Search Console 概述及六页检查历史后，Chrome 操作被用户活动打断，后台标签页读取超时，未读取到新网址检查结果；保留 9 月 14 日历史状态，不将本次技术可索引检查记为已收录。9 月 22 日优先补查六个核心网址，无需重复发布内容。
+- 资料缺口：仍无可追溯工厂原始照片或已批准的具体项目/样品/检验记录，继续待补。本批未新增 MOQ、交期、认证或固定商品参数承诺。
+- 证据：常用项目及隔离目录 `output/seo/2026-09-21/`；含 catalog-evidence、fact-review、测试/构建日志、browser-qa、local-http、production-http、首轮网络失败记录、index-status、部署和自动运行记录。线上浏览器复看超时；生产验收基于提交匹配与正式 HTTP/HTML 回读，桌面/手机视觉为本地生产构建实测。
+- 下一项：9 月 22 日补本周 GSC 实际索引；9 月 28 日更新四篇现有采购指南。任务 ACTIVE，本次真实调度 14:31:05，下一次 9 月 22 日 14:30:43（北京时间）。
+
 ## 2026-09-17
 
 ### 子项目 / 小项：JIESTAR 官方品牌与香港销售主体展示
