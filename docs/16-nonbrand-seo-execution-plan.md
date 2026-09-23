@@ -32,14 +32,14 @@
 
 生产域名统一为 `https://www.jiestartoys.com`，保持原网址。
 
-| URL | 主要搜索意图 | 2026-09-14 Google 网址检查 |
-| --- | --- | --- |
-| `/wholesale` | wholesale building blocks、供应与采购 | 已收录 |
-| `/custom-solutions` | custom building block sets、OEM/ODM、私人品牌 | 已发现，尚未收录；9 月 7 日 17:10 实时测试可收录（历史记录） |
-| `/collections/flowers-botanical` | flower building block sets | 已发现，尚未收录 |
-| `/collections/vehicles` | vehicle building block sets、car model kits | 已发现，尚未收录 |
-| `/collections/ships-boats` | ship building block sets、ship model kits | 已发现，尚未收录 |
-| `/collections/buildings-street-scenes` | building and street scene sets | 已收录 |
+| URL | 主要搜索意图 | Google 实际索引 | 观察日 |
+| --- | --- | --- | --- |
+| `/wholesale` | wholesale building blocks、供应与采购 | 已收录 | 2026-09-23 |
+| `/custom-solutions` | custom building block sets、OEM/ODM、私人品牌 | 已发现，尚未收录 | 2026-09-22 |
+| `/collections/flowers-botanical` | flower building block sets | 已发现，尚未收录；实时可收录，已提交一次索引请求 | 2026-09-23 |
+| `/collections/vehicles` | vehicle building block sets、car model kits | 已发现，尚未收录 | 2026-09-23 |
+| `/collections/ships-boats` | ship building block sets、ship model kits | 已发现，尚未收录 | 2026-09-22 |
+| `/collections/buildings-street-scenes` | building and street scene sets | 已收录 | 2026-09-22 |
 
 六页 HTTP、canonical、robots/noindex、站点地图的技术状态与 Google 实际索引分开记录；技术通过不能标为“已收录”。现有 robots 分页策略没有确认问题，不因未收录而随意放开筛选参数。9 月 21 日按真实商品和分类意图补独立内容，不复制同一段分类介绍。
 
@@ -65,7 +65,7 @@
 | --- | --- | --- | --- |
 | 2026-09-07 | 2026-09-07 | 已完成 | 36 项生产回读通过；当时索引状态见历史证据 |
 | 2026-09-14 | 2026-09-14 | 已完成 | 68 项生产回读通过；六页 GSC 逐网址结果与上周一致，见上表 |
-| 2026-09-21 | 2026-09-21 | 技术完成；GSC 待补 | 121 项生产回读通过；本次未能读取 Google 网址检查结果，9 月 22 日补六页实际索引 |
+| 2026-09-21 | 2026-09-21 至 23 | 已完成 | 121 项生产技术检查通过；六页 GSC 分两日补齐，日期见上表；花卉实时测试通过且索引请求确认成功，实际仍未收录 |
 
 ## 28 天复盘
 
@@ -125,3 +125,18 @@
 - 线上浏览器复看也超时；四页桌面/手机视觉为本地生产构建验收，生产提交与正式 HTML 回读另行核对。
 - 制造资料缺口保持待补；本轮交接未出现可核实的原始工厂图片或已批准案例资料。
 - 私有证据：常用项目和隔离目录 `output/seo/2026-09-21/`。下一内容项为 9 月 28 日 buyer-guides；自动化 ACTIVE，下一次运行北京时间 9 月 22 日 14:30:43。
+
+## 2026-09-22 索引补查与恢复
+
+- Search Console 已完成三页实际索引观察：定制页 14:34、船舶分类 14:36 为“已发现，尚未收录”；建筑街景 14:35 已收录，与 9 月 14 日结果一致。未运行实时测试或请求编入索引；上方核心表仍是完整的 9 月 14 日历史快照。
+- Chrome 被用户活动切换，重新读取时任务标签页已关闭；保留本次部分结果。9 月 23 日只补 `/collections/vehicles`、`/collections/flowers-botanical`、`/wholesale`，完成后再更新六页表和本周完成状态。不重复内容批次或已通过技术检查。
+- GitHub main/生产同为 `925712e62f5d27d645516c34ce927ae880fcdbda`，Vercel `dpl_EWV4wbXwtB1x3fbAdSsQk5Ho8GKQ` READY。无代码修改或发布，本次日志先保存在独立目录待后续合入；常用目录交接日志指向此处。
+- 证据：两目录 `output/seo/2026-09-22/`。实际调度 14:30:56，ACTIVE，下次 9 月 23 日 14:30:10（Asia/Shanghai）。下一内容批次为 9 月 28 日 buyer-guides。
+
+## 2026-09-23 周检完成
+
+- 补查车辆、花卉、批发，与 9 月 22 日定制、船舶、建筑街景记录合并，本周六页已检查完成。旧段落中的“待补”保留为历史，后续以本节和上方表格为准。
+- 花卉首次显示 Google 无法识别，再次读取同一网址恢复为“已发现，尚未收录”，含 sitemap 与首页引荐。14:36 GSC 实时测试显示可编入索引；14:37 请求后明确显示已加入优先抓取队列。两种索引结果均留存；最新仍未收录，不能把实时测试或提交成功当作收录。
+- 花卉线上 HTTP 200、canonical、无 noindex、独立内容、sitemap 及 robots 声明检查通过；无已确认代码缺陷，不重复部署内容或无故调整抓取规则。本次只合入本轮两份交接文档。
+- 私有证据：两目录 `output/seo/2026-09-23/`，含 index-status、flower-http、automation-run 及提交后生产核验。代码行为未改，网站测试与视觉验收沿用 9 月 21 日结果，文档另做 diff 检查。
+- 任务 ACTIVE，本次实际调度 14:30:18，下次 9 月 24 日 14:31:47（Asia/Shanghai）。下一内容及周检日期 9 月 28 日；届时再检查花卉收录，不每天重复索引请求。制造原始资料仍待补。
